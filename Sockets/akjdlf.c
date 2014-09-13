@@ -1,18 +1,11 @@
 /*
- * sockets.c
+ * sdfs.c
  *
  *  Created on: 13/09/2014
  *      Author: utnso
  */
 
-
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
+#include "sockets.h"
 
 
 int crear_servidor(char * PUERTO, int backlog, int tamanioMaximo){
