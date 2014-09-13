@@ -1,0 +1,1 @@
+sockets.d: ../sockets.c

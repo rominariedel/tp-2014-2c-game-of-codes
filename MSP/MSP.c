@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <commons/string.h>
 #include <pthread.h>
-
+#include <commons/config.h>
 
 typedef struct {
 		int sizeMemory;
@@ -24,7 +24,7 @@ int main (int cantArgs, char** args)
 	int sizeMem;
 	t_config* configuracion = config_create(args[1]);
 	sizeMem = config_get_int_value(configuracion, "sizeMemoria");
-	printf("tamanio Memoria = " %d /n, sizeMem);
+	printf("tamanio Memoria =  %d /n", sizeMem);
 
 	/*t_config* configuracion = config_create(args[1]);
 	logi = log_create(args[2], "UMV", 0, LOG_LEVEL_TRACE);
@@ -45,6 +45,6 @@ int main (int cantArgs, char** args)
 		printf("%d",rhEsperarConexiones);
 
 		exit(0);*/
-
+	return 0;
 }
 
