@@ -8,7 +8,7 @@
 #include "sockets.h"
 
 
-int crear_servidor(char * PUERTO, int backlog, int tamanioMaximo){
+int crear_servidor(char * PUERTO, int backlog){
 	struct addrinfo hints;
 	struct addrinfo *serverInfo;
 

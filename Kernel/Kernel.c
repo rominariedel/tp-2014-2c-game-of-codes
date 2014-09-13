@@ -9,6 +9,7 @@
 #include<stddef.h>
 #include <commons/config.h>
 #include<commons/collections/list.h>
+#include"sockets.h"
 
 typedef struct {
 	int A;
@@ -37,10 +38,13 @@ typedef struct cola{
 
 char * PUERTO;
 char * IP_MSP;
-int PUERTO_MSP;
+char * PUERTO_MSP;
 int QUANTUM;
 char * SYSCALLS;
 int TAMANIO_STACK;
+int backlog;
+int socket_MSP;
+int socket_CPU;
 
 colaPlanificacion * NEW;
 colaPlanificacion * READY;
@@ -52,6 +56,7 @@ TCB_struct tcb_km;
 int obtener_TID(int);
 void boot();
 void obtenerDatosConfig(char**);
+void agregar_hilo(colaPlanificacion *, TCB_struct);
 
 int main(int argc, char ** argv){
 	obtenerDatosConfig(argv);
@@ -63,15 +68,15 @@ void obtenerDatosConfig(char ** argv){
 	t_config * configuracion = config_create(argv[1]);
 	PUERTO = config_get_string_value(configuracion, "PUERTO");
 	IP_MSP = config_get_string_value(configuracion, "IP_MSP");
-	PUERTO_MSP = config_get_int_value(configuracion, "PUERTO_MSP");
+	PUERTO_MSP = config_get_string_value(configuracion, "PUERTO_MSP");
 	QUANTUM = config_get_int_value(configuracion, "QUANTUM");
 	SYSCALLS = config_get_string_value(configuracion, "SYSCALLS");
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 }
 
 void boot(){
-	//conectarConMSP();
 
+	socket_MSP = crear_servidor(PUERTO_MSP, backlog);
 	tcb_km.KM = 1;
 	BLOCK->TCB=tcb_km;
 	BLOCK->siguiente_TCB = NULL;
@@ -80,8 +85,8 @@ void boot(){
 }
 
 void interrupcion(TCB_struct tcb, int dirSysCall){
-	//encolar el tcb en block
-	//encolar el tcb en sys_calls
+	agregar_hilo(BLOCK, tcb);
+	agregar_hilo(SYS_CALL, tcb);
 }
 
 /* la SYS_CALL se ejecuta siempre que hay una CPU disponible y haya algun elemento en la cola de
@@ -96,7 +101,7 @@ void ejecutarSysCall(int dirSysCall){
 	tcb_km.P = dirSysCall;
 
 	//se envia a ejecutar el tcb a alguna cpu libre
-	//se bloquea tcb_km
+	agregar_hilo(BLOCK, tcb_km);
 
 	SYS_CALL ->TCB.registrosProgramacion = tcb_km.registrosProgramacion;
 	//desbloquear el tcb de usuario para ser re-planificado
@@ -124,4 +129,8 @@ int obtener_TID(int pid){
 
 void agregar_hilo(colaPlanificacion * COLA, TCB_struct tcb){
 	list_add((void*) COLA,(void*) &tcb);
+}
+
+void planificador(){
+	//recibe conexiones de diferentes CPUs
 }

@@ -17,7 +17,7 @@
 #include <netdb.h>
 #include <unistd.h>
 
-int crear_servidor(char *, int, int);
+int crear_servidor(char *, int);
 int crear_cliente(char*, char *);
 
 #endif /* SOCKETS_H_ */

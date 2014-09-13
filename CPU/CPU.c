@@ -51,7 +51,7 @@ char* IPKERNEL;
 int RETARDO;
 
 int punteroInstruccion;
-char* instruccionAEjecutar = malloc(1);
+char* instruccionAEjecutar;
 TCB_struct* tcbActivo;
 int quantum;
 
@@ -184,7 +184,7 @@ char* DIVR(char* registroA, char* registroB){
 	//Divide el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A; a menos que el segundo operando sea 0,
 	//en cuyo caso se asigna el flag de ZERO_DIV y no se hace la operación.
 	if(*registroB == 0){
-		registroB = ZERO_DIV;
+		*registroB = ZERO_DIV;
 	} else {
 		char* aux = registroA;
 		*registroA = (*aux) % (*registroB);
@@ -206,7 +206,7 @@ char* COMP(char* registroA, char* registroB){
 	//Compara si el primer registro es igual al segundo. De ser verdadero, se almacena el valor 1. De lo
 	//contrario el valor 0. El resultado de la operación se almacena en el registro A.
 	if(*registroA == *registroB){
-		registroA = 1;
+		*registroA = 1;
 	}
 	registroA = 0;
 	return registroA;
@@ -215,7 +215,7 @@ char* COMP(char* registroA, char* registroB){
 char* CGEQ(char* registroA, char* registroB){
 	//Compara si el primer registro es mayor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
 	if(*registroA >= *registroB){
-		registroA = 1;
+		*registroA = 1;
 	}
 	registroA = 0;
 	return registroA;
@@ -224,7 +224,7 @@ char* CGEQ(char* registroA, char* registroB){
 char* CLEQ(char* registroA, char* registroB){
 	//Compara si el primer registro es menor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
 	if(*registroA <= *registroB){
-		registroA = 1;
+		*registroA = 1;
 	}
 	registroA = 0;
 	return registroA;

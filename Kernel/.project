@@ -3,6 +3,7 @@
 	<name>Kernel</name>
 	<comment></comment>
 	<projects>
+		<project>Sockets</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
