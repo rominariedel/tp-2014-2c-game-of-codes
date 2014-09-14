@@ -36,26 +36,20 @@ typedef struct {
 	int baseStack;
 	int cursorStack;
 	int registrosProgramacion[5];
-}TCB_struct;
+}t_TCB;
 
 /* FLAGS */
 bool ZERO_DIV;
 
 /*Registros CPU*/
-int PIDactual;
-int TIDactual;
-int KMactual;
-int baseSegmentoCodigoActual;
-int tamanioSegmentoCodigoActual;
-int* punteroInstruccionActual;
-int baseStackActual;
-int cursorStackActual;
-int A;
-int B;
-int C;
-int D;
-int E;
-TCB_struct* TCBactual;
+char* A;
+char* B;
+char* C;
+char* D;
+char* E;
+char* F;
+
+t_TCB* TCBactual;
 
 
 /* Variables Globales */
@@ -70,9 +64,56 @@ char* IPKERNEL;
 int RETARDO;
 
 int punteroInstruccion;
-
-TCB_struct* tcbActivo;
+t_TCB* tcbActivo;
 int quantum;
+
+
+/*Datos TCB actual*/
+int PIDactual;
+int TIDactual;
+int KMactual;
+int baseSegmentoCodigoActual;
+int tamanioSegmentoCodigoActual;
+int* punteroInstruccionActual;
+int baseStackActual;
+int cursorStackActual;
+
+/*Estados del CPU*/
+int estaEjecutando = 0;
+
+
+/*Definicion de funciones*/
+void cargarArchivoConfiguracion(int cantArgs, char** args);
+void conectarConMSP();
+void conectarConKernel();
+int abortarEjecucion();
+void cargarRegistrosCPU();
+void cargarRegistrosTCB();
+int cargarDatosTCB();
+int actualizarTCB();
+//int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroAInstruccion);
+char* LOAD(char* registro, int numero);
+char* GETM(char* registroA, char* registroB);
+char* MOVR(char* registroA, char* registroB);
+char* ADDR(char* registroA, char* registroB);
+char* SUBR(char* registroA, char* registroB);
+char* MULR(char* registroA, char* registroB);
+char* MODR(char* registroA, char* registroB);
+char* DIVR(char* registroA, char* registroB);
+char* INCR(char* registro);
+char* DECR(char* registro);
+char* COMP(char* registroA, char* registroB);
+char* CGEQ(char* registroA, char* registroB);
+char* CLEQ(char* registroA, char* registroB);
+char* GOTO(char* registro);
+void JMPZ(int nro, char* registro);
+void INTE(int* direccion);
+void FLCL();
+void SHIF(int numero, char* registro);
+void NOPP();
+void PUSH(int numeroA, int numeroB);
+void TAKE(int numero, char* registro);
+void XXXX();
 
 
 
@@ -86,7 +127,47 @@ int main(int cantArgs, char** args){
 	//ejecutar instruccion
 */
 
-	return 0;
+
+	while(1)
+	{
+		int quantumActual = 1;
+//		int recibido = recv(kernelSocket,tcbActivo,sizeof(t_TCB),0);
+//		int recibidoquantum = recv(kernelSocket,quantum,sizeof(int),0);
+
+		//1.Cargar los registros de la CPU con los datos del TCB a ejecutar.
+
+		cargarDatosTCB();
+
+		estaEjecutando = 1;
+
+		while(quantumActual<=quantum)
+		{
+
+			//MSP_SolicitarProximaInstruccionAEJecutar(punteroInstruccion);
+
+
+			/*
+
+			2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a
+			ejecutar.
+			3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer
+			todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
+			4. Actualizará los registros de propósito general del TCB correspondientes según la especificación
+			de la instrucción.
+			5. Incrementa el Puntero de Instrucción.
+			6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
+			proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
+			tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
+			7. Volver al punto 1).*/
+			/*log_trace(logger, "Ejecuto rafaga del programa %d", pcb->pid);
+			log_trace(logger, "Calculo instruccion a buscar");
+			instruccionABuscar = UMV_solicitarBytes(pcb->pid,pcb->indiceCodigo,pcb->programCounter*8,sizeof(t_intructions));
+			instruccionAEjecutar = realloc(instruccionAEjecutar, instruccionABuscar->offset);
+			log_trace(logger, "Busco instruccion a ejecutar");
+			instruccionAEjecutar = UMV_solicitarBytes(pcb->pid,pcb->segmentoCodigo,instruccionABuscar->start,instruccionABuscar->offset);
+			*/
+		}
+	}
 }
 
 void cargarArchivoConfiguracion(int cantArgs, char** args){
@@ -96,9 +177,6 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	PUERTOKERNEL = config_get_string_value(configuracion, "PUERTO_KERNEL");
 	IPKERNEL = config_get_string_value(configuracion, "IP_KERNEL");
 }
-
-
-
 
 void conectarConMSP()
 {
@@ -127,14 +205,16 @@ void conectarConKernel()
 	struct addrinfo hintsKernel;
 	struct addrinfo *kernelInfo;
 
-	//int a = -1;
-
 	memset(&hintsKernel, 0, sizeof(hintsKernel));
 	hintsKernel.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
 	hintsKernel.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
 
 	getaddrinfo(IPKERNEL, PUERTOKERNEL, &hintsKernel, &kernelInfo);	// Carga en serverInfo los datos de la conexion
 	kernelSocket = socket(kernelInfo->ai_family, kernelInfo->ai_socktype, kernelInfo->ai_protocol);
+
+	if(kernelSocket == -1){
+		abortarEjecucion();
+	}
 
 	/*while (a == -1){
 		a = connect(kernelSocket, kernelInfo->ai_addr, kernelInfo->ai_addrlen);
@@ -148,8 +228,28 @@ void conectarConKernel()
 
 }
 
+int abortarEjecucion(){
+	//avisar al kernel que hay que matar al CPU
+	return 0;
+}
+
 void cargarRegistrosCPU(){
-	PIDactual = TCBactual -> PID;
+	*A = TCBactual -> registrosProgramacion[0];
+	*B = TCBactual -> registrosProgramacion[1];
+	*C = TCBactual -> registrosProgramacion[2];
+	*D = TCBactual -> registrosProgramacion[3];
+	*E = TCBactual -> registrosProgramacion[4];
+}
+
+void cargarRegistrosTCB(){
+	TCBactual -> registrosProgramacion[0] = *A;
+	TCBactual -> registrosProgramacion[1] = *B;
+	TCBactual -> registrosProgramacion[2] = *C;
+	TCBactual -> registrosProgramacion[3] = *D;
+	TCBactual -> registrosProgramacion[4] = *E;
+}
+
+int cargarDatosTCB(){
 	TIDactual = TCBactual -> TID;
 	KMactual = TCBactual -> KM;
 	baseSegmentoCodigoActual = TCBactual -> baseSegmentoCodigo;
@@ -157,23 +257,48 @@ void cargarRegistrosCPU(){
 	punteroInstruccionActual = TCBactual -> punteroInstruccion;
 	baseStackActual = TCBactual -> baseStack;
 	cursorStackActual = TCBactual -> cursorStack;
-	A = TCBactual -> registrosProgramacion[0];
-	B = TCBactual -> registrosProgramacion[1];
-	C = TCBactual -> registrosProgramacion[2];
-	D = TCBactual -> registrosProgramacion[3];
-	E = TCBactual -> registrosProgramacion[4];
+	cargarRegistrosCPU();
+	return 0;
 }
 
+int actualizarTCB(){
+	TCBactual -> TID = TIDactual;
+	TCBactual -> KM = KMactual;
+	TCBactual -> baseSegmentoCodigo = baseSegmentoCodigoActual;
+	TCBactual -> tamanioSegmentoCodigo = tamanioSegmentoCodigoActual;
+	TCBactual -> punteroInstruccion = punteroInstruccionActual;
+	TCBactual -> baseStack = baseStackActual;
+	TCBactual -> cursorStack = cursorStackActual;
+	cargarRegistrosCPU();
+	return 0;
+}
 
+int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroInstruccion){
+	char confirmacion;
+	int proximaInstruccionAEjecutar;
+	int mensaje[2];
+	mensaje[0]=1; //codigo de operacion 1 solicitar prox instruccion
+	mensaje[1]= *punteroInstruccion;
+	send(socketMSP,mensaje, sizeof(int[2]), 0);
+	/*int status = */recv(socketMSP, &proximaInstruccionAEjecutar, sizeof(char), 0);
+	if(confirmacion != 0){
 
+	//TODO: terminar
+	}
 
+	return 0;
+}
 
 
 /*Codigo ESO*/
 
-char* registro;
-int numero;
-int* direccion;
+/*
+El lenguaje que deberán interpretar consta de un bytecode de 4 bytes seguido de 0, 1, 2 o 3 operadores
+de tipo registro (1 caracter, o sea 1 byte), número (1 entero, o sea 4 bytes) o direccion (1 entero, o sea 4
+bytes). Los códigos de operación coinciden con su nombre en ASCII, por lo que el código para la
+instrucción “MOVR”, es 1297045074 en un número entero, que en hexadecimal es 0x4d4f5652, que en
+binario es: 01001101 (M) 01001111 (O)01010110 (V) 01010010 (R).
+*/
 
 char* LOAD(char* registro, int numero){ //Carga en el registro, el número dado.
 	*registro = numero;
@@ -309,18 +434,20 @@ void FLCL(){ //limpia registro de flags
 void SHIF(int numero, char* registro){
 	//Desplaza los bits del registro, tantas veces como se indique en el Número. De ser
 	//desplazamiento positivo, se considera hacia la derecha. De lo contrario hacia la izquierda.
-	//double auxNum = pow(2.0,(double)numero);
+/*
+	double auxNum = pow(2.0,(double)numero);
 
 	if(numero < 0){
-	//	char* aux = registro;
-	//	*registro = *aux * auxNum;
+		char* aux = registro;
+		*registro = *aux * auxNum;
 
 	}
 	if(numero > 0){
-	//	char* aux = registro;
-	//	*registro = *aux / auxNum;
+		char* aux = registro;
+		*registro = *aux / auxNum;
 	}
-}
+*/
+	}
 
 void NOPP(){
 	//NO HAGO NADA
@@ -336,13 +463,6 @@ void TAKE(int numero, char* registro){
 }
 
 void XXXX(){
+
 	//TODO: hacer funcion. finalizarEjecucion();
 }
-
-/*
-El lenguaje que deberán interpretar consta de un bytecode de 4 bytes seguido de 0, 1, 2 o 3 operadores
-de tipo registro (1 caracter, o sea 1 byte), número (1 entero, o sea 4 bytes) o direccion (1 entero, o sea 4
-bytes). Los códigos de operación coinciden con su nombre en ASCII, por lo que el código para la
-instrucción “MOVR”, es 1297045074 en un número entero, que en hexadecimal es 0x4d4f5652, que en
-binario es: 01001101 (M) 01001111 (O)01010110 (V) 01010010 (R).
-*/
