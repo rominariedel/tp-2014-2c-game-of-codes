@@ -23,7 +23,9 @@
 #include <math.h>
 
 
+
 /* Estructuras */
+
 typedef struct {
 	int PID;
 	int TID;
@@ -33,11 +35,28 @@ typedef struct {
 	int* punteroInstruccion;
 	int baseStack;
 	int cursorStack;
-	int registrosProgramacion;
+	int registrosProgramacion[5];
 }TCB_struct;
 
 /* FLAGS */
 bool ZERO_DIV;
+
+/*Registros CPU*/
+int PIDactual;
+int TIDactual;
+int KMactual;
+int baseSegmentoCodigoActual;
+int tamanioSegmentoCodigoActual;
+int* punteroInstruccionActual;
+int baseStackActual;
+int cursorStackActual;
+int A;
+int B;
+int C;
+int D;
+int E;
+TCB_struct* TCBactual;
+
 
 /* Variables Globales */
 int kernelSocket;
@@ -51,20 +70,21 @@ char* IPKERNEL;
 int RETARDO;
 
 int punteroInstruccion;
-char* instruccionAEjecutar;
+
 TCB_struct* tcbActivo;
 int quantum;
 
 
 
 int main(int cantArgs, char** args){
+	//char* instruccionAEjecutar = malloc(1);
+
 	/*cargarArchivoConfiguracion(cantArgs,args);
 	conectarConMSP();
 	conectarConKernel();
 	//proximaInstruccionaejecutar
 	//ejecutar instruccion
 */
-
 
 	return 0;
 }
@@ -76,6 +96,8 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	PUERTOKERNEL = config_get_string_value(configuracion, "PUERTO_KERNEL");
 	IPKERNEL = config_get_string_value(configuracion, "IP_KERNEL");
 }
+
+
 
 
 void conectarConMSP()
@@ -126,7 +148,21 @@ void conectarConKernel()
 
 }
 
-
+void cargarRegistrosCPU(){
+	PIDactual = TCBactual -> PID;
+	TIDactual = TCBactual -> TID;
+	KMactual = TCBactual -> KM;
+	baseSegmentoCodigoActual = TCBactual -> baseSegmentoCodigo;
+	tamanioSegmentoCodigoActual = TCBactual -> tamanioSegmentoCodigo;
+	punteroInstruccionActual = TCBactual -> punteroInstruccion;
+	baseStackActual = TCBactual -> baseStack;
+	cursorStackActual = TCBactual -> cursorStack;
+	A = TCBactual -> registrosProgramacion[0];
+	B = TCBactual -> registrosProgramacion[1];
+	C = TCBactual -> registrosProgramacion[2];
+	D = TCBactual -> registrosProgramacion[3];
+	E = TCBactual -> registrosProgramacion[4];
+}
 
 
 
@@ -208,7 +244,7 @@ char* COMP(char* registroA, char* registroB){
 	if(*registroA == *registroB){
 		*registroA = 1;
 	}
-	registroA = 0;
+	*registroA = 0;
 	return registroA;
 }
 
@@ -217,7 +253,7 @@ char* CGEQ(char* registroA, char* registroB){
 	if(*registroA >= *registroB){
 		*registroA = 1;
 	}
-	registroA = 0;
+	*registroA = 0;
 	return registroA;
 }
 
@@ -233,8 +269,7 @@ char* CLEQ(char* registroA, char* registroB){
 char* GOTO(char* registro){
 	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
 	//TODO: REVISAR EL TEMA DE LOS REGISTROS DE CPU.
-	int* punteroDeInstruccion;
-	*punteroDeInstruccion = *registro;
+	*punteroInstruccionActual = *registro;
 	return registro;
 }
 
@@ -274,13 +309,16 @@ void FLCL(){ //limpia registro de flags
 void SHIF(int numero, char* registro){
 	//Desplaza los bits del registro, tantas veces como se indique en el Número. De ser
 	//desplazamiento positivo, se considera hacia la derecha. De lo contrario hacia la izquierda.
+	//double auxNum = pow(2.0,(double)numero);
+
 	if(numero < 0){
-		char* aux = registro;
-		*registro = *aux * pow(2,numero);
+	//	char* aux = registro;
+	//	*registro = *aux * auxNum;
+
 	}
 	if(numero > 0){
-			char* aux = registro;
-			*registro = *aux / pow(2,numero);
+	//	char* aux = registro;
+	//	*registro = *aux / auxNum;
 	}
 }
 
@@ -307,14 +345,4 @@ de tipo registro (1 caracter, o sea 1 byte), número (1 entero, o sea 4 bytes) o
 bytes). Los códigos de operación coinciden con su nombre en ASCII, por lo que el código para la
 instrucción “MOVR”, es 1297045074 en un número entero, que en hexadecimal es 0x4d4f5652, que en
 binario es: 01001101 (M) 01001111 (O)01010110 (V) 01010010 (R).
-
-21. NOPP
-Consume un ciclo del CPU sin hacer nada
-22. PUSH [Número], [Registro]
-Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del
-registro cursor de stack de forma acorde.
-23. TAKE [Número], [Registro]
-Desapila los primeros bytes, indicado por el número, del stack hacia el registro. Modifica el valor
-del registro de stack de forma acorde.
-24. XXXX
-Finaliza la ejecución.*/
+*/
