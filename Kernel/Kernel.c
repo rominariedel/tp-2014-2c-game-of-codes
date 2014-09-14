@@ -160,6 +160,8 @@ TCB_struct crear_hilo(TCB_struct tcb){
 	mensaje[1] = TAMANIO_STACK;
 
 	int base_stack = solicitar_segmento(mensaje);
+
+
 	nuevoTCB.PID = tcb.PID;
 	int tid = obtener_TID(tcb.PID);
 	nuevoTCB.X = base_stack;

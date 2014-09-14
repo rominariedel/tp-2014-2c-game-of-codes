@@ -9,6 +9,9 @@
 #define SOCKETS_H_
 
 
+/*PARA USAR LA LIBRERIA: Propiedades del proyecto >> C/C++ General >> Path and Symbols >> References
+ * >>Tildar Sockets*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

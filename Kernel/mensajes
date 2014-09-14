@@ -1,0 +1,22 @@
+Estos son los numeros que se envian por sockets para indicar que accion se desea ejecutar
+
+
+//-----------ENVIADOS-------------//
+
+1. reservar_segmento
+2. escribir_en_memoria
+3. ejecucion_abortada (se envia a la consola en caso de que una CPU se desconecta con un proceso en ejec)
+
+//-----------RECIBIDOS-------------//
+
+10. finaliza_quantum
+11. finaliza_ejecucion
+12. ejecucion_erronea
+13. desconecta_CPU
+14. desconecta_consola
+15. ejecuta_syscall
+16. creacion_hilo
+17. error_memoriaLlena
+18. error_segmentationFault
+
+Agregar acciones si surgen nuevas
