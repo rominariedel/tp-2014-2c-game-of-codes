@@ -45,4 +45,10 @@ int crear_cliente(char* IP, char * PUERTO){
 		return serverSocket;
 }
 
+void enviar_datos(){
 
+}
+
+void recibir_datos(){
+
+}

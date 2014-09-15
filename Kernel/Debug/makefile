@@ -25,7 +25,7 @@ endif
 all: Kernel
 
 dependents:
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
+	-cd /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) clean all
 
 # Tool invocations
 Kernel: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
