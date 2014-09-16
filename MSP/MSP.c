@@ -11,20 +11,19 @@
 #include <commons/string.h>
 #include <pthread.h>
 #include <commons/config.h>
+#include <commons/collections/list.h>
 
-typedef struct {
-		int sizeMemory;
-} t_regConfigMSP;
-
+int tamanioMemoria;
+int puerto;
+int cantidadSwap;
+int sust_pags;
 char* MSP_CONFIG;
 
 
-int main (int cantArgs, char** args)
+int main (void)
 {
-	int sizeMem;
-	t_config* configuracion = config_create(args[1]);
-	sizeMem = config_get_int_value(configuracion, "sizeMemoria");
-	printf("tamanio Memoria =  %d /n", sizeMem);
+	cargarArchivoConfiguracion();
+
 
 	/*t_config* configuracion = config_create(args[1]);
 	logi = log_create(args[2], "UMV", 0, LOG_LEVEL_TRACE);
@@ -47,4 +46,20 @@ int main (int cantArgs, char** args)
 		exit(0);*/
 	return 0;
 }
+
+void cargarArchivoConfiguracion(void){
+	t_config* configuracion = config_create("config.txt");
+
+	tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA");
+	printf("Tamanio Memoria =  %d /n", tamanioMemoria);
+
+	puerto= config_get_int_value(configuracion, "PUERTO");
+	printf("Puerto =  %d /n", puerto);
+
+	cantidadSwap = config_get_int_value(configuracion, "CANTIDAD_SWAP");
+	printf("Cantidad Swap =  %d /n", cantidadSwap);
+
+	sust_pags = config_get_int_value(configuracion, "SUST_PAGS");
+	printf("Algoritmo de Sustitución de Páginas =  %d /n", sust_pags);
+	}
 
