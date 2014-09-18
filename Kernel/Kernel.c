@@ -45,7 +45,7 @@ typedef struct {
 	int dir_logica;
 	void* bytes;
 	int tamanio;
-}t_datosAEnviar;
+}t_datosAEnviar_memoria;
 
 typedef struct {
 	t_queue * prioridad_0;
@@ -103,6 +103,7 @@ char * SYSCALLS;
 int TAMANIO_STACK;
 int backlog;
 int socket_MSP;
+int TID;
 
 t_colas_prioridades READY;
 t_queue * NEW;
@@ -122,7 +123,7 @@ void agregar_hilo(t_queue* , TCB_struct);
 int solicitar_segmento(int mensaje[2]);
 int tamanio_syscalls(void*);
 void * extraer_syscalls();
-t_datosAEnviar crear_paquete(int, int, void*, int);
+t_datosAEnviar_memoria crear_paquete(int, int, void*, int);
 int escribir_memoria(int, int, void*, int);
 void crear_colas();
 void ejecutarSysCall(int dirSyscall);
@@ -132,7 +133,7 @@ void ejecutarSysCall(int dirSyscall);
 int main(int argc, char ** argv){
 	crear_colas();
 	obtenerDatosConfig(argv);
-
+	TID = 0;
 	int socket_gral = boot();
 	//TODO: validar socket
 
@@ -247,7 +248,8 @@ TCB_struct crear_hilo(TCB_struct tcb){
 }
 
 int obtener_TID(int pid){
-	return 0;
+	TID ++;
+	return TID;
 }
 
 void agregar_hilo(t_queue * COLA, TCB_struct tcb){
@@ -260,7 +262,8 @@ void planificador(){
 	//recibe conexiones de diferentes CPUs
 }
 
-/*Esta operacion le solicita a la MSP un segmento de STACK o CODIGO*/
+/*Esta operacion le solicita a la MSP un segmento de STACK o CODIGO, retortna la direccion base del
+ * segmento reservado*/
 int solicitar_segmento(int mensaje[2]){
 	int todo_ok;
 	int respuesta;
@@ -298,16 +301,16 @@ int escribir_memoria(int pid, int dir_logica, void* bytes, int tamanio){
 	send(socket_MSP, (void*) escribir_en_memoria, sizeof(int), 0);
 	recv(socket_MSP, &todo_ok, sizeof(int), 0);
 
-	t_datosAEnviar paquete = crear_paquete(pid, dir_logica, bytes, tamanio);
-	send(socket_MSP, &paquete, sizeof(t_datosAEnviar), 0);
+	t_datosAEnviar_memoria paquete = crear_paquete(pid, dir_logica, bytes, tamanio);
+	send(socket_MSP, &paquete, sizeof(t_datosAEnviar_memoria), 0);
 	recv(socket_MSP, &respuesta, sizeof(int), 0);
 	//TODO:validar si hay segmentation fault
 	return respuesta;
 
 }
 
-t_datosAEnviar crear_paquete(int pid, int dir_logica, void* bytes, int tamanio){
-	t_datosAEnviar paquete;
+t_datosAEnviar_memoria crear_paquete(int pid, int dir_logica, void* bytes, int tamanio){
+	t_datosAEnviar_memoria paquete;
 	paquete.pid = pid;
 	paquete.dir_logica = dir_logica;
 	void * bytes_a_enviar = malloc(tamanio);

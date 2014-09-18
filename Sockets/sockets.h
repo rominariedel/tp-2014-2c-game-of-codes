@@ -20,8 +20,20 @@
 #include <netdb.h>
 #include <unistd.h>
 
+#define tamanio_header (2*sizeof(int))
+
+
+typedef struct{
+	int codigo_operacion;
+	void * datos;
+	int tamanio;
+}t_datosAEnviar;
+
 int crear_servidor(char *, int);
 int crear_cliente(char*, char *);
+int enviar_datos(int socket, t_datosAEnviar * paquete);
+t_datosAEnviar * recibir_datos(int socket);
+
 
 #endif /* SOCKETS_H_ */
 
