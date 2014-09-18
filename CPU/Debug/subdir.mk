@@ -17,7 +17,7 @@ C_DEPS += \
 CPU.o: ../CPU.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -Im -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"CPU.d" -o "$@" "$<"
+	gcc -I"/home/utnso/git/tp-2014-2c-game-of-codes/commons" -Im -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"CPU.d" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

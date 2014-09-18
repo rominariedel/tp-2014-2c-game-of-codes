@@ -8,6 +8,8 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include commons/collections/subdir.mk
+-include commons/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -22,26 +24,22 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: CPU
-
-dependents:
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
+all: libcommons.so
 
 # Tool invocations
-CPU: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so
+libcommons.so: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug" -L/home/utnso/workspace/so-commons-library -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -shared -o "libcommons.so" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) CPU
+	-$(RM) $(OBJS)$(C_DEPS)$(LIBRARIES) libcommons.so
 	-@echo ' '
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
 
 -include ../makefile.targets
