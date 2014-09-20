@@ -41,13 +41,6 @@ typedef struct cola{
 }colaPlanificacion;
 
 typedef struct {
-	int pid;
-	int dir_logica;
-	void* bytes;
-	int tamanio;
-}t_datosAEnviar_memoria;
-
-typedef struct {
 	t_queue * prioridad_0;
 	t_queue * prioridad_1;
 } t_colas_prioridades;
@@ -123,8 +116,7 @@ void agregar_hilo(t_queue* , TCB_struct);
 int solicitar_segmento(int mensaje[2]);
 int tamanio_syscalls(void*);
 void * extraer_syscalls();
-t_datosAEnviar_memoria crear_paquete(int, int, void*, int);
-int escribir_memoria(int, int, void*, int);
+void escribir_memoria(int, int, int, void*);
 void crear_colas();
 void ejecutarSysCall(int dirSyscall);
 
@@ -172,7 +164,7 @@ int boot(){
 
 	int base_segmento_codigo = solicitar_segmento(mensaje_codigo);
 	//TODO: validar la base del segmento
-	escribir_memoria(pid_KM_boot, base_segmento_codigo, syscalls, mensaje_codigo[1]);
+	escribir_memoria(pid_KM_boot, base_segmento_codigo, mensaje_codigo[1], syscalls);
 	free(syscalls);
 
 	int mensaje_stack[2];
@@ -180,7 +172,6 @@ int boot(){
 	mensaje_stack[1] = TAMANIO_STACK;
 	int base_segmento_stack = solicitar_segmento(mensaje_stack);
 	//TODO: validar la base del stack
-
 	tcb_km.KM = 1;
 	tcb_km.M = base_segmento_codigo;
 	tcb_km.tamanioSegmentoCodigo = mensaje_codigo[1];
@@ -262,20 +253,25 @@ void planificador(){
 	//recibe conexiones de diferentes CPUs
 }
 
-/*Esta operacion le solicita a la MSP un segmento de STACK o CODIGO, retortna la direccion base del
+/*Esta operacion le solicita a la MSP un segmento, retorna la direccion base del
  * segmento reservado*/
 int solicitar_segmento(int mensaje[2]){
-	int todo_ok;
-	int respuesta;
-	send(socket_MSP, (void*) reservar_segmento, sizeof(int), 0);
-	recv(socket_MSP, &todo_ok, sizeof(int), 0);
-	//TODO: validar que se pueda reservar un segmento
 
-	send(socket_MSP, mensaje, 2*(sizeof(int)), 0);
-	recv(socket_MSP, &respuesta, sizeof(int), 0);
-	//TODO:validar que se haya podido reservar el segmento, si no hay error de memoria llena
+	char * datos = malloc(2 * sizeof(int));
+	memcpy(datos, &mensaje[0], sizeof(int));
+	memcpy(datos + sizeof(int), &mensaje[1], sizeof(int));
 
-	return respuesta;
+	t_datosAEnviar * paquete = crear_paquete(reservar_segmento, (void*) datos, 2*sizeof(int));
+
+	enviar_datos(socket_MSP, paquete);
+	free(datos);
+	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
+
+	int dir_base =(int) malloc(sizeof(int));
+	memcpy(&dir_base, respuesta->datos, sizeof(int));
+	//TODO: validar si no hay violacion de segmento
+
+	return dir_base;
 }
 
 void * extraer_syscalls(){
@@ -293,31 +289,26 @@ int tamanio_syscalls(void* syscalls){
 	return sizeof(syscalls);
 }
 
-int escribir_memoria(int pid, int dir_logica, void* bytes, int tamanio){
+void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
-	int todo_ok;
-	int respuesta;
+	char * datos = malloc((3 * sizeof(int)) + sizeof(void*));
+	memcpy(datos, &pid, sizeof(int));
+	memcpy(datos + sizeof(int), &dir_logica, sizeof(int));
+	memcpy(datos + (2*sizeof(int)), &tamanio, sizeof(int));
+	memcpy(datos + (3*sizeof(int)), bytes, sizeof(void*));
 
-	send(socket_MSP, (void*) escribir_en_memoria, sizeof(int), 0);
-	recv(socket_MSP, &todo_ok, sizeof(int), 0);
+	t_datosAEnviar * paquete = crear_paquete(escribir_en_memoria, datos, (3*sizeof(int)) + sizeof(void*));
+	enviar_datos(socket_MSP, paquete);
+	free(datos);
 
-	t_datosAEnviar_memoria paquete = crear_paquete(pid, dir_logica, bytes, tamanio);
-	send(socket_MSP, &paquete, sizeof(t_datosAEnviar_memoria), 0);
-	recv(socket_MSP, &respuesta, sizeof(int), 0);
+	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
+
+	int rta =(int) malloc(sizeof(int));
+	memcpy(&rta, respuesta->datos, sizeof(int));
+
+
 	//TODO:validar si hay segmentation fault
-	return respuesta;
 
-}
-
-t_datosAEnviar_memoria crear_paquete(int pid, int dir_logica, void* bytes, int tamanio){
-	t_datosAEnviar_memoria paquete;
-	paquete.pid = pid;
-	paquete.dir_logica = dir_logica;
-	void * bytes_a_enviar = malloc(tamanio);
-	memcpy(bytes_a_enviar, bytes, tamanio);
-	paquete.bytes = bytes_a_enviar;
-	paquete.tamanio = tamanio;
-	return paquete;
 }
 
 void crear_colas(){

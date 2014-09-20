@@ -7,7 +7,7 @@
 
 #include "sockets.h"
 
-
+int suma(int cant_args, int arg_tamanio[cant_args]);
 
 static char* serializar(t_datosAEnviar * paquete){
 	char * paquete_corrido = malloc(paquete->tamanio + tamanio_header);
@@ -130,4 +130,33 @@ t_datosAEnviar * recibir_datos(int socket){
 	free(buffer);
 
 	return datos_recibidos;
+}
+
+
+/* Recibe un número que indica la cantidad de elementos del paquete, un vector que indica el tamaño
+ * de cada elemento del paquete, y un vector con punteros a los elementos del paquete.
+ *
+ * Los elementos de arg_tamanio y argumentos tienen que corresponderse (p.ej arg_tamanio[1] tiene que
+ * tener el tamaño de argumentos[1]), y el buffer que retorna tiene copiados los elementos en orden
+ * inverso al que se mandó en el vector*/
+
+char* serializar_datos(int cant_args, int arg_tamanio[cant_args], void ** argumentos[cant_args]){
+	int tamanio_total = suma(cant_args, arg_tamanio);
+	char * buffer = malloc(tamanio_total);
+	int offset = tamanio_total;
+	while(cant_args){
+		offset = offset -arg_tamanio[cant_args-1];
+		memcpy(buffer + offset, *(argumentos[cant_args-1]), arg_tamanio[cant_args-1]);
+		cant_args --;
+	}
+	return buffer;
+}
+
+int suma(int cant_args, int arg_tamanio[cant_args]){
+	int total = 0;
+	while(cant_args){
+		total = total + arg_tamanio[cant_args-1];
+		cant_args --;
+	}
+	return total;
 }
