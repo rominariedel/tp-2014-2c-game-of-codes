@@ -11,6 +11,8 @@
 #include<commons/collections/list.h>
 #include"sockets.h"
 #include<commons/collections/queue.h>
+#include <sys/select.h>
+
 #define pid_KM_boot 0
 
 /*ESTRUCTURAS*/
@@ -46,11 +48,15 @@ typedef struct {
 } t_colas_prioridades;
 
 typedef struct {
-	int id_CPU;
+	int socket_CPU;
 	int bit_estado;
 	int PID;
-} lista_CPUs;
+} struct_CPU;
 
+typedef struct{
+	int socket_consola;
+	int PID;
+} struct_consola;
 
 /*VARIABLES GLOBALES*/
 
@@ -80,7 +86,7 @@ enum mensajes{
 	error_memoriaLlena = 17,
 	error_segmentationFault = 18,
 	soy_consola = 19,
-	soy_cpu = 20,
+	soy_CPU = 20,
 	entrada_estandar = 21,
 	salida_estandar = 22,
 	join = 23,
@@ -97,20 +103,25 @@ int TAMANIO_STACK;
 int backlog;
 int socket_MSP;
 int TID;
+int PID;
 
+/*COLAS DE PLANIFICACIÓN*/
 t_colas_prioridades READY;
 t_queue * NEW;
 t_colas_prioridades BLOCK;
 t_queue * EXEC;
 t_queue * SYS_CALL;
+
 TCB_struct tcb_km;
-
-
+fd_set clientes_set;
+t_list * CPU_list;
+t_list * consola_list;
 
 /*FUNCIONES*/
 
-int obtener_TID(int);
-int boot();
+int obtener_PID();
+int obtener_TID();
+void boot();
 void obtenerDatosConfig(char**);
 void agregar_hilo(t_queue* , TCB_struct);
 int solicitar_segmento(int mensaje[2]);
@@ -119,25 +130,17 @@ void * extraer_syscalls();
 void escribir_memoria(int, int, int, void*);
 void crear_colas();
 void ejecutarSysCall(int dirSyscall);
-
+int es_CPU(int socket);
 
 
 int main(int argc, char ** argv){
+
 	crear_colas();
 	obtenerDatosConfig(argv);
 	TID = 0;
-	int socket_gral = boot();
-	//TODO: validar socket
+	PID = 0;
+	boot();
 
-	while(1){
-		int modulo_conectado = -1;
-		recv(socket_gral, &modulo_conectado, sizeof(int), 0);
-		if(modulo_conectado == 19){
-			//acciones de la consola
-		}else if(modulo_conectado == 20){
-			//acciones de CPU
-		}
-	}
 
 
 	return 0;
@@ -153,7 +156,7 @@ void obtenerDatosConfig(char ** argv){
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 }
 
-int boot(){
+void boot(){
 
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
 
@@ -183,8 +186,79 @@ int boot(){
 	//TODO: inicializar los registros de programacion
 
 	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
+
 	int socket_gral = crear_servidor(PUERTO,backlog);
-	return socket_gral;
+	//TODO: validar socket
+
+	FD_ZERO(&clientes_set);
+	FD_SET(socket_gral, &clientes_set);
+
+	fd_set copia_set;
+	int descriptor_mas_alto = socket_gral;
+
+	while(1){
+		copia_set = clientes_set;
+
+		int i = select(descriptor_mas_alto + 1, &copia_set, NULL, NULL, NULL);
+		if (i == -1) {
+					//ERROR
+					break;
+		}
+
+		int n_descriptor = 0;
+
+		while (n_descriptor <= descriptor_mas_alto) {
+
+			if (FD_ISSET(n_descriptor,&copia_set)) {
+
+				if (n_descriptor == socket_gral) {
+					int socket_conectado = recibir_conexion(socket_gral);
+					FD_SET(socket_conectado, &clientes_set);
+					int modulo_conectado = -1;
+					t_datosAEnviar * datos = recibir_datos(socket_conectado);
+					modulo_conectado = datos->codigo_operacion;
+
+					if(modulo_conectado == soy_consola){
+						struct_consola consola_conectada;
+						int pid = obtener_PID();
+						consola_conectada.PID = pid;
+						consola_conectada.socket_consola = socket_conectado;
+						list_add(consola_list, &consola_conectada);
+						//loader(consola_conectada); El PID ya esta asignado y es el que tiene que usar el
+						//loader para crear el TCB
+
+
+					}else if(modulo_conectado == soy_CPU){
+						struct_CPU cpu_conectada;
+						cpu_conectada.PID = -1;
+						cpu_conectada.bit_estado = libre;
+						cpu_conectada.socket_CPU = socket_conectado;
+						list_add(CPU_list, &cpu_conectada);
+					}
+
+
+				}
+				else{
+					t_datosAEnviar * datos;
+					datos = recibir_datos(n_descriptor);
+					int codigo_operacion = datos->codigo_operacion;
+					if(es_CPU(n_descriptor)){
+						switch(codigo_operacion){
+						//TODO:Mensajes que envia la CPU
+						}
+					}else{
+						switch(codigo_operacion){
+						//TODO:Mensajes que envia la consola
+						}
+					}
+
+				}
+			}
+			n_descriptor++;
+		}
+
+
+	}
 }
 
 void interrupcion(TCB_struct tcb, int dirSyscall){
@@ -238,11 +312,13 @@ TCB_struct crear_hilo(TCB_struct tcb){
 	return nuevoTCB;
 }
 
-int obtener_TID(int pid){
-	TID ++;
-	return TID;
+int obtener_TID(){
+	return TID++;
 }
 
+int obtener_PID(){
+	return PID++;
+}
 void agregar_hilo(t_queue * COLA, TCB_struct tcb){
 
 	queue_push(COLA, (void*)&tcb);
@@ -292,6 +368,7 @@ int tamanio_syscalls(void* syscalls){
 void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
 	char * datos = malloc((3 * sizeof(int)) + sizeof(void*));
+
 	memcpy(datos, &pid, sizeof(int));
 	memcpy(datos + sizeof(int), &dir_logica, sizeof(int));
 	memcpy(datos + (2*sizeof(int)), &tamanio, sizeof(int));
@@ -322,4 +399,17 @@ void crear_colas(){
 
 	EXEC = queue_create();
 	SYS_CALL = queue_create();
+
+	CPU_list = list_create();
+	consola_list = list_create();
+}
+
+int es_CPU(int socket){
+
+	bool tiene_mismo_socket(struct_CPU estructura){
+		return estructura.socket_CPU == socket;
+	}
+
+	void * elemento = list_find(CPU_list, (void*)tiene_mismo_socket);
+	return (elemento != NULL);
 }

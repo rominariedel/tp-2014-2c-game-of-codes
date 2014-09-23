@@ -24,7 +24,7 @@ static t_datosAEnviar* deserializar_header(char * buffer){
 	return paquete;
 }
 
-static void deserializar_datos(char * buffer, t_datosAEnviar * datos_recibidos){
+static void deserializar(char * buffer, t_datosAEnviar * datos_recibidos){
 	void * datos = malloc(datos_recibidos->tamanio);
 	memcpy(datos_recibidos->datos, datos, datos_recibidos->tamanio);
 	free(datos);
@@ -81,6 +81,15 @@ int crear_cliente(char* IP, char * PUERTO){
 		return serverSocket;
 }
 
+int recibir_conexion(int socket){
+	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
+	socklen_t addrlen = sizeof(addr);
+
+	int socketCliente = accept(socket, (struct sockaddr *) &addr, &addrlen);
+
+	return socketCliente;
+}
+
 int enviar_datos(int socket, t_datosAEnviar * paquete){
 
 	int cantidad_enviada;
@@ -126,7 +135,7 @@ t_datosAEnviar * recibir_datos(int socket){
 	}
 
 	//Copia datos
-	deserializar_datos(buffer, datos_recibidos);
+	deserializar(buffer, datos_recibidos);
 	free(buffer);
 
 	return datos_recibidos;
@@ -144,7 +153,7 @@ char* serializar_datos(int cant_args, int arg_tamanio[cant_args], void ** argume
 	int tamanio_total = suma(cant_args, arg_tamanio);
 	char * buffer = malloc(tamanio_total);
 	int offset = tamanio_total;
-	while(cant_args){
+	while(cant_args > 0){
 		offset = offset -arg_tamanio[cant_args-1];
 		memcpy(buffer + offset, *(argumentos[cant_args-1]), arg_tamanio[cant_args-1]);
 		cant_args --;
@@ -159,4 +168,16 @@ int suma(int cant_args, int arg_tamanio[cant_args]){
 		cant_args --;
 	}
 	return total;
+}
+
+void * deserializar_datos(int cant_args, int arg_tamanio[cant_args], char * buffer){
+	void * argumentos[cant_args];
+	int offset = 0;
+	while(cant_args>0){
+		memcpy(argumentos[cant_args-1], buffer + offset, arg_tamanio[cant_args-1]);
+		offset = offset + arg_tamanio[cant_args-1];
+		cant_args --;
+	}
+	free(buffer);
+	return argumentos[cant_args];
 }
