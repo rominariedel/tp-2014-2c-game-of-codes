@@ -7,9 +7,7 @@
 
 #include "sockets.h"
 
-int suma(int cant_args, int arg_tamanio[cant_args]);
-
-static char* serializar(t_datosAEnviar * paquete){
+static char* serializar_paquete(t_datosAEnviar * paquete){
 	char * paquete_corrido = malloc(paquete->tamanio + tamanio_header);
 	memcpy(paquete_corrido, paquete, tamanio_header);
 	memcpy(paquete_corrido + tamanio_header, paquete->datos, paquete->tamanio);
@@ -24,10 +22,9 @@ static t_datosAEnviar* deserializar_header(char * buffer){
 	return paquete;
 }
 
-static void deserializar(char * buffer, t_datosAEnviar * datos_recibidos){
-	void * datos = malloc(datos_recibidos->tamanio);
-	memcpy(datos_recibidos->datos, datos, datos_recibidos->tamanio);
-	free(datos);
+static void serializar_datos(char * buffer, t_datosAEnviar * datos_recibidos){
+	datos_recibidos-> datos = malloc(datos_recibidos->tamanio);
+	memcpy(datos_recibidos->datos, buffer, datos_recibidos->tamanio);
 }
 
 
@@ -49,11 +46,11 @@ int crear_servidor(char * PUERTO, int backlog){
 	struct addrinfo *serverInfo;
 
 	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;		// No importa si uso IPv4 o IPv6
-	hints.ai_flags = AI_PASSIVE;		// Asigna el address del localhost: 127.0.0.1
-	hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_socktype = SOCK_STREAM;
 
-	getaddrinfo(NULL, PUERTO, &hints, &serverInfo); // Notar que le pasamos NULL como IP, ya que le indicamos que use localhost en AI_PASSIVE
+	getaddrinfo(NULL, PUERTO, &hints, &serverInfo);
 	int listenningSocket;
 	listenningSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 	bind(listenningSocket,serverInfo->ai_addr, serverInfo->ai_addrlen);
@@ -95,7 +92,7 @@ int enviar_datos(int socket, t_datosAEnviar * paquete){
 	int cantidad_enviada;
 	int enviando = 1;
 	int offset = 0;
-	char * buffer = serializar(paquete);
+	char * buffer = serializar_paquete(paquete);
 	int cantidad_total = paquete->tamanio + tamanio_header;
 	while(enviando){
 		cantidad_enviada = send(socket, buffer + offset, cantidad_total-offset, 0);
@@ -135,49 +132,11 @@ t_datosAEnviar * recibir_datos(int socket){
 	}
 
 	//Copia datos
-	deserializar(buffer, datos_recibidos);
+	serializar_datos(buffer, datos_recibidos);
 	free(buffer);
 
 	return datos_recibidos;
 }
 
 
-/* Recibe un número que indica la cantidad de elementos del paquete, un vector que indica el tamaño
- * de cada elemento del paquete, y un vector con punteros a los elementos del paquete.
- *
- * Los elementos de arg_tamanio y argumentos tienen que corresponderse (p.ej arg_tamanio[1] tiene que
- * tener el tamaño de argumentos[1]), y el buffer que retorna tiene copiados los elementos en orden
- * inverso al que se mandó en el vector*/
 
-char* serializar_datos(int cant_args, int arg_tamanio[cant_args], void ** argumentos[cant_args]){
-	int tamanio_total = suma(cant_args, arg_tamanio);
-	char * buffer = malloc(tamanio_total);
-	int offset = tamanio_total;
-	while(cant_args > 0){
-		offset = offset -arg_tamanio[cant_args-1];
-		memcpy(buffer + offset, *(argumentos[cant_args-1]), arg_tamanio[cant_args-1]);
-		cant_args --;
-	}
-	return buffer;
-}
-
-int suma(int cant_args, int arg_tamanio[cant_args]){
-	int total = 0;
-	while(cant_args){
-		total = total + arg_tamanio[cant_args-1];
-		cant_args --;
-	}
-	return total;
-}
-
-void * deserializar_datos(int cant_args, int arg_tamanio[cant_args], char * buffer){
-	void * argumentos[cant_args];
-	int offset = 0;
-	while(cant_args>0){
-		memcpy(argumentos[cant_args-1], buffer + offset, arg_tamanio[cant_args-1]);
-		offset = offset + arg_tamanio[cant_args-1];
-		cant_args --;
-	}
-	free(buffer);
-	return argumentos[cant_args];
-}

@@ -5,58 +5,9 @@
  *      Author: utnso
  */
 
-#include<stdio.h>
-#include<stddef.h>
-#include "commons/config.h"
-#include<commons/collections/list.h>
-#include"sockets.h"
-#include<commons/collections/queue.h>
-#include <sys/select.h>
+#include "auxiliares/auxiliares.h"
 
 #define pid_KM_boot 0
-
-/*ESTRUCTURAS*/
-
-typedef struct {
-	int A;
-	int B;
-	int C;
-	int D;
-	int E;
-}reg_programacion;
-
-typedef struct {
-	int PID;
-	int TID;
-	int KM;
-	int M;
-	int tamanioSegmentoCodigo;
-	int P;
-	int X;
-	int S;
-	reg_programacion * registrosProgramacion;
-}TCB_struct;
-
-typedef struct cola{
-	TCB_struct TCB;
-	struct cola * siguiente_TCB;
-}colaPlanificacion;
-
-typedef struct {
-	t_queue * prioridad_0;
-	t_queue * prioridad_1;
-} t_colas_prioridades;
-
-typedef struct {
-	int socket_CPU;
-	int bit_estado;
-	int PID;
-} struct_CPU;
-
-typedef struct{
-	int socket_consola;
-	int PID;
-} struct_consola;
 
 /*VARIABLES GLOBALES*/
 
@@ -79,59 +30,37 @@ enum mensajes{
 	finaliza_quantum = 10,
 	finaliza_ejecucion = 11,
 	ejecucion_erronea = 12,
-	desconecta_CPU = 13,
-	desconecta_consola = 14,
-	ejecuta_syscall = 15,
-	creacion_hilo = 16,
-	error_memoriaLlena = 17,
-	error_segmentationFault = 18,
-	soy_consola = 19,
-	soy_CPU = 20,
-	entrada_estandar = 21,
-	salida_estandar = 22,
-	join = 23,
-	bloquear = 24,
-	despertar = 25,
+	desconexion = 13,
+	interrupcion = 14,
+	creacion_hilo = 15,
+	error_memoriaLlena = 16,
+	error_segmentationFault = 17,
+	soy_consola = 18,
+	soy_CPU = 19,
+	entrada_estandar = 20,
+	salida_estandar = 21,
+	join = 22,
+	bloquear = 23,
+	despertar = 24,
 };
 
-char * PUERTO;
-char * IP_MSP;
-char * PUERTO_MSP;
-int QUANTUM;
-char * SYSCALLS;
-int TAMANIO_STACK;
-int backlog;
-int socket_MSP;
-int TID;
-int PID;
-
-/*COLAS DE PLANIFICACIÓN*/
-t_colas_prioridades READY;
-t_queue * NEW;
-t_colas_prioridades BLOCK;
-t_queue * EXEC;
-t_queue * SYS_CALL;
-
-TCB_struct tcb_km;
-fd_set clientes_set;
-t_list * CPU_list;
-t_list * consola_list;
 
 /*FUNCIONES*/
 
-int obtener_PID();
-int obtener_TID();
 void boot();
 void obtenerDatosConfig(char**);
 void agregar_hilo(t_queue* , TCB_struct);
 int solicitar_segmento(int mensaje[2]);
 int tamanio_syscalls(void*);
-void * extraer_syscalls();
 void escribir_memoria(int, int, int, void*);
-void crear_colas();
 void ejecutarSysCall(int dirSyscall);
 int es_CPU(int socket);
-
+void finalizo_quantum(TCB_struct*);
+void sacar_de_ejecucion(TCB_struct *);
+void finalizo_ejecucion(TCB_struct*);
+void abortar(TCB_struct*);
+void interrumpir(TCB_struct*, int);
+void crear_hilo(TCB_struct);
 
 int main(int argc, char ** argv){
 
@@ -185,7 +114,7 @@ void boot(){
 	tcb_km.X = base_segmento_stack;
 	//TODO: inicializar los registros de programacion
 
-	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
+	queue_push(BLOCK->prioridad_0, (void *) &tcb_km);
 
 	int socket_gral = crear_servidor(PUERTO,backlog);
 	//TODO: validar socket
@@ -235,6 +164,8 @@ void boot(){
 						cpu_conectada.socket_CPU = socket_conectado;
 						list_add(CPU_list, &cpu_conectada);
 					}
+					free(datos->datos);
+					free(datos);
 
 
 				}
@@ -243,16 +174,63 @@ void boot(){
 					datos = recibir_datos(n_descriptor);
 					int codigo_operacion = datos->codigo_operacion;
 					if(es_CPU(n_descriptor)){
+						TCB_struct* tcb;
+						int * dirSysCall;
 						switch(codigo_operacion){
-						//TODO:Mensajes que envia la CPU
+
+						case finaliza_quantum:
+							finalizo_quantum((TCB_struct*)datos->datos);
+							break;
+						case finaliza_ejecucion:
+							finalizo_ejecucion((TCB_struct*)datos->datos);
+							break;
+						case ejecucion_erronea:
+							abortar((TCB_struct*) datos->datos);
+							break;
+						case desconexion:
+							abortar((TCB_struct*) datos->datos);
+							break;
+						case interrupcion:
+							tcb = malloc(sizeof(TCB_struct));
+							dirSysCall = malloc(sizeof(int));
+							memcpy(tcb, datos->datos, sizeof(TCB_struct));
+							memcpy(dirSysCall, datos->datos + sizeof(TCB_struct),sizeof(int));
+							interrumpir(tcb, *dirSysCall);
+							break;
+						case creacion_hilo:
+							tcb = malloc(sizeof(TCB_struct));
+							memcpy(tcb, datos->datos, sizeof(TCB_struct));
+							crear_hilo(*tcb);
+							break;
+						case entrada_estandar:
+							//pedir_entrada(datos->datos);
+							break;
+						case salida_estandar:
+
+							break;
+						case join:
+
+							break;
+						case bloquear:
+
+							break;
+						case despertar:
+
+							break;
+
 						}
 					}else{
 						switch(codigo_operacion){
-						//TODO:Mensajes que envia la consola
+						case desconexion:
+							break;
 						}
 					}
+					free(datos->datos);
+					free(datos);
 
 				}
+
+
 			}
 			n_descriptor++;
 		}
@@ -261,9 +239,9 @@ void boot(){
 	}
 }
 
-void interrupcion(TCB_struct tcb, int dirSyscall){
-	agregar_hilo(BLOCK.prioridad_1, tcb);
-	agregar_hilo(SYS_CALL, tcb);
+void interrumpir(TCB_struct * tcb, int dirSyscall){
+	list_add(BLOCK->prioridad_1, tcb);
+	agregar_hilo(SYS_CALL, *tcb);
 	//Esperar a que haya alguna cpu libre
 	ejecutarSysCall(dirSyscall);
 }
@@ -280,14 +258,14 @@ void ejecutarSysCall(int dirSyscall){
 	tcb_km.P = dirSyscall;
 
 	//TODO: se envia a ejecutar el tcb a alguna cpu libre
-	agregar_hilo(BLOCK.prioridad_0, tcb_km);
+	agregar_hilo(BLOCK->prioridad_0, tcb_km);
 
 	tcb_user->registrosProgramacion = tcb_km.registrosProgramacion;
-	queue_pop(BLOCK.prioridad_1);
+	//queue_pop(BLOCK.prioridad_1);
 	//TODO: re-planificar el tcb_user
 }
 
-TCB_struct crear_hilo(TCB_struct tcb){
+void crear_hilo(TCB_struct tcb){
 
 	TCB_struct nuevoTCB;
 	int mensaje[2];
@@ -307,18 +285,11 @@ TCB_struct crear_hilo(TCB_struct tcb){
 	nuevoTCB.M = tcb.M;
 	nuevoTCB.tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
 	nuevoTCB.P = tcb.P;
-	reg_programacion nuevosRegistros = *tcb.registrosProgramacion;
-	nuevoTCB.registrosProgramacion = &nuevosRegistros;
-	return nuevoTCB;
+	reg_programacion nuevosRegistros = tcb.registrosProgramacion;
+	nuevoTCB.registrosProgramacion = nuevosRegistros;
+	agregar_hilo(READY.prioridad_1, nuevoTCB);
 }
 
-int obtener_TID(){
-	return TID++;
-}
-
-int obtener_PID(){
-	return PID++;
-}
 void agregar_hilo(t_queue * COLA, TCB_struct tcb){
 
 	queue_push(COLA, (void*)&tcb);
@@ -350,29 +321,15 @@ int solicitar_segmento(int mensaje[2]){
 	return dir_base;
 }
 
-void * extraer_syscalls(){
-	FILE* archivo_syscalls = fopen(SYSCALLS, "read");
-	int tamanio = sizeof(archivo_syscalls);
-	void * syscalls = malloc(tamanio);
-	memcpy(syscalls, archivo_syscalls, tamanio);
-	fclose(archivo_syscalls);
-	return syscalls;
-}
-
-int tamanio_syscalls(void* syscalls){
-	int offset = ftell(syscalls);
-	fseek(syscalls, offset, SEEK_SET);
-	return sizeof(syscalls);
-}
 
 void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
-	char * datos = malloc((3 * sizeof(int)) + sizeof(void*));
+	char * datos = malloc((3 * sizeof(int)) + tamanio);
 
 	memcpy(datos, &pid, sizeof(int));
 	memcpy(datos + sizeof(int), &dir_logica, sizeof(int));
 	memcpy(datos + (2*sizeof(int)), &tamanio, sizeof(int));
-	memcpy(datos + (3*sizeof(int)), bytes, sizeof(void*));
+	memcpy(datos + (3*sizeof(int)), bytes, tamanio);
 
 	t_datosAEnviar * paquete = crear_paquete(escribir_en_memoria, datos, (3*sizeof(int)) + sizeof(void*));
 	enviar_datos(socket_MSP, paquete);
@@ -388,21 +345,7 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
 }
 
-void crear_colas(){
-	NEW = queue_create();
 
-	READY.prioridad_0 = queue_create();
-	READY.prioridad_1 = queue_create();
-
-	BLOCK.prioridad_0 = queue_create();
-	BLOCK.prioridad_1 = queue_create();
-
-	EXEC = queue_create();
-	SYS_CALL = queue_create();
-
-	CPU_list = list_create();
-	consola_list = list_create();
-}
 
 int es_CPU(int socket){
 
@@ -412,4 +355,34 @@ int es_CPU(int socket){
 
 	void * elemento = list_find(CPU_list, (void*)tiene_mismo_socket);
 	return (elemento != NULL);
+}
+
+
+void finalizo_quantum(TCB_struct* tcb){
+	sacar_de_ejecucion(tcb);
+	agregar_hilo(READY.prioridad_1, *tcb);
+
+}
+
+void sacar_de_ejecucion(TCB_struct* tcb){
+	int PID = tcb->PID;
+	int TID = tcb->TID;
+	bool es_TCB(TCB_struct tcb_comparar){
+		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
+	}
+	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*)es_TCB);
+	free(tcb_exec);
+
+
+}
+
+void finalizo_ejecucion(TCB_struct *tcb){
+	sacar_de_ejecucion(tcb);
+	agregar_hilo(EXIT, *tcb);
+}
+
+void abortar(TCB_struct* tcb){
+	sacar_de_ejecucion(tcb);
+	agregar_hilo(EXIT, *tcb);
+	//LOGUEAR que tuvo que abortar el hilo
 }
