@@ -42,16 +42,11 @@ typedef struct T_DIRECCION_LOG {
 	int SID;
 	int paginaId;
 	int desplazamiento;
-}T_DIRECCION_SEG;
+}T_DIRECCION_LOG;
 
 uint32_t* crearSegmento(int PID,int tamanio);
-
 void destruirSegmento (int PID, uint32_t* baseSegmento);
-
 uint32_t* solicitarMemoria(int PID, uint32_t* direccionLogica, int tamanio);
-
 uint32_t* escribirMemoria(int PID, uint32_t* direccionLogica, int bytesAEscribir, int tamanio);
-
-
 
 #endif /* MSP_H_ */

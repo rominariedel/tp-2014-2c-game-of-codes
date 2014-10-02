@@ -22,7 +22,8 @@ char* MSP_CONFIG;
 int tamanioPag = 256;
 
 t_list* procesos;
-
+t_list* marcosVacios;
+t_list* marcosLlenos;
 
 int main (void)
 {
@@ -68,8 +69,6 @@ void cargarArchivoConfiguracion(void){
 }
 
 void crearmarcos(void){
-	t_list* marcosVacios;
-	t_list* marcosLlenos;
 
 	int cantidadMarcos = tamanioMemoria / tamanioPag;
 
@@ -120,7 +119,7 @@ T_SEGMENTO* crearSegmentoVacio (T_PROCESO proceso, int tamanio){
 	segVacio.SID = calcularSID(proceso);
 	segVacio.paginas = crearPagsPorTamanioSeg(tamanio);
 
-	T_DIRECCION_SEG direccionLogica;
+	T_DIRECCION_LOG direccionLogica;
 	direccionLogica.SID = segVacio->SID;
 	direccionLogica.paginaId = 0;
 	direccionLogica.desplazamiento = 0;
@@ -196,5 +195,63 @@ static void destruirPag(T_PAGINA* pagina){
 	free(pagina);
 }
 
+uint32_t* solicitarMemoria(int PID, uint32_t* direccionVirtual, int tamanio){
+
+	//validar posicion de memoria invalida o que exceda los limites del segmento
+
+	T_DIRECCION_LOG* direccionLogica = algoritmoParaConvertir(direccionVirtual);
+		// desarrollar el algoritmo para convertir la estructura T_DIRECCION_SEG
+		// en la direccion uint32_t que es lo que reconoce el Kernal
+
+	bool procesoPorPid (T_PROCESO* proceso){
+		return proceso->PID == PID;
+	}
+	bool segmentoPorSid (T_SEGMENTO* segmento){
+		return segmento->SID == direccionLogica->SID;
+	}
+	bool paginaPorPagid (T_PAGINA* pagina){
+		return pagina->paginaID == direccionLogica->paginaId;
+	}
+	bool marcoPorPagid (T_MARCO* marco){
+		return marco->pagina->paginaID == direccionLogica->paginaId;
+	}
+
+	if ((direccionLogica->desplazamiento + tamanio) > tamanioPag ) {
+		//error segmentation fault (o pagina???????)
+	}
+
+	T_PROCESO*  proceso = list_find(procesos, (void*) procesoPorPid);
+
+	if(proceso != NULL){
+		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
+
+		if (seg != NULL){
+			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
+
+			if (pag != NULL){
+				T_MARCO* marco = list_find(marcosLlenos, (void*) marcoPorPagid);
+
+				if (marco == NULL){
+
+					if (marcosVacios->elements_count == 0){
+						///swapping
+					}
+					else{
+						//le asigno un marco a la pgina
+					}
+				}
+
+				//return desde desplazamiento hasta despĺazamiento mas tamaño
+				return 0;
+			}
+		}
+	}
+
+
+	return 0;
+}
+uint32_t* escribirMemoria(int PID, uint32_t* direccionLogica, int bytesAEscribir, int tamanio){
+	return 0;
+}
 
 
