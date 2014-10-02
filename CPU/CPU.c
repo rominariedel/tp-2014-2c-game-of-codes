@@ -38,8 +38,15 @@ typedef struct {
 	int registrosProgramacion[5];
 }t_TCB;
 
-/* FLAGS */
-bool ZERO_DIV;
+/*Datos actuales*/
+int PIDactual;
+int TIDactual;
+int KMactual;   //KM == 1 el programa puede ejecutar las instrucciones protegidas. esta en modo kernel.
+int baseSegmentoCodigoActual;
+int tamanioSegmentoCodigoActual;
+int* punteroInstruccionActual;
+int baseStackActual;
+int cursorStackActual;
 
 /*Registros CPU*/
 char* A;
@@ -49,13 +56,9 @@ char* D;
 char* E;
 char* F;
 
-t_TCB* TCBactual;
-
-
 /* Variables Globales */
 int kernelSocket;
 int socketMSP;
-int superMensaje[11];
 
 char* PUERTOMSP;
 char* IPMSP;
@@ -63,23 +66,14 @@ char* PUERTOKERNEL;
 char* IPKERNEL;
 int RETARDO;
 
-int punteroInstruccion;
-t_TCB* tcbActivo;
+
+t_TCB* TCBactual;
 int quantum;
 
 
-/*Datos TCB actual*/
-int PIDactual;
-int TIDactual;
-int KMactual;
-int baseSegmentoCodigoActual;
-int tamanioSegmentoCodigoActual;
-int* punteroInstruccionActual;
-int baseStackActual;
-int cursorStackActual;
-
 /*Estados del CPU*/
 int estaEjecutando = 0;
+int matarCPU = 0;
 
 
 /*Definicion de funciones*/
@@ -88,10 +82,17 @@ void conectarConMSP();
 void conectarConKernel();
 int abortarEjecucion();
 void cargarRegistrosCPU();
-void cargarRegistrosTCB();
+void actualizarRegistrosTCB();
 int cargarDatosTCB();
 int actualizarTCB();
-//int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroAInstruccion);
+void ejecutarInstruccion(int);
+void devolverTCBactual();
+void limpiarRegistros();
+
+/*Funciones MSP*/
+int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroAInstruccion);
+
+/*Instrucciones*/
 char* LOAD(char* registro, int numero);
 char* GETM(char* registroA, char* registroB);
 char* MOVR(char* registroA, char* registroB);
@@ -117,9 +118,10 @@ void XXXX();
 
 
 
-int main(int cantArgs, char** args){
-	//char* instruccionAEjecutar = malloc(1);
 
+int main(int cantArgs, char** args){
+
+	//TODO: para poder ubicar donde empieza el main
 	/*cargarArchivoConfiguracion(cantArgs,args);
 	conectarConMSP();
 	conectarConKernel();
@@ -127,45 +129,55 @@ int main(int cantArgs, char** args){
 	//ejecutar instruccion
 */
 
-
 	while(1)
 	{
-		int quantumActual = 1;
-//		int recibido = recv(kernelSocket,tcbActivo,sizeof(t_TCB),0);
-//		int recibidoquantum = recv(kernelSocket,quantum,sizeof(int),0);
+		int quantumActual = 0;
 
-		//1.Cargar los registros de la CPU con los datos del TCB a ejecutar.
+		//estoy a la espera de que el kernel me mande el TCB y el quantum
+		int recibidoTCBactual = recv(kernelSocket,TCBactual,sizeof(t_TCB),0);
+		int recibidoquantum = recv(kernelSocket,quantum,sizeof(int),0);
+		if (recibidoTCBactual == -1){error("error al recibir TCB");
+		if (recibidoquantum == -1){error("error al recibir quantum");
 
+		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
 		cargarDatosTCB();
 
-		estaEjecutando = 1;
+		estaEjecutando = 1; //estado CPU
 
-		while(quantumActual<=quantum)
+		while(quantumActual<quantum)
 		{
 
-			//MSP_SolicitarProximaInstruccionAEJecutar(punteroInstruccion);
+			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 
+			int proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(punteroInstruccionActual);
 
-			/*
+			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
 
-			2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a
-			ejecutar.
-			3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer
-			todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
-			4. Actualizará los registros de propósito general del TCB correspondientes según la especificación
-			de la instrucción.
-			5. Incrementa el Puntero de Instrucción.
-			6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
+			ejecutarInstruccion(proximaInstruccionAEjecutar);
+
+			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
+
+			actualizarRegistrosCPU();
+
+			// 5. Incrementa el Puntero de Instrucción.
+
+			punteroInstruccionActual++;
+
+			// Incrementar quantum
+
+			quantumActual++;
+
+			//TODO: considerar caso de que sea KM!!! no se tiene en cuenta el q
+		}
+
+		if(quantumActual == quantum){
+			/* 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
-			7. Volver al punto 1).*/
-			/*log_trace(logger, "Ejecuto rafaga del programa %d", pcb->pid);
-			log_trace(logger, "Calculo instruccion a buscar");
-			instruccionABuscar = UMV_solicitarBytes(pcb->pid,pcb->indiceCodigo,pcb->programCounter*8,sizeof(t_intructions));
-			instruccionAEjecutar = realloc(instruccionAEjecutar, instruccionABuscar->offset);
-			log_trace(logger, "Busco instruccion a ejecutar");
-			instruccionAEjecutar = UMV_solicitarBytes(pcb->pid,pcb->segmentoCodigo,instruccionABuscar->start,instruccionABuscar->offset);
 			*/
+			devolverTCBactual();
+			limpiarRegistros();
+
 		}
 	}
 }
@@ -193,12 +205,17 @@ void conectarConMSP()
 	getaddrinfo(IPMSP, PUERTOMSP, &hintsMSP, &mspInfo);	// Carga en serverInfo los datos de la conexion
 	socketMSP = socket(mspInfo->ai_family, mspInfo->ai_socktype, mspInfo->ai_protocol);
 
-	connect(socketMSP, mspInfo->ai_addr, mspInfo->ai_addrlen);
+	int estadoConexion = connect(socketMSP, mspInfo->ai_addr, mspInfo->ai_addrlen);
+
+	if(estadoConexion == -1){
+		error("no se pudo realizar la conexion con la MSP");
+		abortarEjecucion();
+	}
+	//TODO: hacer log
+
+	printf("Se conecto a la MSP");
+
 	freeaddrinfo(mspInfo);	// No lo necesitamos mas
-
-	//send(socketMSP, &id, sizeof(char), 0);
-	//recv(socketMSP, &conf, sizeof(char), 0);
-
 }
 
 void conectarConKernel()
@@ -213,19 +230,17 @@ void conectarConKernel()
 	getaddrinfo(IPKERNEL, PUERTOKERNEL, &hintsKernel, &kernelInfo);	// Carga en serverInfo los datos de la conexion
 	kernelSocket = socket(kernelInfo->ai_family, kernelInfo->ai_socktype, kernelInfo->ai_protocol);
 
-	if(kernelSocket == -1){
+	int estadoConexion = connect(kernelSocket, kernelInfo->ai_addr, kernelInfo->ai_addrlen);
+
+	if(estadoConexion == -1){
+		error("no se pudo realizar la conexion con el Kernel");
 		abortarEjecucion();
 	}
+	//TODO: hacer log
 
-	/*while (a == -1){
-		a = connect(kernelSocket, kernelInfo->ai_addr, kernelInfo->ai_addrlen);
-	}
-	log_info(logger, "Se establecio conexion con el kernel por el socket %d", kernelSocket);
-	recv(kernelSocket, &quantum, sizeof(int), 0);
-	log_trace(logger, "Recibo valor de quantum: %d", quantum);
-	recv(kernelSocket, &retardo, sizeof(int), 0);
-	log_trace(logger, "Recibo valor de retardo: %d", retardo);
-	freeaddrinfo(kernelInfo);	// No lo necesitamos mas*/
+	printf("Se conecto al Kernel");
+
+	freeaddrinfo(kernelInfo);	// No lo necesitamos mas
 
 }
 
@@ -242,7 +257,7 @@ void cargarRegistrosCPU(){
 	*E = TCBactual -> registrosProgramacion[4];
 }
 
-void cargarRegistrosTCB(){
+void actualizarRegistrosTCB(){
 	TCBactual -> registrosProgramacion[0] = *A;
 	TCBactual -> registrosProgramacion[1] = *B;
 	TCBactual -> registrosProgramacion[2] = *C;
@@ -270,24 +285,45 @@ int actualizarTCB(){
 	TCBactual -> punteroInstruccion = punteroInstruccionActual;
 	TCBactual -> baseStack = baseStackActual;
 	TCBactual -> cursorStack = cursorStackActual;
-	cargarRegistrosCPU();
+	actualizarRegistrosTCB();
 	return 0;
 }
 
+
+void devolverTCBactual(){
+	actualizarTCB();
+	int status = send(kernelSocket,TCBactual,sizeof(t_TCB),0);
+	if(status){printf("no se pudo devolver el TCBactual");}
+}
+
+void limpiarRegistros(){
+	TIDactual = 0;
+	KMactual = 0;
+	baseSegmentoCodigoActual = NULL;
+	tamanioSegmentoCodigoActual = 0;
+	punteroInstruccionActual = NULL;
+	baseStackActual = NULL;
+	cursorStackActual = NULL;
+	*A = 0;
+	*B = 0;
+	*C = 0;
+	*D = 0;
+	*E = 0;
+	*F = 0;
+}
+
+
+/*Funciones MSP*/
+
 int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroInstruccion){
-	char confirmacion;
 	int proximaInstruccionAEjecutar;
 	int mensaje[2];
 	mensaje[0]=1; //codigo de operacion 1 solicitar prox instruccion
 	mensaje[1]= *punteroInstruccion;
 	send(socketMSP,mensaje, sizeof(int[2]), 0);
-	/*int status = */recv(socketMSP, &proximaInstruccionAEjecutar, sizeof(char), 0);
-	if(confirmacion != 0){
-
-	//TODO: terminar
-	}
-
-	return 0;
+	int status = recv(socketMSP, &proximaInstruccionAEjecutar, sizeof(char), 0);
+	//me manda la instruccion a ejecutar en forma de numero, el valor de la instruccion en ASCII
+	return proximaInstruccionAEjecutar;
 }
 
 
@@ -346,7 +382,7 @@ char* DIVR(char* registroA, char* registroB){
 	//Divide el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A; a menos que el segundo operando sea 0,
 	//en cuyo caso se asigna el flag de ZERO_DIV y no se hace la operación.
 	if(*registroB == 0){
-		*registroB = ZERO_DIV;
+		*registroB = 0;
 	} else {
 		char* aux = registroA;
 		*registroA = (*aux) % (*registroB);
