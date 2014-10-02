@@ -20,10 +20,11 @@ typedef struct T_SEGMENTO {
 	int SID;
 	int tamanio;
 	t_list* paginas;
+	uint32_t* direccionVirtual;
 } T_SEGMENTO;
 
 typedef struct T_PAGINA {
-	int pagainaID;
+	int paginaID;
 	int swapped;
 	int marcoID;
 	char data [256];
@@ -36,6 +37,12 @@ typedef struct T_MARCO {
 	T_PAGINA* pagina;
 	char* alg_meta_data;
 }T_MARCO;
+
+typedef struct T_DIRECCION_LOG {
+	int SID;
+	int paginaId;
+	int desplazamiento;
+}T_DIRECCION_SEG;
 
 uint32_t* crearSegmento(int PID,int tamanio);
 
