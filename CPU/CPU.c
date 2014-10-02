@@ -176,6 +176,7 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	IPMSP = config_get_string_value(configuracion, "IP_MSP");
 	PUERTOKERNEL = config_get_string_value(configuracion, "PUERTO_KERNEL");
 	IPKERNEL = config_get_string_value(configuracion, "IP_KERNEL");
+	RETARDO = config_get_string_value(configuracion, "RETARDO");
 }
 
 void conectarConMSP()
