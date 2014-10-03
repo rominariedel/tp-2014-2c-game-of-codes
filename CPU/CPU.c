@@ -120,6 +120,17 @@ void PUSH(int numeroA, int numeroB);
 void TAKE(int numero, char* registro);
 void XXXX();
 
+/*Instrucciones Protegidas*/
+void MALC();
+void FREE();
+void INNN();
+void INNC();
+void OUTN();
+void OUTC();
+void CREA();
+void JOIN();
+void BLOCK();
+void WAKE();
 
 
 
@@ -549,6 +560,9 @@ void XXXX(){
 	//TODO: hacer funcion. finalizarEjecucion();
 }
 
+
+
+
 /*Instrucciones Protegidas*/
 /*    Solo si KM == 1     */
 
@@ -593,37 +607,50 @@ void INNC(){
 	*A = cadena;
 }
 
+void OUTN(){
+	//Imprime por consola del programa el número, con signo almacenado en el registro A. Invoca al
+	//servicio correspondiente en el proceso Kernel.
+	printf("el numero almacenado en el registro A es: %l", *A);
+}
 
+void OUTC(){
+	//Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
+	//encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
+	//proceso Kernel.
+	int tamanio = strlen(*A);
+	if(tamanio <= *B){
+		printf("La cadena apuntada por el registro A es: %l", *A);
+	}
+}
 
-/*29. OUTN
-Imprime por consola del programa el número, con signo almacenado en el registro A. Invoca al
-servicio correspondiente en el proceso Kernel.
-30. OUTC
-Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
-encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
-proceso Kernel.
-31. CREA
-Crea un hilo, hijo del TCB que ejecutó la llamada al sistema correspondiente. El nuevo hilo
-tendrá su Program Counter apuntado al número almacenado en el registro B. El identificador del
-nuevo hilo se almacena en el registro A.
-Para lograrlo debe generar un nuevo TCB como copia del TCB actual, asignarle un nuevo TID
-correlativo al actual, cargar en el Puntero de Instrucción la rutina donde comenzará a ejecutar el
-nuevo hilo (registro B), pasarlo de modo Kernel a modo Usuario, duplicar el segmento de stack
-desde la base del stack, hasta el cursor del stack. Asignar la base y cursor de forma acorde (tal
-que la diferencia entre cursor y base se mantenga igual)13 y luego invocar al servicio
-correspondiente en el proceso Kernel con el TCB recién generado.
-32. JOIN
-Bloquea el programa que ejecutó la llamada al sistema hasta que el hilo con el identificador
-almacenado en el registro A haya finalizado. Invoca al servicio correspondiente en el proceso
-Kernel.
-33. BLOK
- */
+void CREA(){
+	/*Crea un hilo, hijo del TCB que ejecutó la llamada al sistema correspondiente. El nuevo hilo
+	tendrá su Program Counter apuntado al número almacenado en el registro B. El identificador del
+	nuevo hilo se almacena en el registro A.
+	Para lograrlo debe generar un nuevo TCB como copia del TCB actual, asignarle un nuevo TID
+	correlativo al actual, cargar en el Puntero de Instrucción la rutina donde comenzará a ejecutar el
+	nuevo hilo (registro B), pasarlo de modo Kernel a modo Usuario, duplicar el segmento de stack
+	desde la base del stack, hasta el cursor del stack. Asignar la base y cursor de forma acorde (tal
+	que la diferencia entre cursor y base se mantenga igual)13 y luego invocar al servicio
+	correspondiente en el proceso Kernel con el TCB recién generado.*/
 
+}
 
+void JOIN(){
+	//Bloquea el programa que ejecutó la llamada al sistema hasta que el hilo con el identificador
+	//almacenado en el registro A haya finalizado. Invoca al servicio correspondiente en el proceso Kernel.
+}
 
+void BLOCK(){
+	//Bloquea el programa que ejecutó la llamada al sistema hasta que el recurso apuntado por B se libere.
+	//La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema WAIT pre-compilada.
 
+}
 
-
+void WAKE(){
+	//Desbloquea al primer programa bloqueado por el recurso apuntado por B.
+	//La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema SIGNAL pre-compilada.
+}
 
 
 
