@@ -4,7 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>commons</project>
-		<project>Sockets</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
