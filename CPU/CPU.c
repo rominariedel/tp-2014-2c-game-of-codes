@@ -132,20 +132,33 @@ void JOIN();
 void BLOCK();
 void WAKE();
 
+enum mensajesMSP{
+	/*enviar mensajes*/
+	solicitarProximaInstruccionAEJecutar = 1,
+	crearNuevoSegmento = 2,
+	destruirSegmento = 3,
+
+};
+
 
 
 int main(int cantArgs, char** args){
 
+
+	printf("Bienvenido al CPU");
 	//TODO: para poder ubicar donde empieza el main
-	/*cargarArchivoConfiguracion(cantArgs,args);
+	cargarArchivoConfiguracion(cantArgs,args);
 	conectarConMSP();
 	conectarConKernel();
 	//proximaInstruccionaejecutar
 	//ejecutar instruccion
-*/
+
 
 	while(1)
 	{
+		//conectarConMSP();
+		//conectarConKernel();
+
 		int quantumActual = 0;
 
 		//estoy a la espera de que el kernel me mande el TCB y el quantum
@@ -205,13 +218,11 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	IPKERNEL = config_get_string_value(configuracion, "IP_KERNEL");
 	RETARDO = config_get_string_value(configuracion, "RETARDO");
 }
-
+/*
 void conectarConMSP()
 {
 	struct addrinfo hintsMSP;
 	struct addrinfo *mspInfo;
-	//char id = 1;
-	//char conf = 0;
 
 	memset(&hintsMSP, 0, sizeof(hintsMSP));
 	hintsMSP.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
@@ -258,11 +269,15 @@ void conectarConKernel()
 	freeaddrinfo(kernelInfo);	// No lo necesitamos mas
 
 }
+*/
 
+void abortarEjecucion(){
+	int mensaje[2];
+	mensaje[0]=  1; //abortar ejecucion, matar cpu
+	mensaje[1]= TCBactual;
+	int status = send(kernelSocket,mensaje, sizeof(int[2]), 0);
+	if (status == -1){printf("No se pudo conectar con el Kernel");}
 
-int abortarEjecucion(){
-	//avisar al kernel que hay que matar al CPU
-	return 0;
 }
 
 void cargarRegistrosCPU(){
@@ -335,7 +350,7 @@ void limpiarRegistros(){
 int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroInstruccion){
 	int proximaInstruccionAEjecutar;
 	int mensaje[2];
-	mensaje[0]=1; //codigo de operacion 1 solicitar prox instruccion
+	mensaje[0]=  solicitarProximaInstruccionAEJecutar; //codigo de operacion 1 solicitar prox instruccion
 	mensaje[1]= *punteroInstruccion;
 	send(socketMSP,mensaje, sizeof(int[2]), 0);
 	int status = recv(socketMSP, &proximaInstruccionAEjecutar, sizeof(char), 0);
@@ -348,7 +363,7 @@ int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroInstruccion){
 void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 	void* nuevoSegmento;
 	int mensaje[3];
-	mensaje[0]=2; //codigo de operacion 2 crear segmento
+	mensaje[0]= crearNuevoSegmento; //codigo de operacion 2 crear segmento
 	mensaje[1]= PID;
 	mensaje[2]= tamanioSegmento;
 	send(socketMSP,mensaje, sizeof(int[3]), 0);
@@ -359,7 +374,7 @@ void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 void MSP_DestruirSegmento(int PID, void* segmento){
 	int confirmacion;
 	int mensaje[3];
-	mensaje[0]=2; //codigo de operacion 3 destruir segmento
+	mensaje[0]= destruirSegmento; //codigo de operacion 3 destruir segmento
 	mensaje[1]= PID;
 	mensaje[2]= segmento;
 	send(socketMSP,mensaje, sizeof(int[3]), 0);
@@ -651,6 +666,8 @@ void WAKE(){
 	//Desbloquea al primer programa bloqueado por el recurso apuntado por B.
 	//La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema SIGNAL pre-compilada.
 }
+
+
 
 
 
