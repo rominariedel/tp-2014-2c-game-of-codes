@@ -80,6 +80,8 @@ int 		calcularProximoSID (T_PROCESO proceso);
 t_list* 	crearPagsPorTamanioSeg(int tamanio);
 T_PAGINA* 	crearPaginaVacia (int paginaID);
 static void destruirPag(T_PAGINA* pagina);
+void 		asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag);
+void 		actualizarMarcos();
 
 T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
 uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);

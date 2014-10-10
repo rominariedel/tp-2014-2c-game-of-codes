@@ -41,7 +41,7 @@ int main (void)
 
 	pthread_join(hiloConsola, NULL);
 
-	return 1; //todo Hacer las constantes globales exito o no
+	return OPERACION_EXITOSA;
 
 	/*t_config* configuracion = config_create(args[1]);
 	logi = log_create(args[2], "UMV", 0, LOG_LEVEL_TRACE);
@@ -101,7 +101,7 @@ void interpretarComando (char* comando){
 		printf("Creando segmento...");
 		uint32_t baseSegmento = crearSegmento(atoi(parametros[0]), atoi (parametros[1]));
 		if (baseSegmento == ERROR_MEMORIA_LLENA){
-			printf("Ha ocurrido un error. La memoria esta llena");
+			error_show("La memoria esta llena");
 		}
 		else printf("La dirección base del segmento creado es %d",baseSegmento);
 
@@ -113,19 +113,40 @@ void interpretarComando (char* comando){
 		if(resultado == 1){
 			printf ("El segmento ha sido detruido exitósamente");
 		}
-		else printf("El segmento no ha sido destruido, ha ocurrido un error:");
+		else printf("El segmento no ha sido destruido:");
 		switch (resultado){
 		case ERROR_SEGMENTO_INEXISTENTE:
-			printf("El segmento especificado no existe");
+			error_show("El segmento especificado no existe");
 			break;
 		case ERROR_PROCESO_INEXISTENTE:
-			printf("El proceso con PID: %d no existe", parametros[0]);
+			error_show("El proceso con PID: %d no existe", parametros[0]);
 			break;
 		}
 	}
 
 	else if (string_equals_ignore_casse(palabras[0],"Escribir Memoria")){
-
+		printf("Iniciando proceso de escritura de memoria...");
+		int resultado = escribirMemoria(atoi(parametros[0]),atoi(parametros[1]),atoi(parametros[2]), atoi(parametros[3]));
+		switch (resultado){
+		case ERROR_VIOLACION_DE_SEGMENTO_MEMORIA_INVALIDA:
+			error_show("Segmentation Fault: La memoria especificada es inválida");
+			break;
+		case ERROR_VIOLACION_DE_SEGMENTO_LIMITES_SEG_EXCEDIDOS:
+			error_show("Segmentation Fault: Se excedieron los limites del segmento");
+			break;
+		case ERROR_PAGINA_INEXISTENTE:
+			error_show("La pagina no existe");
+			break;
+		case ERROR_SEGMENTO_INEXISTENTE:
+			error_show("El segmento no existe");
+			break;
+		case ERROR_PROCESO_INEXISTENTE:
+			error_show("El proceso no existe");
+			break;
+		case OPERACION_EXITOSA:
+			printf("Se ha escrito en memoria satisfactoriamente");
+			break;
+		}
 	}
 
 	else if (string_equals_ignore_casse(palabras[0],"Leer Memoria")){
@@ -133,19 +154,19 @@ void interpretarComando (char* comando){
 		char* resultado = solicitarMemoria(atoi(parametros[0]),atoi(parametros[1]),atoi(parametros[2]));
 		switch (resultado){
 		case ERROR_VIOLACION_DE_SEGMENTO_MEMORIA_INVALIDA:
-			printf("Segmentation Fault: La memoria especificada es inválida");
+			error_show("Segmentation Fault: La memoria especificada es inválida");
 			break;
 		case ERROR_VIOLACION_DE_SEGMENTO_LIMITES_SEG_EXCEDIDOS:
-			printf("Segmentation Fault: Se excedieron los limites del segmento");
+			error_show("Segmentation Fault: Se excedieron los limites del segmento");
 			break;
 		case ERROR_PAGINA_INEXISTENTE:
-			printf("La pagina no existe");
+			error_show("La pagina no existe");
 			break;
 		case ERROR_SEGMENTO_INEXISTENTE:
-			printf("El segmento no existe");
+			error_show("El segmento no existe");
 			break;
 		case ERROR_PROCESO_INEXISTENTE:
-			printf("El proceso no existe");
+			error_show("El proceso no existe");
 			break;
 		default:
 			printf("%s", resultado);
@@ -342,6 +363,7 @@ char* solicitarMemoria(int PID, uint32_t* direccionVirtual, int tamanio){
 	//}
 
 	T_DIRECCION_LOG* direccionLogica = uint32ToDireccionLogica(direccionVirtual);
+	char memoriaSolicitada[] = "";
 
 	bool procesoPorPid (T_PROCESO* proceso){
 		return proceso->PID == PID;
@@ -352,8 +374,8 @@ char* solicitarMemoria(int PID, uint32_t* direccionVirtual, int tamanio){
 	bool paginaPorPagid (T_PAGINA* pagina){
 		return pagina->paginaID == direccionLogica->paginaId;
 	}
-	bool marcoPorPagid (T_MARCO* marco){
-		return marco->pagina->paginaID == direccionLogica->paginaId;
+	bool marcoPorVacio (T_MARCO* marco){
+		return marco->empty == true;
 	}
 
 	if ((direccionLogica->desplazamiento + tamanio) > tamanioPag ) {
@@ -372,11 +394,12 @@ char* solicitarMemoria(int PID, uint32_t* direccionVirtual, int tamanio){
 
 				if (pag->marcoID == 0){
 
-					if (marcosVacios->elements_count == 0){
+					if (list_is_empty(marcosVacios)){
 						//todo swapping - ejecutar algoritmo de sustitucion de pags
 					}
 					else{
-						//todo le asigno un marco a la pgina
+						T_MARCO* marcoAsignado = list_any_satisfy(marcosVacios, (void)* marcoPorVacio);
+						asignoMarcoAPagina(PID, marcoAsignado, pag);
 					}
 				}
 
@@ -384,22 +407,106 @@ char* solicitarMemoria(int PID, uint32_t* direccionVirtual, int tamanio){
 				int final = direccionLogica->desplazamiento + tamanio;
 				int i;
 				for(i = inicio; final > i  ; i++){
-					return pag->data[i];
+					string_append(memoriaSolicitada, pag->data[i]);
 				}
 			}
 			else return ERROR_PAGINA_INEXISTENTE;
 		}
 		else return ERROR_SEGMENTO_INEXISTENTE;
 	}
+	else return ERROR_PROCESO_INEXISTENTE;
 
-	return ERROR_PROCESO_INEXISTENTE;
+	return memoriaSolicitada;
 }
 
-uint32_t* escribirMemoria(int PID, uint32_t* direccionLogica, int bytesAEscribir, int tamanio){
-	return 0;
-	//todo realizar operacion
+int escribirMemoria(int PID, uint32_t* direccionVirtual, char bytesAEscribir, int tamanio){
+
+	//TODO if (direccionVirtual){
+		//return ERROR_VIOLACION_DE_SEGMENTO_MEMORIA_INVALIDA;
+	//}
+
+	T_DIRECCION_LOG* direccionLogica = uint32ToDireccionLogica(direccionVirtual);
+
+	bool procesoPorPid (T_PROCESO* proceso){
+		return proceso->PID == PID;
+	}
+	bool segmentoPorSid (T_SEGMENTO* segmento){
+		return segmento->SID == direccionLogica->SID;
+	}
+	bool paginaPorPagid (T_PAGINA* pagina){
+		return pagina->paginaID == direccionLogica->paginaId;
+	}
+	bool marcoPorVacio (T_MARCO* marco){
+		return marco->empty == true;
+	}
+
+	if (((direccionLogica->desplazamiento + tamanio) > tamanioPag ) || (list_size(bytesAEscribir) > tamanio)) {
+		return ERROR_VIOLACION_DE_SEGMENTO_LIMITES_SEG_EXCEDIDOS;
+	}
+
+	T_PROCESO*  proceso = list_find(procesos, (void*) procesoPorPid);
+
+	if(proceso != NULL){
+		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
+
+		if (seg != NULL){
+			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
+
+			if (pag != NULL){
+
+				if (pag->marcoID == 0){
+
+					if (list_is_empty(marcosVacios)){
+						//todo swapping - ejecutar algoritmo de sustitucion de pags
+					}
+					else{
+						T_MARCO* marcoAsignado = list_any_satisfy(marcosVacios, (void)* marcoPorVacio);
+						asignoMarcoAPagina(PID, marcoAsignado, pag);
+					}
+				}
+
+				int inicio = direccionLogica->desplazamiento;
+				int final = direccionLogica->desplazamiento + tamanio;
+				int i;
+				for(i = inicio; final > i  ; i++){
+					pag->data[i] = list_take_and_remove(bytesAEscribir, i);
+				}
+			}
+			else return ERROR_PAGINA_INEXISTENTE;
+		}
+		else return ERROR_SEGMENTO_INEXISTENTE;
+	}
+	else return ERROR_PROCESO_INEXISTENTE;
+	return OPERACION_EXITOSA;
 }
 
+void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag){
+	pag->marcoID = marcoAsignado->marcoID;
+	marcoAsignado->pagina = pag;
+	marcoAsignado->PID = PID;
+	marcoAsignado->empty = false;
+	actualizarMarcos();
+}
+
+void actualizarMarcos(){
+	t_list* marcos = list_create();
+	list_add_all(marcos,marcosLlenos);
+	list_add_all(marcos,marcosVacios);
+
+	bool marcoPorVacio (T_MARCO* marco){
+		return marco->empty == true;
+	}
+	bool marcoPorLleno (T_MARCO* marco){
+		return marco->empty == false;
+	}
+
+	list_clean(marcosVacios);
+	list_add_all(marcosVacios, list_filter(marcos, (void)* marcoPorVacio));
+
+	list_clean(marcosLlenos);
+	list_add_all(marcosLlenos, list_filter(marcos, (void)* marcoPorLleno));
+
+}
 int tablaMarcos(){
 	printf("%s TABLA DE MARCOS %s",string_repeat("-",40));
 
