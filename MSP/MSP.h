@@ -58,14 +58,30 @@ typedef struct T_DIRECCION_LOG {
 
 
 //Operaciones de interfaz
-uint32_t* crearSegmento(int PID,int tamanio);
-void destruirSegmento (int PID, uint32_t* baseSegmento);
-char* solicitarMemoria(int PID, uint32_t* direccionLogica, int tamanio);
-uint32_t* escribirMemoria(int PID, uint32_t* direccionLogica, int bytesAEscribir, int tamanio);
+uint32_t* 	crearSegmento		(int PID, int tamanio);
+int 		destruirSegmento 	(int PID, uint32_t* baseSegmento);
+char* 		solicitarMemoria	(int PID, uint32_t* direccionLogica, int tamanio);
+uint32_t* 	escribirMemoria		(int PID, uint32_t* direccionLogica, int bytesAEscribir, int tamanio);
 
 //Operaciones de consola
+void 	inicializarConsola();
+void 	interpretarComando (char* comando);
+int 	tablaMarcos();
+int 	tablaSegmentos();
+int 	tablaPaginas(int PID);
 
 //Funciones internas
-//todo hacerlo
+void 		inicializar();
+void 		cargarArchivoConfiguracion(void);
+void 		crearmarcos();
+T_MARCO* 	crearMarcoVacio (int marcoId);
+T_SEGMENTO* crearSegmentoVacio (T_PROCESO proceso, int tamanio);
+int 		calcularProximoSID (T_PROCESO proceso);
+t_list* 	crearPagsPorTamanioSeg(int tamanio);
+T_PAGINA* 	crearPaginaVacia (int paginaID);
+static void destruirPag(T_PAGINA* pagina);
+
+T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
+uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
 
 #endif /* MSP_H_ */

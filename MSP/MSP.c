@@ -100,7 +100,11 @@ void interpretarComando (char* comando){
 	if (string_equals_ignore_casse(palabras[0],"Crear segmento")){
 		printf("Creando segmento...");
 		uint32_t baseSegmento = crearSegmento(atoi(parametros[0]), atoi (parametros[1]));
-		printf("La dirección base del segmento creado es %d",baseSegmento);
+		if (baseSegmento == ERROR_MEMORIA_LLENA){
+			printf("Ha ocurrido un error. La memoria esta llena");
+		}
+		else printf("La dirección base del segmento creado es %d",baseSegmento);
+
 	}
 
 	else if (string_equals_ignore_casse(palabras[0],"Destruir Segmento")){
@@ -109,8 +113,15 @@ void interpretarComando (char* comando){
 		if(resultado == 1){
 			printf ("El segmento ha sido detruido exitósamente");
 		}
-		else printf("El segmento no ha sido destruido, ha ocurrido un error de:");
-		// todo switch case segun el error
+		else printf("El segmento no ha sido destruido, ha ocurrido un error:");
+		switch (resultado){
+		case ERROR_SEGMENTO_INEXISTENTE:
+			printf("El segmento especificado no existe");
+			break;
+		case ERROR_PROCESO_INEXISTENTE:
+			printf("El proceso con PID: %d no existe", parametros[0]);
+			break;
+		}
 	}
 
 	else if (string_equals_ignore_casse(palabras[0],"Escribir Memoria")){
@@ -118,7 +129,28 @@ void interpretarComando (char* comando){
 	}
 
 	else if (string_equals_ignore_casse(palabras[0],"Leer Memoria")){
-
+		printf("Solicitando memoria...");
+		char* resultado = solicitarMemoria(atoi(parametros[0]),atoi(parametros[1]),atoi(parametros[2]));
+		switch (resultado){
+		case ERROR_VIOLACION_DE_SEGMENTO_MEMORIA_INVALIDA:
+			printf("Segmentation Fault: La memoria especificada es inválida");
+			break;
+		case ERROR_VIOLACION_DE_SEGMENTO_LIMITES_SEG_EXCEDIDOS:
+			printf("Segmentation Fault: Se excedieron los limites del segmento");
+			break;
+		case ERROR_PAGINA_INEXISTENTE:
+			printf("La pagina no existe");
+			break;
+		case ERROR_SEGMENTO_INEXISTENTE:
+			printf("El segmento no existe");
+			break;
+		case ERROR_PROCESO_INEXISTENTE:
+			printf("El proceso no existe");
+			break;
+		default:
+			printf("%s", resultado);
+			break;
+		}
 	}
 
 	else if (string_equals_ignore_casse(palabras[0],"Tabla de Segmentos")){
@@ -220,9 +252,7 @@ T_SEGMENTO* crearSegmentoVacio (T_PROCESO proceso, int tamanio){
 	direccionLogica.paginaId = 0;
 	direccionLogica.desplazamiento = 0;
 
-	segVacio.direccionVirtual = algoritmoParaConvertir(direccionLogica);
-	// todo desarrollar el algoritmo para convertir la estructura T_DIRECCION_SEG
-	// en la direccion uint32_t que es lo que reconoce el Kernal
+	segVacio.direccionVirtual = DireccionLogicaToUint32(direccionLogica);
 
 	return segVacio;
 }
@@ -311,9 +341,7 @@ char* solicitarMemoria(int PID, uint32_t* direccionVirtual, int tamanio){
 		//return ERROR_VIOLACION_DE_SEGMENTO_MEMORIA_INVALIDA;
 	//}
 
-	T_DIRECCION_LOG* direccionLogica = algoritmoParaConvertir(direccionVirtual);
-		// todo desarrollar el algoritmo para convertir la estructura T_DIRECCION_SEG
-		// en la direccion uint32_t que es lo que reconoce el Kernal
+	T_DIRECCION_LOG* direccionLogica = uint32ToDireccionLogica(direccionVirtual);
 
 	bool procesoPorPid (T_PROCESO* proceso){
 		return proceso->PID == PID;
@@ -363,9 +391,8 @@ char* solicitarMemoria(int PID, uint32_t* direccionVirtual, int tamanio){
 		}
 		else return ERROR_SEGMENTO_INEXISTENTE;
 	}
-	else return ERROR_PROCESO_INEXISTENTE;
 
-	return OPERACION_EXITOSA;
+	return ERROR_PROCESO_INEXISTENTE;
 }
 
 uint32_t* escribirMemoria(int PID, uint32_t* direccionLogica, int bytesAEscribir, int tamanio){
@@ -471,4 +498,23 @@ int tablaPaginas(int PID){
 
 	return OPERACION_EXITOSA;
 
+}
+
+T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion) {
+
+	T_DIRECCION_LOG direccionLogica;
+	direccionLogica.SID = intDireccion / pow(2, 20);
+	direccionLogica.paginaId = (intDireccion % (int)pow(2,20)) / pow(2, 8);
+	direccionLogica.desplazamiento = intDireccion % (int)pow(2, 8);
+
+	return direccionLogica;
+}
+
+uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica) {
+
+	uint32_t intDireccion = direccionLogica.SID * pow(2, 20);
+	intDireccion += direccionLogica.paginaId * pow(2, 8);
+	intDireccion += direccionLogica.desplazamiento;
+
+	return intDireccion;
 }
