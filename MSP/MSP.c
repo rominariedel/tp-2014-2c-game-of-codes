@@ -228,6 +228,7 @@ void crearmarcos(){
 T_MARCO* crearMarcoVacio (int marcoId){
 	T_MARCO marcoVacio = malloc(sizeof(T_MARCO));
 	marcoVacio.marcoID = marcoId;
+	marcoVacio.empty = true;
 	return marcoVacio;
 }
 
@@ -304,14 +305,15 @@ t_list* crearPagsPorTamanioSeg(int tamanio) {
 T_PAGINA* crearPaginaVacia (int paginaID){
 	T_PAGINA paginaVacia = malloc(sizeof(T_PAGINA));
 	paginaVacia.paginaID = paginaID;
+	paginaVacia.marcoID = 0;
 
 	int i;
 
 	for(i=0;(tamanioPag -1) > i;i++){
-		paginaVacia.data[i] = "";
+		paginaVacia.data[i] = '';
 	}
 
-	paginaVacia.data[tamanioPag] = '\n';
+	paginaVacia.data[tamanioPag] = '\0';
 	return paginaVacia;
 }
 
