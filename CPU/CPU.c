@@ -67,7 +67,7 @@ char* PUERTOKERNEL;
 char* IPKERNEL;
 int RETARDO;
 
-
+int superMensaje[13];
 t_TCB* TCBactual;
 int quantum;
 
@@ -144,30 +144,31 @@ enum mensajesMSP{
 
 int main(int cantArgs, char** args){
 
-
-	printf("Bienvenido al CPU");
-	//TODO: para poder ubicar donde empieza el main
+	printf("%s /n", "HOlaaaaaa");
+	printf("/n ------Bienvenido al CPU----- /n");
 	cargarArchivoConfiguracion(cantArgs,args);
+	printf("/n Cargando archivos configuración /n");
 	conectarConMSP();
+	printf("/n Conectado con MSP /n");
 	conectarConKernel();
-	//proximaInstruccionaejecutar
-	//ejecutar instruccion
-
+	printf("/n Conectado con Kernel /n");
 
 	while(1)
 	{
-		//conectarConMSP();
-		//conectarConKernel();
+		conectarConMSP();
+		conectarConKernel();
 
 		int quantumActual = 0;
 
 		//estoy a la espera de que el kernel me mande el TCB y el quantum
-		int recibidoTCBactual = recv(kernelSocket,TCBactual,sizeof(t_TCB),0);
+		int recibidoTCBactual = recv(kernelSocket,superMensaje,sizeof(t_TCB),0);
 		int recibidoquantum = recv(kernelSocket,quantum,sizeof(int),0);
 		if (recibidoTCBactual == -1){error("error al recibir TCB");
 		if (recibidoquantum == -1){error("error al recibir quantum");
+		recibirSuperMensaje(superMensaje);
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
+
 		cargarDatosTCB();
 
 		estaEjecutando = 1; //estado CPU
@@ -185,7 +186,7 @@ int main(int cantArgs, char** args){
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 
-			actualizarRegistrosCPU();
+			actualizarRegistrosTCB();
 
 			// 5. Incrementa el Puntero de Instrucción.
 
@@ -296,6 +297,21 @@ void actualizarRegistrosTCB(){
 	TCBactual -> registrosProgramacion[4] = *E;
 }
 
+void recibirSuperMensaje(int superMensaje[12]){
+	TCBactual -> TID = superMensaje[0];
+	TCBactual -> KM = superMensaje[1];
+	TCBactual -> baseSegmentoCodigo = superMensaje[2];
+	TCBactual -> tamanioSegmentoCodigo = superMensaje[3];
+	TCBactual -> punteroInstruccion = superMensaje[4];
+	TCBactual -> baseStack = superMensaje[5];
+	TCBactual -> cursorStack = superMensaje[6];
+	TCBactual -> registrosProgramacion[0] = superMensaje[7];
+	TCBactual -> registrosProgramacion[1] = superMensaje[8];
+	TCBactual -> registrosProgramacion[2] = superMensaje[9];
+	TCBactual -> registrosProgramacion[3] = superMensaje[10];
+	TCBactual -> registrosProgramacion[4] = superMensaje[11];
+}
+
 int cargarDatosTCB(){
 	TIDactual = TCBactual -> TID;
 	KMactual = TCBactual -> KM;
@@ -320,10 +336,25 @@ int actualizarTCB(){
 	return 0;
 }
 
+void cargarTCBenSuperMensaje(t_TCB* TCBactual){
+	superMensaje[0] = TCBactual -> TID;
+	superMensaje[1] = TCBactual -> KM;
+	superMensaje[2] = TCBactual -> baseSegmentoCodigo;
+	superMensaje[3] = TCBactual -> tamanioSegmentoCodigo;
+	superMensaje[4] = TCBactual -> punteroInstruccion;
+	superMensaje[5] = TCBactual -> baseStack;
+	superMensaje[6] = TCBactual -> cursorStack;
+	superMensaje[7] = TCBactual -> registrosProgramacion[0];
+	superMensaje[8] = TCBactual -> registrosProgramacion[1];
+	superMensaje[9] = TCBactual -> registrosProgramacion[2];
+	superMensaje[10] = TCBactual -> registrosProgramacion[3];
+	superMensaje[11] = TCBactual -> registrosProgramacion[4];
+}
 
 void devolverTCBactual(){
 	actualizarTCB();
-	int status = send(kernelSocket,TCBactual,sizeof(t_TCB),0);
+	cargarTCBenSuperMensaje(TCBactual);
+	int status = send(kernelSocket,superMensaje,sizeof(t_TCB),0);
 	if(status){printf("no se pudo devolver el TCBactual");}
 }
 
@@ -343,6 +374,10 @@ void limpiarRegistros(){
 	*F = 0;
 }
 
+void ejecutarInstruccion(int proximaInstruccionAEjecutar){
+
+
+}
 
 /*Funciones MSP*/
 
