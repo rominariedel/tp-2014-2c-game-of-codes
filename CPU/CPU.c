@@ -22,7 +22,7 @@
 #include <semaphore.h>
 #include <math.h>
 #include <error.h>
-
+#include <stdvector.h>
 
 
 /* Estructuras */
@@ -140,11 +140,48 @@ enum mensajesMSP{
 
 };
 
+enum instruccionesCPU{
+	LOAD,
+	GETM,
+	MOVR,
+	ADDR,
+	SUBR,
+	MULR,
+	MODR,
+	DIVR,
+	INCR,
+	DECR,
+	COMP,
+	CGEQ,
+	CLEQ,
+	GOTO,
+	JMPZ,
+	INTE,
+	FLCL,
+	SHIF,
+	NOPP,
+	PUSH,
+	TAKE,
+	XXXX,
+};
+
+enum instruccionesProtegidas{
+	MALC,
+	FREE,
+	INNN,
+	INNC,
+	OUTN,
+	OUTC,
+	CREA,
+	JOIN,
+	BLOCK,
+	WAKE,
+};
+
 
 
 int main(int cantArgs, char** args){
 
-	printf("%s /n", "HOlaaaaaa");
 	printf("/n ------Bienvenido al CPU----- /n");
 	cargarArchivoConfiguracion(cantArgs,args);
 	printf("/n Cargando archivos configuración /n");
@@ -375,8 +412,7 @@ void limpiarRegistros(){
 }
 
 void ejecutarInstruccion(int proximaInstruccionAEjecutar){
-
-
+//TODO: ejecutarb
 }
 
 /*Funciones MSP*/
@@ -392,8 +428,6 @@ int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroInstruccion){
 	//me manda la instruccion a ejecutar en forma de numero, el valor de la instruccion en ASCII
 	return proximaInstruccionAEjecutar;
 }
-
-
 
 void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 	void* nuevoSegmento;
