@@ -8,6 +8,7 @@ RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Debug/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -22,22 +23,22 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: 
+all: MSP
 
 dependents:
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) clean all
+	-cd /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
 
 # Tool invocations
-: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so
+MSP: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug" -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons" -o  $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug" -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons" -o "MSP" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) 
+	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) MSP
 	-@echo ' '
 
 .PHONY: all clean dependents

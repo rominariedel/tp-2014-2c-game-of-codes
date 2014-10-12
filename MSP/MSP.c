@@ -93,7 +93,7 @@ void inicializarConsola(){
 void interpretarComando (char* comando){
 	char** palabras = string_split(comando,"");
 	char** parametros;
-
+	int resultado;
 	if (palabras[1] != NULL){
 		parametros = string_split(palabras[1],",");
 	}
@@ -152,7 +152,7 @@ void interpretarComando (char* comando){
 
 	else if (string_equals_ignore_case(palabras[0],"Leer Memoria")){
 		printf("Solicitando memoria...");
-		int resultado = solicitarMemoria(atoi(parametros[0]),(uint32_t) atoi(parametros[1]),atoi(parametros[2]));
+		resultado = solicitarMemoria(atoi(parametros[0]),(uint32_t) atoi(parametros[1]),atoi(parametros[2]));
 		switch (resultado){
 		case ERROR_VIOLACION_DE_SEGMENTO_MEMORIA_INVALIDA:
 			error_show("Segmentation Fault: La memoria especificada es inválida\n");
@@ -176,15 +176,15 @@ void interpretarComando (char* comando){
 	}
 
 	else if (string_equals_ignore_case(palabras[0],"Tabla de Segmentos")){
-		int resultado = tablaSegmentos();
+		resultado = tablaSegmentos();
 	}
 
 	else if (string_equals_ignore_case(palabras[0],"Tabla de Páginas")){
-		int resultado = tablaPaginas(atoi(parametros[0]));
+		resultado = tablaPaginas(atoi(parametros[0]));
 	}
 
 	else if (string_equals_ignore_case(palabras[0],"Listar Marcos")){
-		int resultado = tablaMarcos();
+		resultado = tablaMarcos();
 	}
 }
 

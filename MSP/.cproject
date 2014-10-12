@@ -31,7 +31,6 @@
 								<option id="gnu.c.link.option.libs.695266236" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="commons"/>
 									<listOptionValue builtIn="false" value="pthread"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/commons/Debug/makefile}&quot;"/>
 								</option>
 								<option id="gnu.c.link.option.paths.771134323" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/commons/Debug}&quot;"/>
