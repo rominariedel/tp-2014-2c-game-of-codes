@@ -24,7 +24,7 @@ enum mensajes{
 	ejecucion_abortada = 3,
 	imprimir_en_pantalla = 4,
 	ingresar_cadena = 5,
-
+	ejecutar = 6,
 	//Mensajes recibidos
 
 	finaliza_quantum = 10,
@@ -61,6 +61,7 @@ void finalizo_ejecucion(TCB_struct*);
 void abortar(TCB_struct*);
 void interrumpir(TCB_struct*, int);
 void crear_hilo(TCB_struct);
+void lodear(int PID);
 
 int main(int argc, char ** argv){
 
@@ -87,9 +88,9 @@ void obtenerDatosConfig(char ** argv){
 
 void boot(){
 
-	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
-
+	lodear(3);
 	void * syscalls = extraer_syscalls();
+	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
 	int mensaje_codigo[2];
 	mensaje_codigo[0] = pid_KM_boot;
 	mensaje_codigo[1] = tamanio_syscalls(syscalls);
@@ -114,7 +115,7 @@ void boot(){
 	tcb_km.X = base_segmento_stack;
 	//TODO: inicializar los registros de programacion
 
-	queue_push(BLOCK->prioridad_0, (void *) &tcb_km);
+	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
 
 	int socket_gral = crear_servidor(PUERTO,backlog);
 	//TODO: validar socket
@@ -148,21 +149,21 @@ void boot(){
 					modulo_conectado = datos->codigo_operacion;
 
 					if(modulo_conectado == soy_consola){
-						struct_consola consola_conectada;
+						struct_consola * consola_conectada = malloc(sizeof(struct_consola));
 						int pid = obtener_PID();
-						consola_conectada.PID = pid;
-						consola_conectada.socket_consola = socket_conectado;
-						list_add(consola_list, &consola_conectada);
+						consola_conectada->PID = pid;
+						consola_conectada->socket_consola = socket_conectado;
+						list_add(consola_list, consola_conectada);
 						//loader(consola_conectada); El PID ya esta asignado y es el que tiene que usar el
 						//loader para crear el TCB
 
 
 					}else if(modulo_conectado == soy_CPU){
-						struct_CPU cpu_conectada;
-						cpu_conectada.PID = -1;
-						cpu_conectada.bit_estado = libre;
-						cpu_conectada.socket_CPU = socket_conectado;
-						list_add(CPU_list, &cpu_conectada);
+						struct_CPU* cpu_conectada = malloc(sizeof(struct_CPU));
+						cpu_conectada->PID = -1;
+						cpu_conectada->bit_estado = libre;
+						cpu_conectada->socket_CPU = socket_conectado;
+						list_add(CPU_list, cpu_conectada);
 					}
 					free(datos->datos);
 					free(datos);
@@ -240,7 +241,7 @@ void boot(){
 }
 
 void interrumpir(TCB_struct * tcb, int dirSyscall){
-	list_add(BLOCK->prioridad_1, tcb);
+	list_add(BLOCK.prioridad_1, tcb);
 	agregar_hilo(SYS_CALL, *tcb);
 	//Esperar a que haya alguna cpu libre
 	ejecutarSysCall(dirSyscall);
@@ -258,7 +259,7 @@ void ejecutarSysCall(int dirSyscall){
 	tcb_km.P = dirSyscall;
 
 	//TODO: se envia a ejecutar el tcb a alguna cpu libre
-	agregar_hilo(BLOCK->prioridad_0, tcb_km);
+	agregar_hilo(BLOCK.prioridad_0, tcb_km);
 
 	tcb_user->registrosProgramacion = tcb_km.registrosProgramacion;
 	//queue_pop(BLOCK.prioridad_1);
@@ -353,8 +354,7 @@ int es_CPU(int socket){
 		return estructura.socket_CPU == socket;
 	}
 
-	void * elemento = list_find(CPU_list, (void*)tiene_mismo_socket);
-	return (elemento != NULL);
+	return list_any_satisfy(CPU_list, (void*)tiene_mismo_socket);
 }
 
 
@@ -385,4 +385,29 @@ void abortar(TCB_struct* tcb){
 	sacar_de_ejecucion(tcb);
 	agregar_hilo(EXIT, *tcb);
 	//LOGUEAR que tuvo que abortar el hilo
+}
+
+void enviar_a_ejecucion(TCB_struct * tcb){
+	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
+	int op = ejecutar;
+	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
+	memcpy(mensaje, &op, sizeof(int));
+	memcpy(mensaje + sizeof(int), tcb, sizeof(TCB_struct));
+	enviar_datos(cpu->socket_CPU, mensaje);
+}
+
+void lodear(int PID){
+	TCB_struct * tcb = malloc(sizeof(TCB_struct));
+	tcb->KM = 0;
+	tcb->M = 0;
+	tcb->P = 0;
+	tcb->PID = PID;
+	tcb->S = 0;
+	tcb->TID = obtener_TID();
+	tcb->X = 0;
+
+	queue_push(NEW, tcb);
+	queue_pop(NEW);
+	queue_push(EXIT, tcb);
+	free(tcb);
 }

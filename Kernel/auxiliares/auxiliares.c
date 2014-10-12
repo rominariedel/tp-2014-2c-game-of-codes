@@ -22,11 +22,11 @@ void crear_colas(){
 
 	READY.prioridad_0 = queue_create();
 	READY.prioridad_1 = queue_create();
-	BLOCK->prioridad_0 = queue_create();
+//	BLOCK.prioridad_0 = queue_create();
 
 	SYS_CALL = queue_create();
 
-	BLOCK->prioridad_1 = list_create();
+//	BLOCK.prioridad_1 = list_create();
 	EXEC = list_create();
 	CPU_list = list_create();
 	consola_list = list_create();
@@ -48,3 +48,11 @@ void * extraer_syscalls(){
 	return syscalls;
 }
 
+void mover_a_exit(TCB_struct * tcb){
+	queue_push(EXIT, tcb);
+}
+
+
+bool CPU_esta_libre(struct_CPU cpu){
+	return cpu.bit_estado;
+}

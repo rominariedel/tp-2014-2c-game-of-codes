@@ -15,8 +15,7 @@
 #include"sockets.h"
 #include<commons/collections/queue.h>
 #include <sys/select.h>
-
-
+#include<cspecs/cspec.h>
 /*ESTRUCTURAS*/
 
 typedef struct {
@@ -38,6 +37,7 @@ typedef struct {
 	int S;
 	reg_programacion registrosProgramacion;
 }TCB_struct;
+
 typedef struct cola{
 	TCB_struct TCB;
 	struct cola * siguiente_TCB;
@@ -54,7 +54,6 @@ typedef struct{
 	int PID;
 } struct_consola;
 
-
 typedef struct {
 	t_queue * prioridad_0;
 	t_queue * prioridad_1;
@@ -65,9 +64,14 @@ typedef struct {
 	t_list * prioridad_1;
 }t_lista_prioridades;
 
+typedef struct {
+	int id_recurso;
+	TCB_struct tcb;
+} bloqueado;
+
 t_colas_prioridades READY;
 t_queue * NEW;
-t_lista_prioridades * BLOCK;
+t_lista_prioridades BLOCK;
 t_list * EXEC;
 t_queue * SYS_CALL;
 t_queue * EXIT;
@@ -95,6 +99,6 @@ int obtener_PID();
 TCB_struct * deserializar_TCB(char * datos);
 void crear_colas();
 void * extraer_syscalls();
-
+bool CPU_esta_libre(struct_CPU cpu);
 
 #endif /* AUXILIARES_H_ */

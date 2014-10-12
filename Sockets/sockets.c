@@ -61,21 +61,21 @@ int crear_servidor(char * PUERTO, int backlog){
 
 int crear_cliente(char* IP, char * PUERTO){
 	struct addrinfo hints;
-		struct addrinfo *serverInfo;
+	struct addrinfo *serverInfo;
 
-		memset(&hints, 0, sizeof(hints));
-		hints.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
-		hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
+	hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
 
-		getaddrinfo(IP, PUERTO, &hints, &serverInfo);	// Carga en serverInfo los datos de la conexion
+	getaddrinfo(IP, PUERTO, &hints, &serverInfo);	// Carga en serverInfo los datos de la conexion
 
 
-		int serverSocket;
-		serverSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
+	int serverSocket;
+	serverSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 
-		connect(serverSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
-		freeaddrinfo(serverInfo);
-		return serverSocket;
+	connect(serverSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
+	freeaddrinfo(serverInfo);
+	return serverSocket;
 }
 
 int recibir_conexion(int socket){

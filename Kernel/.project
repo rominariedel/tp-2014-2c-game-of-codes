@@ -3,7 +3,6 @@
 	<name>Kernel</name>
 	<comment></comment>
 	<projects>
-		<project>Sockets</project>
 		<project>commons</project>
 	</projects>
 	<buildSpec>
