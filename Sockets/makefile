@@ -4,11 +4,10 @@
 
 -include ../makefile.init
 
-RM := rm
+RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Debug/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -23,26 +22,27 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: MSP
-
-dependents:
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
+all: libSockets.so
 
 # Tool invocations
-MSP: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so
+libSockets.so: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug" -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons" -o "MSP" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -shared -o "libSockets.so" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) MSP
+	-$(RM) $(OBJS)$(C_DEPS)$(LIBRARIES) libSockets.so
 	-@echo ' '
+
+install: all
+	sudo cp libSockets.so /usr/lib
+	sudo cp sockets.h /usr/include
+	make clean
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
 
 -include ../makefile.targets

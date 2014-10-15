@@ -22,29 +22,48 @@ void crear_colas(){
 
 	READY.prioridad_0 = queue_create();
 	READY.prioridad_1 = queue_create();
-	BLOCK->prioridad_0 = queue_create();
+	BLOCK.prioridad_0 = queue_create();
 
 	SYS_CALL = queue_create();
 
-	BLOCK->prioridad_1 = list_create();
+	BLOCK.prioridad_1 = list_create();
 	EXEC = list_create();
 	CPU_list = list_create();
 	consola_list = list_create();
 }
 
-
-int tamanio_syscalls(void* syscalls){
-	int offset = ftell(syscalls);
-	fseek(syscalls, offset, SEEK_SET);
-	return sizeof(syscalls);
+void free_colas(){
+	queue_destroy(NEW);
+	queue_destroy(EXIT);
 }
 
-void * extraer_syscalls(){
+long tamanio_syscalls(FILE* syscalls){
+	fseek(syscalls, 0, SEEK_END);
+	return ftell(syscalls);
+}
+
+char * extraer_syscalls(){
 	FILE* archivo_syscalls = fopen(SYSCALLS, "read");
-	int tamanio = sizeof(archivo_syscalls);
-	void * syscalls = malloc(tamanio);
-	memcpy(syscalls, archivo_syscalls, tamanio);
+	tamanio_codigo_syscalls = tamanio_syscalls(archivo_syscalls);
+	char * syscalls = malloc(tamanio_codigo_syscalls);
+	fread((void*) syscalls, 1, tamanio_codigo_syscalls, archivo_syscalls);
 	fclose(archivo_syscalls);
 	return syscalls;
+}
+
+void mover_a_exit(TCB_struct * tcb){
+	queue_push(EXIT, tcb);
+}
+
+
+bool CPU_esta_libre(struct_CPU cpu){
+	return cpu.bit_estado;
+}
+
+
+void planificar(TCB_struct tcb){
+	queue_push(NEW, &tcb);
+	queue_pop(NEW);
+	queue_push(EXIT, &tcb);
 }
 

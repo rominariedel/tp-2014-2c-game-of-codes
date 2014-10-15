@@ -24,7 +24,7 @@ enum mensajes{
 	ejecucion_abortada = 3,
 	imprimir_en_pantalla = 4,
 	ingresar_cadena = 5,
-
+	ejecutar = 6,
 	//Mensajes recibidos
 
 	finaliza_quantum = 10,
@@ -46,28 +46,33 @@ enum mensajes{
 
 
 /*FUNCIONES*/
+void abortar(TCB_struct*); //VER
 
+void guardar_en_memoria(char*);
+void loader();
 void boot();
 void obtenerDatosConfig(char**);
-void agregar_hilo(t_queue* , TCB_struct);
-int solicitar_segmento(int mensaje[2]);
-int tamanio_syscalls(void*);
-void escribir_memoria(int, int, int, void*);
+void agregar_hilo(t_queue* , TCB_struct); //VER
+void boot();
+void crear_hilo(TCB_struct);
 void ejecutarSysCall(int dirSyscall);
 int es_CPU(int socket);
-void finalizo_quantum(TCB_struct*);
-void sacar_de_ejecucion(TCB_struct *);
+void escribir_memoria(int, int, int, void*);
 void finalizo_ejecucion(TCB_struct*);
-void abortar(TCB_struct*);
+void finalizo_quantum(TCB_struct*);
 void interrumpir(TCB_struct*, int);
-void crear_hilo(TCB_struct);
+void obtenerDatosConfig(char**);
+void sacar_de_ejecucion(TCB_struct *);
+int solicitar_segmento(int, int);
 
 int main(int argc, char ** argv){
 
+	printf("KERNEL\n");
 	crear_colas();
 	obtenerDatosConfig(argv);
 	TID = 0;
 	PID = 0;
+	loader();
 	boot();
 
 
@@ -85,28 +90,38 @@ void obtenerDatosConfig(char ** argv){
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 }
 
+void loader(){
+
+	TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
+
+	char * syscalls = extraer_syscalls();
+
+	guardar_en_memoria((char*)syscalls);
+
+	//nuevoTCB->P = segmento_codigo;
+	//nuevoTCB->X = segmento_stack;
+	//nuevoTCB->S = segmento_stack;
+	//TODO: inicializar los registros de programacion
+
+	agregar_hilo(NEW , *nuevoTCB);
+}
+
+
 void boot(){
 
+	char * syscalls = extraer_syscalls();
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
 
-	void * syscalls = extraer_syscalls();
-	int mensaje_codigo[2];
-	mensaje_codigo[0] = pid_KM_boot;
-	mensaje_codigo[1] = tamanio_syscalls(syscalls);
-
-	int base_segmento_codigo = solicitar_segmento(mensaje_codigo);
+	int base_segmento_codigo = solicitar_segmento(pid_KM_boot, tamanio_codigo_syscalls);
 	//TODO: validar la base del segmento
-	escribir_memoria(pid_KM_boot, base_segmento_codigo, mensaje_codigo[1], syscalls);
+	escribir_memoria(pid_KM_boot, base_segmento_codigo, (int)tamanio_codigo_syscalls, (void*)syscalls);
 	free(syscalls);
 
-	int mensaje_stack[2];
-	mensaje_stack[0] = pid_KM_boot;
-	mensaje_stack[1] = TAMANIO_STACK;
-	int base_segmento_stack = solicitar_segmento(mensaje_stack);
+	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
 	//TODO: validar la base del stack
 	tcb_km.KM = 1;
 	tcb_km.M = base_segmento_codigo;
-	tcb_km.tamanioSegmentoCodigo = mensaje_codigo[1];
+	tcb_km.tamanioSegmentoCodigo = tamanio_codigo_syscalls;
 	tcb_km.P = 0;
 	tcb_km.PID = pid_KM_boot;
 	tcb_km.S = base_segmento_stack;
@@ -114,7 +129,7 @@ void boot(){
 	tcb_km.X = base_segmento_stack;
 	//TODO: inicializar los registros de programacion
 
-	queue_push(BLOCK->prioridad_0, (void *) &tcb_km);
+	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
 
 	int socket_gral = crear_servidor(PUERTO,backlog);
 	//TODO: validar socket
@@ -148,21 +163,21 @@ void boot(){
 					modulo_conectado = datos->codigo_operacion;
 
 					if(modulo_conectado == soy_consola){
-						struct_consola consola_conectada;
+						struct_consola * consola_conectada = malloc(sizeof(struct_consola));
 						int pid = obtener_PID();
-						consola_conectada.PID = pid;
-						consola_conectada.socket_consola = socket_conectado;
-						list_add(consola_list, &consola_conectada);
+						consola_conectada->PID = pid;
+						consola_conectada->socket_consola = socket_conectado;
+						list_add(consola_list, consola_conectada);
 						//loader(consola_conectada); El PID ya esta asignado y es el que tiene que usar el
 						//loader para crear el TCB
 
 
 					}else if(modulo_conectado == soy_CPU){
-						struct_CPU cpu_conectada;
-						cpu_conectada.PID = -1;
-						cpu_conectada.bit_estado = libre;
-						cpu_conectada.socket_CPU = socket_conectado;
-						list_add(CPU_list, &cpu_conectada);
+						struct_CPU* cpu_conectada = malloc(sizeof(struct_CPU));
+						cpu_conectada->PID = -1;
+						cpu_conectada->bit_estado = libre;
+						cpu_conectada->socket_CPU = socket_conectado;
+						list_add(CPU_list, cpu_conectada);
 					}
 					free(datos->datos);
 					free(datos);
@@ -240,7 +255,7 @@ void boot(){
 }
 
 void interrumpir(TCB_struct * tcb, int dirSyscall){
-	list_add(BLOCK->prioridad_1, tcb);
+	list_add(BLOCK.prioridad_1, tcb);
 	agregar_hilo(SYS_CALL, *tcb);
 	//Esperar a que haya alguna cpu libre
 	ejecutarSysCall(dirSyscall);
@@ -258,7 +273,7 @@ void ejecutarSysCall(int dirSyscall){
 	tcb_km.P = dirSyscall;
 
 	//TODO: se envia a ejecutar el tcb a alguna cpu libre
-	agregar_hilo(BLOCK->prioridad_0, tcb_km);
+	agregar_hilo(BLOCK.prioridad_0, tcb_km);
 
 	tcb_user->registrosProgramacion = tcb_km.registrosProgramacion;
 	//queue_pop(BLOCK.prioridad_1);
@@ -268,11 +283,8 @@ void ejecutarSysCall(int dirSyscall){
 void crear_hilo(TCB_struct tcb){
 
 	TCB_struct nuevoTCB;
-	int mensaje[2];
-	mensaje[0] = tcb.PID;
-	mensaje[1] = TAMANIO_STACK;
 
-	int base_stack = solicitar_segmento(mensaje);
+	int base_stack = solicitar_segmento(tcb.PID, TAMANIO_STACK);
 
 
 	nuevoTCB.PID = tcb.PID;
@@ -302,11 +314,11 @@ void planificador(){
 
 /*Esta operacion le solicita a la MSP un segmento, retorna la direccion base del
  * segmento reservado*/
-int solicitar_segmento(int mensaje[2]){
+int solicitar_segmento(int pid, int tamanio){
 
 	char * datos = malloc(2 * sizeof(int));
-	memcpy(datos, &mensaje[0], sizeof(int));
-	memcpy(datos + sizeof(int), &mensaje[1], sizeof(int));
+	memcpy(datos, &pid, sizeof(int));
+	memcpy(datos + sizeof(int), &tamanio, sizeof(int));
 
 	t_datosAEnviar * paquete = crear_paquete(reservar_segmento, (void*) datos, 2*sizeof(int));
 
@@ -314,11 +326,11 @@ int solicitar_segmento(int mensaje[2]){
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
 
-	int dir_base =(int) malloc(sizeof(int));
-	memcpy(&dir_base, respuesta->datos, sizeof(int));
+	int * dir_base = malloc(sizeof(int));
+	memcpy(dir_base, respuesta->datos, sizeof(int));
 	//TODO: validar si no hay violacion de segmento
 
-	return dir_base;
+	return *dir_base;
 }
 
 
@@ -345,6 +357,22 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
 }
 
+void guardar_en_memoria(char *path){
+
+	TCB_struct nuevoTCB;
+	int tid = obtener_TID();
+	int pid = obtener_PID();
+
+	nuevoTCB.PID = pid;
+	nuevoTCB.TID = tid;
+
+
+	//int segmento_codigo = solicitar_segmento(nuevoTCB.PID, tamanio_syscalls);
+
+	//int segmento_stack  = solicitar_segmento(nuevoTCB.PID, TAMANIO_STACK);
+
+	//escribir_memoria(nuevoTCB.PID,segmento_codigo, tamanio_syscalls, (void*)path );
+}
 
 
 int es_CPU(int socket){
@@ -353,8 +381,7 @@ int es_CPU(int socket){
 		return estructura.socket_CPU == socket;
 	}
 
-	void * elemento = list_find(CPU_list, (void*)tiene_mismo_socket);
-	return (elemento != NULL);
+	return list_any_satisfy(CPU_list, (void*)tiene_mismo_socket);
 }
 
 
@@ -385,4 +412,13 @@ void abortar(TCB_struct* tcb){
 	sacar_de_ejecucion(tcb);
 	agregar_hilo(EXIT, *tcb);
 	//LOGUEAR que tuvo que abortar el hilo
+}
+
+void enviar_a_ejecucion(TCB_struct * tcb){
+	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
+	int op = ejecutar;
+	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
+	memcpy(mensaje, &op, sizeof(int));
+	memcpy(mensaje + sizeof(int), tcb, sizeof(TCB_struct));
+	enviar_datos(cpu->socket_CPU, mensaje);
 }
