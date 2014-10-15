@@ -47,6 +47,8 @@ enum mensajes{
 
 /*FUNCIONES*/
 
+void guardar_en_memoria(char);
+void loader();
 void boot();
 void obtenerDatosConfig(char**);
 void agregar_hilo(t_queue* , TCB_struct);
@@ -69,6 +71,7 @@ int main(int argc, char ** argv){
 	obtenerDatosConfig(argv);
 	TID = 0;
 	PID = 0;
+	loader();
 	boot();
 
 
@@ -85,6 +88,21 @@ void obtenerDatosConfig(char ** argv){
 	SYSCALLS = config_get_string_value(configuracion, "SYSCALLS");
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 }
+
+void loader(){
+
+	void * syscalls = extraer_syscalls();
+
+	guardar_en_memoria(syscalls);
+
+	nuevoTCB.P = segmento_codigo;
+	nuevoTCB.X = segmento_stack;
+	nuevoTCB.S = segmento_stack;
+	//TODO: inicializar los registros de programacion
+
+	agregar_hilo(NEW ,nuevoTCB );
+}
+
 
 void boot(){
 
@@ -346,6 +364,29 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
 }
 
+void guardar_en_memoria(char path){
+
+	TCB_struct nuevoTCB;
+		int tid = obtener_TID();
+		int pid = obtener_PID();
+
+		nuevoTCB.PID = pid;
+		nuevoTCB.TID = tid;
+
+			int mensaje_codigo[2];
+			mensaje_codigo[0] = nuevoTCB.PID ;
+		    mensaje_codigo[1] = path;
+
+		int segmento_codigo = solicitar_segmento(mensaje_codigo);
+
+		int mensaje_stack[2];
+				mensaje_stack[0] = nuevoTCB.PID ;
+				mensaje_stack[1] = TAMANIO_STACK;
+
+		int segmento_stack  = solicitar_segmento(mensaje_stack);
+
+		escribir_memoria(nuevoTCB.PID,segmento_stack, mensaje_codigo[1],path );
+}
 
 
 int es_CPU(int socket){
