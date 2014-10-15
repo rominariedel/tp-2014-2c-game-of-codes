@@ -20,16 +20,16 @@ void crear_colas(){
 	NEW = queue_create();
 	EXIT = queue_create();
 
-	//READY.prioridad_0 = queue_create();
-	//READY.prioridad_1 = queue_create();
-//	BLOCK.prioridad_0 = queue_create();
+	READY.prioridad_0 = queue_create();
+	READY.prioridad_1 = queue_create();
+	BLOCK.prioridad_0 = queue_create();
 
-	//SYS_CALL = queue_create();
+	SYS_CALL = queue_create();
 
-//	BLOCK.prioridad_1 = list_create();
-	//EXEC = list_create();
-	//CPU_list = list_create();
-	//consola_list = list_create();
+	BLOCK.prioridad_1 = list_create();
+	EXEC = list_create();
+	CPU_list = list_create();
+	consola_list = list_create();
 }
 
 void free_colas(){
@@ -37,17 +37,16 @@ void free_colas(){
 	queue_destroy(EXIT);
 }
 
-int tamanio_syscalls(void* syscalls){
-	//int offset = ftell(syscalls);
-	//fseek(syscalls, offset, SEEK_SET);
-	return sizeof(syscalls);
+long tamanio_syscalls(FILE* syscalls){
+	fseek(syscalls, 0, SEEK_END);
+	return ftell(syscalls);
 }
 
-FILE * extraer_syscalls(){
+char * extraer_syscalls(){
 	FILE* archivo_syscalls = fopen(SYSCALLS, "read");
-	int tamanio = sizeof(archivo_syscalls);
-	FILE * syscalls = malloc(tamanio);
-	memcpy(syscalls, archivo_syscalls, tamanio);
+	tamanio_codigo_syscalls = tamanio_syscalls(archivo_syscalls);
+	char * syscalls = malloc(tamanio_codigo_syscalls);
+	fread((void*) syscalls, 1, tamanio_codigo_syscalls, archivo_syscalls);
 	fclose(archivo_syscalls);
 	return syscalls;
 }

@@ -46,8 +46,13 @@ enum mensajes{
 
 
 /*FUNCIONES*/
-void abortar(TCB_struct*);
-void agregar_hilo(t_queue* , TCB_struct);
+void abortar(TCB_struct*); //VER
+
+void guardar_en_memoria(char*);
+void loader();
+void boot();
+void obtenerDatosConfig(char**);
+void agregar_hilo(t_queue* , TCB_struct); //VER
 void boot();
 void crear_hilo(TCB_struct);
 void ejecutarSysCall(int dirSyscall);
@@ -67,6 +72,7 @@ int main(int argc, char ** argv){
 	obtenerDatosConfig(argv);
 	TID = 0;
 	PID = 0;
+	loader();
 	boot();
 
 
@@ -84,29 +90,38 @@ void obtenerDatosConfig(char ** argv){
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 }
 
+void loader(){
+
+	TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
+
+	char * syscalls = extraer_syscalls();
+
+	guardar_en_memoria((char*)syscalls);
+
+	//nuevoTCB->P = segmento_codigo;
+	//nuevoTCB->X = segmento_stack;
+	//nuevoTCB->S = segmento_stack;
+	//TODO: inicializar los registros de programacion
+
+	agregar_hilo(NEW , *nuevoTCB);
+}
+
+
 void boot(){
 
-	FILE * syscalls = extraer_syscalls();
+	char * syscalls = extraer_syscalls();
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
-	/*int mensaje_codigo[2];
-	mensaje_codigo[0] = pid_KM_boot;
-	mensaje_codigo[1] = tamanio_syscalls(syscalls);
-*/
-	int tamanio_sys = tamanio_syscalls(syscalls);
-	int base_segmento_codigo = solicitar_segmento(pid_KM_boot, tamanio_sys);
+
+	int base_segmento_codigo = solicitar_segmento(pid_KM_boot, tamanio_codigo_syscalls);
 	//TODO: validar la base del segmento
-	escribir_memoria(pid_KM_boot, base_segmento_codigo, tamanio_sys, syscalls);
+	escribir_memoria(pid_KM_boot, base_segmento_codigo, (int)tamanio_codigo_syscalls, (void*)syscalls);
 	free(syscalls);
 
-	/*int mensaje_stack[2];
-	mensaje_stack[0] = pid_KM_boot;
-	mensaje_stack[1] = TAMANIO_STACK;
-	*/
 	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
 	//TODO: validar la base del stack
 	tcb_km.KM = 1;
 	tcb_km.M = base_segmento_codigo;
-	tcb_km.tamanioSegmentoCodigo = tamanio_sys;
+	tcb_km.tamanioSegmentoCodigo = tamanio_codigo_syscalls;
 	tcb_km.P = 0;
 	tcb_km.PID = pid_KM_boot;
 	tcb_km.S = base_segmento_stack;
@@ -342,6 +357,22 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
 }
 
+void guardar_en_memoria(char *path){
+
+	TCB_struct nuevoTCB;
+	int tid = obtener_TID();
+	int pid = obtener_PID();
+
+	nuevoTCB.PID = pid;
+	nuevoTCB.TID = tid;
+
+
+	//int segmento_codigo = solicitar_segmento(nuevoTCB.PID, tamanio_syscalls);
+
+	//int segmento_stack  = solicitar_segmento(nuevoTCB.PID, TAMANIO_STACK);
+
+	//escribir_memoria(nuevoTCB.PID,segmento_codigo, tamanio_syscalls, (void*)path );
+}
 
 
 int es_CPU(int socket){
