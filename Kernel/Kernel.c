@@ -42,6 +42,7 @@ enum mensajes{
 	join = 22,
 	bloquear = 23,
 	despertar = 24,
+	path_codigo_consola = 25,
 };
 
 
@@ -346,14 +347,7 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 	t_datosAEnviar * paquete = crear_paquete(escribir_en_memoria, datos, (3*sizeof(int)) + sizeof(void*));
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
-
-	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
-
-	int rta =(int) malloc(sizeof(int));
-	memcpy(&rta, respuesta->datos, sizeof(int));
-
-
-	//TODO:validar si hay segmentation fault
+	free(paquete);
 
 }
 
