@@ -42,14 +42,13 @@ enum mensajes{
 	join = 22,
 	bloquear = 23,
 	despertar = 24,
+	path_codigo_consola = 25,
 };
 
 
 /*FUNCIONES*/
 void abortar(TCB_struct*); //VER
-
-void guardar_en_memoria(char*);
-void loader();
+void loader(struct_consola*);
 void boot();
 void obtenerDatosConfig(char**);
 void agregar_hilo(t_queue* , TCB_struct); //VER
@@ -72,7 +71,6 @@ int main(int argc, char ** argv){
 	obtenerDatosConfig(argv);
 	TID = 0;
 	PID = 0;
-	loader();
 	boot();
 
 
@@ -90,20 +88,46 @@ void obtenerDatosConfig(char ** argv){
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 }
 
-void loader(){
+void loader(struct_consola * consola_conectada){
 
-	TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
+		TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
 
-	char * syscalls = extraer_syscalls();
 
-	guardar_en_memoria((char*)syscalls);
+		int tid = obtener_TID();
 
-	//nuevoTCB->P = segmento_codigo;
-	//nuevoTCB->X = segmento_stack;
-	//nuevoTCB->S = segmento_stack;
-	//TODO: inicializar los registros de programacion
+		nuevoTCB->PID = consola_conectada->PID;
+		nuevoTCB->TID = tid;
 
-	agregar_hilo(NEW , *nuevoTCB);
+		t_datosAEnviar * datos_consola  = recibir_datos(consola_conectada->socket_consola);
+
+		if (datos_consola->codigo_operacion == path_codigo_consola){
+
+
+				int segmento_codigo = solicitar_segmento(nuevoTCB->PID,datos_consola->codigo_operacion);
+
+				int segmento_stack  = solicitar_segmento(nuevoTCB->PID, TAMANIO_STACK);
+
+				//TODO finalizar conexion si hubo un problema al solicitar un segmento.
+
+				escribir_memoria(nuevoTCB->PID,segmento_codigo,datos_consola->tamanio ,datos_consola->datos);
+
+				nuevoTCB->KM = 0;
+				nuevoTCB->M = segmento_codigo;
+				nuevoTCB->tamanioSegmentoCodigo = datos_consola->tamanio;
+				nuevoTCB->P = segmento_codigo;
+				nuevoTCB->X = segmento_stack;
+				nuevoTCB->S = segmento_stack;
+				nuevoTCB->registrosProgramacion.A = 0;
+				nuevoTCB->registrosProgramacion.B = 0;
+				nuevoTCB->registrosProgramacion.C = 0;
+				nuevoTCB->registrosProgramacion.D = 0;
+				nuevoTCB->registrosProgramacion.E = 0;
+
+				agregar_hilo(NEW , *nuevoTCB);
+
+
+		}
+
 }
 
 
@@ -355,23 +379,6 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes){
 
 	//TODO:validar si hay segmentation fault
 
-}
-
-void guardar_en_memoria(char *path){
-
-	TCB_struct nuevoTCB;
-	int tid = obtener_TID();
-	int pid = obtener_PID();
-
-	nuevoTCB.PID = pid;
-	nuevoTCB.TID = tid;
-
-
-	//int segmento_codigo = solicitar_segmento(nuevoTCB.PID, tamanio_syscalls);
-
-	//int segmento_stack  = solicitar_segmento(nuevoTCB.PID, TAMANIO_STACK);
-
-	//escribir_memoria(nuevoTCB.PID,segmento_codigo, tamanio_syscalls, (void*)path );
 }
 
 
