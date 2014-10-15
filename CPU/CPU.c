@@ -22,7 +22,7 @@
 #include <semaphore.h>
 #include <math.h>
 #include <error.h>
-#include <stdvector.h>
+
 
 
 /* Estructuras */
