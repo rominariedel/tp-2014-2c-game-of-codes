@@ -15,7 +15,7 @@
 #include"sockets.h"
 #include<commons/collections/queue.h>
 #include <sys/select.h>
-#include<cspecs/cspec.h>
+#include <cspecs/cspec.h>
 /*ESTRUCTURAS*/
 
 typedef struct {
@@ -98,7 +98,10 @@ int obtener_TID();
 int obtener_PID();
 TCB_struct * deserializar_TCB(char * datos);
 void crear_colas();
-void * extraer_syscalls();
+FILE * extraer_syscalls();
 bool CPU_esta_libre(struct_CPU cpu);
+void planificar(TCB_struct);
+void free_colas();
+int tamanio_syscalls(void*);
 
 #endif /* AUXILIARES_H_ */

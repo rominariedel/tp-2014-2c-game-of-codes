@@ -46,25 +46,23 @@ enum mensajes{
 
 
 /*FUNCIONES*/
-
-void boot();
-void obtenerDatosConfig(char**);
+void abortar(TCB_struct*);
 void agregar_hilo(t_queue* , TCB_struct);
-int solicitar_segmento(int mensaje[2]);
-int tamanio_syscalls(void*);
-void escribir_memoria(int, int, int, void*);
+void boot();
+void crear_hilo(TCB_struct);
 void ejecutarSysCall(int dirSyscall);
 int es_CPU(int socket);
-void finalizo_quantum(TCB_struct*);
-void sacar_de_ejecucion(TCB_struct *);
+void escribir_memoria(int, int, int, void*);
 void finalizo_ejecucion(TCB_struct*);
-void abortar(TCB_struct*);
+void finalizo_quantum(TCB_struct*);
 void interrumpir(TCB_struct*, int);
-void crear_hilo(TCB_struct);
-void lodear(int PID);
+void obtenerDatosConfig(char**);
+void sacar_de_ejecucion(TCB_struct *);
+int solicitar_segmento(int, int);
 
 int main(int argc, char ** argv){
 
+	printf("KERNEL\n");
 	crear_colas();
 	obtenerDatosConfig(argv);
 	TID = 0;
@@ -88,26 +86,27 @@ void obtenerDatosConfig(char ** argv){
 
 void boot(){
 
-	lodear(3);
-	void * syscalls = extraer_syscalls();
+	FILE * syscalls = extraer_syscalls();
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
-	int mensaje_codigo[2];
+	/*int mensaje_codigo[2];
 	mensaje_codigo[0] = pid_KM_boot;
 	mensaje_codigo[1] = tamanio_syscalls(syscalls);
-
-	int base_segmento_codigo = solicitar_segmento(mensaje_codigo);
+*/
+	int tamanio_sys = tamanio_syscalls(syscalls);
+	int base_segmento_codigo = solicitar_segmento(pid_KM_boot, tamanio_sys);
 	//TODO: validar la base del segmento
-	escribir_memoria(pid_KM_boot, base_segmento_codigo, mensaje_codigo[1], syscalls);
+	escribir_memoria(pid_KM_boot, base_segmento_codigo, tamanio_sys, syscalls);
 	free(syscalls);
 
-	int mensaje_stack[2];
+	/*int mensaje_stack[2];
 	mensaje_stack[0] = pid_KM_boot;
 	mensaje_stack[1] = TAMANIO_STACK;
-	int base_segmento_stack = solicitar_segmento(mensaje_stack);
+	*/
+	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
 	//TODO: validar la base del stack
 	tcb_km.KM = 1;
 	tcb_km.M = base_segmento_codigo;
-	tcb_km.tamanioSegmentoCodigo = mensaje_codigo[1];
+	tcb_km.tamanioSegmentoCodigo = tamanio_sys;
 	tcb_km.P = 0;
 	tcb_km.PID = pid_KM_boot;
 	tcb_km.S = base_segmento_stack;
@@ -269,11 +268,8 @@ void ejecutarSysCall(int dirSyscall){
 void crear_hilo(TCB_struct tcb){
 
 	TCB_struct nuevoTCB;
-	int mensaje[2];
-	mensaje[0] = tcb.PID;
-	mensaje[1] = TAMANIO_STACK;
 
-	int base_stack = solicitar_segmento(mensaje);
+	int base_stack = solicitar_segmento(tcb.PID, TAMANIO_STACK);
 
 
 	nuevoTCB.PID = tcb.PID;
@@ -303,11 +299,11 @@ void planificador(){
 
 /*Esta operacion le solicita a la MSP un segmento, retorna la direccion base del
  * segmento reservado*/
-int solicitar_segmento(int mensaje[2]){
+int solicitar_segmento(int pid, int tamanio){
 
 	char * datos = malloc(2 * sizeof(int));
-	memcpy(datos, &mensaje[0], sizeof(int));
-	memcpy(datos + sizeof(int), &mensaje[1], sizeof(int));
+	memcpy(datos, &pid, sizeof(int));
+	memcpy(datos + sizeof(int), &tamanio, sizeof(int));
 
 	t_datosAEnviar * paquete = crear_paquete(reservar_segmento, (void*) datos, 2*sizeof(int));
 
@@ -315,11 +311,11 @@ int solicitar_segmento(int mensaje[2]){
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
 
-	int dir_base =(int) malloc(sizeof(int));
-	memcpy(&dir_base, respuesta->datos, sizeof(int));
+	int * dir_base = malloc(sizeof(int));
+	memcpy(dir_base, respuesta->datos, sizeof(int));
 	//TODO: validar si no hay violacion de segmento
 
-	return dir_base;
+	return *dir_base;
 }
 
 
@@ -394,20 +390,4 @@ void enviar_a_ejecucion(TCB_struct * tcb){
 	memcpy(mensaje, &op, sizeof(int));
 	memcpy(mensaje + sizeof(int), tcb, sizeof(TCB_struct));
 	enviar_datos(cpu->socket_CPU, mensaje);
-}
-
-void lodear(int PID){
-	TCB_struct * tcb = malloc(sizeof(TCB_struct));
-	tcb->KM = 0;
-	tcb->M = 0;
-	tcb->P = 0;
-	tcb->PID = PID;
-	tcb->S = 0;
-	tcb->TID = obtener_TID();
-	tcb->X = 0;
-
-	queue_push(NEW, tcb);
-	queue_pop(NEW);
-	queue_push(EXIT, tcb);
-	free(tcb);
 }

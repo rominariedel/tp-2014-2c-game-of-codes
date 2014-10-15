@@ -2,7 +2,11 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
-USER_OBJS :=
+# Add inputs and outputs from these tool invocations to the build variables 
+O_SRCS += \
+../Default/Kernel.o \
+../Default/tests.o 
 
-LIBS := -lcspecs -lSockets -lcommons
+
+# Each subdirectory must supply rules for building sources it contributes
 

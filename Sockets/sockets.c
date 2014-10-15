@@ -76,7 +76,7 @@ int crear_cliente(char* IP, char * PUERTO){
 	connect(serverSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
 	freeaddrinfo(serverInfo);
 	return serverSocket;
-}
+ }
 
 int recibir_conexion(int socket){
 	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
