@@ -22,7 +22,7 @@
 #include <semaphore.h>
 #include <math.h>
 #include <error.h>
-#include <stdvector.h>
+//#include <stdvector.h>
 
 
 /* Estructuras */
@@ -33,7 +33,7 @@ typedef struct {
 	int KM;
 	int baseSegmentoCodigo;
 	int tamanioSegmentoCodigo;
-	int* punteroInstruccion;
+	int punteroInstruccion;
 	int baseStack;
 	int cursorStack;
 	int registrosProgramacion[5];
@@ -45,17 +45,17 @@ int TIDactual;
 int KMactual;   //KM == 1 el programa puede ejecutar las instrucciones protegidas. esta en modo kernel.
 int baseSegmentoCodigoActual;
 int tamanioSegmentoCodigoActual;
-int* punteroInstruccionActual;
+int punteroInstruccionActual;
 int baseStackActual;
 int cursorStackActual;
 
 /*Registros CPU*/
-char* A;
-char* B;
-char* C;
-char* D;
-char* E;
-char* F;
+int A;
+int B;
+int C;
+int D;
+int E;
+int F;
 
 /* Variables Globales */
 int kernelSocket;
@@ -89,7 +89,7 @@ int actualizarTCB();
 void ejecutarInstruccion(int);
 void devolverTCBactual();
 void limpiarRegistros();
-
+void recibirSuperMensaje(int superMensaje[12]);
 /*Funciones MSP*/
 int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroAInstruccion);
 void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
@@ -110,7 +110,7 @@ char* DECR(char* registro);
 char* COMP(char* registro1, char* registro2);
 char* CGEQ(char* registro1, char* registro2);
 char* CLEQ(char* registro1, char* registro2);
-char* GOTO(char* registro);
+int * GOTO(int* registro);
 void JMPZ(int nro, char* registro);
 void INTE(int* direccion);
 void FLCL();
@@ -141,41 +141,41 @@ enum mensajesMSP{
 };
 
 enum instruccionesCPU{
-	LOAD,
-	GETM,
-	MOVR,
-	ADDR,
-	SUBR,
-	MULR,
-	MODR,
-	DIVR,
-	INCR,
-	DECR,
-	COMP,
-	CGEQ,
-	CLEQ,
-	GOTO,
-	JMPZ,
-	INTE,
-	FLCL,
-	SHIF,
-	NOPP,
-	PUSH,
-	TAKE,
-	XXXX,
+	_LOAD,
+	_GETM,
+	_MOVR,
+	_ADDR,
+	_SUBR,
+	_MULR,
+	_MODR,
+	_DIVR,
+	_INCR,
+	_DECR,
+	_COMP,
+	_CGEQ,
+	_CLEQ,
+	_GOTO,
+	_JMPZ,
+	_INTE,
+	_FLCL,
+	_SHIF,
+	_NOPP,
+	_PUSH,
+	_TAKE,
+	_XXXX,
 };
 
 enum instruccionesProtegidas{
-	MALC,
-	FREE,
-	INNN,
-	INNC,
-	OUTN,
-	OUTC,
-	CREA,
-	JOIN,
-	BLOCK,
-	WAKE,
+	_MALC,
+	_FREE,
+	_INNN,
+	_INNC,
+	_OUTN,
+	_OUTC,
+	_CREA,
+	_JOIN,
+	_BLOCK,
+	_WAKE,
 };
 
 
@@ -199,9 +199,9 @@ int main(int cantArgs, char** args){
 
 		//estoy a la espera de que el kernel me mande el TCB y el quantum
 		int recibidoTCBactual = recv(kernelSocket,superMensaje,sizeof(t_TCB),0);
-		int recibidoquantum = recv(kernelSocket,quantum,sizeof(int),0);
-		if (recibidoTCBactual == -1){error("error al recibir TCB");
-		if (recibidoquantum == -1){error("error al recibir quantum");
+		int recibidoquantum = recv(kernelSocket,&quantum,sizeof(int),0); //REVISAR
+		if (recibidoTCBactual == -1){perror("error al recibir TCB");
+		if (recibidoquantum == -1){perror("error al recibir quantum");
 		recibirSuperMensaje(superMensaje);
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
@@ -215,7 +215,7 @@ int main(int cantArgs, char** args){
 
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 
-			int proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(punteroInstruccionActual);
+			int proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(&punteroInstruccionActual);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
 
@@ -254,7 +254,7 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	IPMSP = config_get_string_value(configuracion, "IP_MSP");
 	PUERTOKERNEL = config_get_string_value(configuracion, "PUERTO_KERNEL");
 	IPKERNEL = config_get_string_value(configuracion, "IP_KERNEL");
-	RETARDO = config_get_string_value(configuracion, "RETARDO");
+	RETARDO = config_get_int_value(configuracion, "RETARDO");
 }
 /*
 void conectarConMSP()
@@ -312,26 +312,26 @@ void conectarConKernel()
 void abortarEjecucion(){
 	int mensaje[2];
 	mensaje[0]=  1; //abortar ejecucion, matar cpu
-	mensaje[1]= TCBactual;
+	//mensaje[1]= TCBactual; TCBactual no es un int. REVISAR
 	int status = send(kernelSocket,mensaje, sizeof(int[2]), 0);
 	if (status == -1){printf("No se pudo conectar con el Kernel");}
 
 }
 
 void cargarRegistrosCPU(){
-	*A = TCBactual -> registrosProgramacion[0];
-	*B = TCBactual -> registrosProgramacion[1];
-	*C = TCBactual -> registrosProgramacion[2];
-	*D = TCBactual -> registrosProgramacion[3];
-	*E = TCBactual -> registrosProgramacion[4];
+	A = TCBactual -> registrosProgramacion[0];
+	B = TCBactual -> registrosProgramacion[1];
+	C = TCBactual -> registrosProgramacion[2];
+	D = TCBactual -> registrosProgramacion[3];
+	E = TCBactual -> registrosProgramacion[4];
 }
 
 void actualizarRegistrosTCB(){
-	TCBactual -> registrosProgramacion[0] = *A;
-	TCBactual -> registrosProgramacion[1] = *B;
-	TCBactual -> registrosProgramacion[2] = *C;
-	TCBactual -> registrosProgramacion[3] = *D;
-	TCBactual -> registrosProgramacion[4] = *E;
+	TCBactual -> registrosProgramacion[0] = A;
+	TCBactual -> registrosProgramacion[1] = B;
+	TCBactual -> registrosProgramacion[2] = C;
+	TCBactual -> registrosProgramacion[3] = D;
+	TCBactual -> registrosProgramacion[4] = E;
 }
 
 void recibirSuperMensaje(int superMensaje[12]){
@@ -398,17 +398,17 @@ void devolverTCBactual(){
 void limpiarRegistros(){
 	TIDactual = 0;
 	KMactual = 0;
-	baseSegmentoCodigoActual = NULL;
+	baseSegmentoCodigoActual = 0;
 	tamanioSegmentoCodigoActual = 0;
-	punteroInstruccionActual = NULL;
-	baseStackActual = NULL;
-	cursorStackActual = NULL;
-	*A = 0;
-	*B = 0;
-	*C = 0;
-	*D = 0;
-	*E = 0;
-	*F = 0;
+	punteroInstruccionActual = 0;
+	baseStackActual = 0;
+	cursorStackActual = 0;
+	A = 0;
+	B = 0;
+	C = 0;
+	D = 0;
+	E = 0;
+	F = 0;
 }
 
 void ejecutarInstruccion(int proximaInstruccionAEjecutar){
@@ -424,7 +424,7 @@ int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroInstruccion){
 	mensaje[0]=  solicitarProximaInstruccionAEJecutar; //codigo de operacion 1 solicitar prox instruccion
 	mensaje[1]= *punteroInstruccion;
 	send(socketMSP,mensaje, sizeof(int[2]), 0);
-	int status = recv(socketMSP, &proximaInstruccionAEjecutar, sizeof(char), 0);
+	recv(socketMSP, &proximaInstruccionAEjecutar, sizeof(char), 0);
 	//me manda la instruccion a ejecutar en forma de numero, el valor de la instruccion en ASCII
 	return proximaInstruccionAEjecutar;
 }
@@ -436,7 +436,7 @@ void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 	mensaje[1]= PID;
 	mensaje[2]= tamanioSegmento;
 	send(socketMSP,mensaje, sizeof(int[3]), 0);
-	int status = recv(socketMSP, &nuevoSegmento, sizeof(char), 0);
+	recv(socketMSP, &nuevoSegmento, sizeof(char), 0);
 	return nuevoSegmento;
 }
 
@@ -445,10 +445,10 @@ void MSP_DestruirSegmento(int PID, void* segmento){
 	int mensaje[3];
 	mensaje[0]= destruirSegmento; //codigo de operacion 3 destruir segmento
 	mensaje[1]= PID;
-	mensaje[2]= segmento;
+	//mensaje[2]= segmento; REVISAR
 	send(socketMSP,mensaje, sizeof(int[3]), 0);
-	recv(socketMSP, confirmacion, sizeof(char), 0);
-	if(confirmacion == -1){error("no se pudo destruir el segmento");}
+	recv(socketMSP, &confirmacion, sizeof(char), 0); //REVISAR ESTO
+	if(confirmacion == -1){perror("no se pudo destruir el segmento");}
 }
 
 
@@ -478,8 +478,8 @@ char* SETM(int numero, char* registro1, char* registro2){
 }
 
 
-char* GETM(char* registro1, char* registro2){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	registro1 = &registro2;
+char GETM(char registro1, char* registro2){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
+	registro1 = *registro2;
 	return registro1;
 }
 
@@ -517,7 +517,7 @@ char* DIVR(char* registro1, char* registro2){
 	//en cuyo caso tira error de division por cero
 
 	if(*registro2 == 0){
-		error("division por cero");
+		perror("division por cero");
 	}
 	else {
 		*A = (*registro1) % (*registro2);
@@ -569,9 +569,9 @@ char* CLEQ(char* registro1, char* registro2){
 	return A;
 }
 
-char* GOTO(char* registro){
+int* GOTO(int * registro){
 	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
-	punteroInstruccionActual = &baseSegmentoCodigoActual + *registro;
+	punteroInstruccionActual = baseSegmentoCodigoActual + *registro;
 	return registro;
 }
 
@@ -581,7 +581,7 @@ void JMPZ(int direccion){
 	//El valor es el desplazamiento desde el inicio del programa.
 
 	if(A == 0){
-		GOTO(direccion);
+		GOTO(&direccion);
 	}
 }
 
@@ -590,7 +590,7 @@ void JPNZ(int direccion){
 	// El valor es el desplazamiento desde el inicio del programa.
 
 	if(A != 0){
-		GOTO(direccion);
+		GOTO(&direccion);
 	}
 }
 
@@ -656,9 +656,9 @@ void MALC(){
 	//almacena en el registro A. Crea en la MSP un nuevo segmento del tamaño especificado asociado
 	//al programa en ejecución.
 
-	void* cantidadMemoria = *A;
-	A = &cantidadMemoria;
-	MSP_CrearNuevoSegmento(PIDactual, cantidadMemoria);
+	int cantidadMemoria = *A;
+	int base_segmento = MSP_CrearNuevoSegmento(PIDactual, cantidadMemoria);
+	A = &base_segmento;
 
 }
 
