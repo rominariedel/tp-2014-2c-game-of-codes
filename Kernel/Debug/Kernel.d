@@ -1,5 +1,4 @@
-auxiliares/auxiliares.d: ../auxiliares/auxiliares.c \
- ../auxiliares/auxiliares.h \
+Kernel.d: ../Kernel.c ../auxiliares/auxiliares.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/config.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/node.h \

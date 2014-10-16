@@ -33,6 +33,7 @@
 								</option>
 								<option id="gnu.c.link.option.libs.393657901" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="cspecs"/>
+									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="Sockets"/>
 									<listOptionValue builtIn="false" value="commons"/>
 								</option>
@@ -83,10 +84,10 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Default">
+		<configuration configurationName="Release">
 			<resource resourceType="PROJECT" workspacePath="/Kernel"/>
 		</configuration>
-		<configuration configurationName="Release">
+		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/Kernel"/>
 		</configuration>
 		<configuration configurationName="Debug">

@@ -10,12 +10,46 @@
 
 #include<stdio.h>
 #include<stddef.h>
-#include "commons/config.h"
+#include <commons/config.h>
 #include<commons/collections/list.h>
-#include"sockets.h"
+#include <sockets.h>
 #include<commons/collections/queue.h>
 #include <sys/select.h>
 #include <cspecs/cspec.h>
+#include<commons/string.h>
+#include <pthread.h>
+
+enum mensajes{
+
+	//Mensajes enviados
+
+	reservar_segmento = 1,
+	escribir_en_memoria = 2,
+	ejecucion_abortada = 3,
+	imprimir_en_pantalla = 4,
+	ingresar_cadena = 5,
+	ejecutar = 6,
+	//Mensajes recibidos
+
+	finaliza_quantum = 10,
+	finaliza_ejecucion = 11,
+	ejecucion_erronea = 12,
+	desconexion = 13,
+	interrupcion = 14,
+	creacion_hilo = 15,
+	error_memoriaLlena = 16,
+	error_segmentationFault = 17,
+	soy_consola = 18,
+	soy_CPU = 19,
+	entrada_estandar = 20,
+	salida_estandar = 21,
+	join = 22,
+	bloquear = 23,
+	despertar = 24,
+	path_codigo_consola = 25,
+};
+
+
 /*ESTRUCTURAS*/
 
 typedef struct {
@@ -78,6 +112,8 @@ t_queue * EXIT;
 
 TCB_struct tcb_km;
 fd_set clientes_set;
+fd_set CPU_set;
+fd_set consola_set;
 t_list * CPU_list;
 t_list * consola_list;
 
@@ -93,6 +129,10 @@ int TAMANIO_STACK;
 int backlog;
 int socket_MSP;
 long tamanio_codigo_syscalls;
+int socket_gral;
+int descriptor_mas_alto_consola;
+int descriptor_mas_alto_cpu;
+
 
 int obtener_TID();
 int obtener_PID();
@@ -103,5 +143,12 @@ bool CPU_esta_libre(struct_CPU cpu);
 void planificar(TCB_struct);
 void free_colas();
 long tamanio_syscalls(FILE*);
-
+void abortar(TCB_struct*); //VER
+void crear_hilo(TCB_struct);
+//int es_CPU(int socket);
+void finalizo_ejecucion(TCB_struct*);
+void finalizo_quantum(TCB_struct*);
+void interrumpir(TCB_struct*, int);
+void planificador();
+struct_consola * obtener_consolaConectada(int);
 #endif /* AUXILIARES_H_ */
