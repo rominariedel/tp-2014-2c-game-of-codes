@@ -10,7 +10,6 @@
 #include <commons/string.h>
 #include <commons/log.h>
 #include <pthread.h>
-#include <string.h>
 #include <time.h>
 #include <stdint.h>
 #include <commons/config.h>
@@ -22,7 +21,6 @@
 #include <semaphore.h>
 #include <math.h>
 #include <error.h>
-//#include <stdvector.h>
 
 
 
@@ -98,27 +96,27 @@ void MSP_DestruirSegmento(int PID, void* segmento);
 
 
 /*Instrucciones*/
-char* LOAD(char* registro, int numero);
-char* GETM(char* registro1, char* registro2);
-char* MOVR(char* registro1, char* registro2);
-char* ADDR(char* registro1, char* registro2);
-char* SUBR(char* registro1, char* registro2);
-char* MULR(char* registro1, char* registro2);
-char* MODR(char* registro1, char* registro2);
-char* DIVR(char* registro1, char* registro2);
-char* INCR(char* registro);
-char* DECR(char* registro);
-char* COMP(char* registro1, char* registro2);
-char* CGEQ(char* registro1, char* registro2);
-char* CLEQ(char* registro1, char* registro2);
-int * GOTO(int* registro);
-void JMPZ(int nro, char* registro);
+void LOAD(char registro, int numero);
+void GETM(char registro1, char registro2);
+void MOVR(char registro1, char registro2);
+void ADDR(char registro1, char registro2);
+void SUBR(char registro1, char registro2);
+void MULR(char registro1, char registro2);
+void MODR(char registro1, char registro2);
+void DIVR(char registro1, char registro2);
+void INCR(char registro);
+void DECR(char registro);
+void COMP(char registro1, char registro2);
+void CGEQ(char registro1, char registro2);
+void CLEQ(char registro1, char registro2);
+void GOTO(int* registro);
+void JMPZ(int nro, char registro);
 void INTE(int* direccion);
 void FLCL();
-void SHIF(int numero, char* registro);
+void SHIF(int numero, char registro);
 void NOPP();
 void PUSH(int numeroA, int numeroB);
-void TAKE(int numero, char* registro);
+void TAKE(int numero, char registro);
 void XXXX();
 
 /*Instrucciones Protegidas*/
@@ -446,7 +444,7 @@ void MSP_DestruirSegmento(int PID, void* segmento){
 	int mensaje[3];
 	mensaje[0]= destruirSegmento; //codigo de operacion 3 destruir segmento
 	mensaje[1]= PID;
-	//mensaje[2]= segmento; REVISAR
+//	mensaje[2]= segmento; REVISAR
 	send(socketMSP,mensaje, sizeof(int[3]), 0);
 	recv(socketMSP, &confirmacion, sizeof(char), 0); //REVISAR ESTO
 	if(confirmacion == -1){perror("no se pudo destruir el segmento");}
@@ -463,117 +461,101 @@ instrucción “MOVR”, es 1297045074 en un número entero, que en hexadecimal 
 binario es: 01001101 (M) 01001111 (O)01010110 (V) 01010010 (R).
 */
 
-char* LOAD(char* registro, int numero){ //Carga en el registro, el número dado.
-	*registro = numero;
-	return registro;
+void LOAD(char registro, int numero){ //Carga en el registro, el número dado.
+	registro = numero;
 }
 
-char* SETM(int numero, char* registro1, char* registro2){
+void SETM(int numero, char registro1, char registro2){
 	//Pone tantos bytes desde el segundo registro, hacia la memoria apuntada por el primer registro
 	//explicacion Gaston: pone en los n bytes del registro bx en la dirección de memoria apuntanda por el registro ax
 	//(ax = numero que es una posición de memoria)
 
 	//TODO: sigo sin entender.
-
-	return registro2;
 }
 
 
-char GETM(char registro1, char* registro2){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	registro1 = *registro2;
-	return registro1;
+void GETM(char registro1, char registro2){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
+	registro1 = registro2;
 }
 
 /*
  * la diferencia entre GETM y MOVR seria que en GETM , le estoy asignando al primer registro la direccion de memoria que tiene el segundo registro?
  */
 
-char* MOVR(char* registro1, char* registro2){ //Copia el valor del segundo registro hacia el primero
-	*registro1 = *registro2;
-	return registro1;
+void MOVR(char registro1, char registro2){ //Copia el valor del segundo registro hacia el primero
+	 registro1 =  registro2;
 }
 
-char* ADDR(char* registro1, char* registro2){ //Suma el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
-	*A = *registro1 + *registro2;
-	return A;
+void ADDR(char registro1, char registro2){ //Suma el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+	A = registro1 + registro2;
 }
 
-char* SUBR(char* registro1, char* registro2){ //Resta el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
-	*A = *registro1 - *registro2;
-	return A;
+void SUBR(char registro1, char registro2){ //Resta el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+	 A =  registro1 -  registro2;
 }
 
-char* MULR(char* registro1, char* registro2){ //Multiplica el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
-	*A = (*registro1) * (*registro2);
-	return A;
+void MULR(char registro1, char registro2){ //Multiplica el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+	 A = registro1 * registro2;
 }
 
-char* MODR(char* registro1, char* registro2){ //Obtiene el resto de la división del primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
-	*A = (*registro1) % (*registro2);
-	return A;
+void MODR(char registro1, char registro2){ //Obtiene el resto de la división del primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+	 A = ( registro1) % ( registro2);
 }
 
-char* DIVR(char* registro1, char* registro2){
+void DIVR(char registro1, char registro2){
 	//Divide el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A; a menos que el segundo operando sea 0,
 	//en cuyo caso tira error de division por cero
 
-	if(*registro2 == 0){
+	if( registro2 == 0){
 		perror("division por cero");
 	}
 	else {
-		*A = (*registro1) % (*registro2);
+		 A = ( registro1) % ( registro2);
 	}
-	return A;
 }
 
-char* INCR(char* registro){ //incrementar una unidad al registro
-	*registro =+ 1;
-	return registro;
+void INCR(char registro){ //incrementar una unidad al registro
+	 registro =+ 1;
 }
 
-char* DECR(char* registro){ //decrementar una unidad al registro
-	*registro =- 1;
-	return registro;
+void DECR(char registro){ //decrementar una unidad al registro
+	 registro =- 1;
 }
 
-char* COMP(char* registro1, char* registro2){
+void COMP(char registro1, char registro2){
 	//Compara si el primer registro es igual al segundo. De ser verdadero, se almacena el valor 1. De lo
 	//contrario el valor 0. El resultado de la operación se almacena en el registro A.
-	if(*registro1 == *registro2){
-		*A = 1;
+	if( registro1 ==  registro2){
+		 A = 1;
 	}
 	else{
-		*A = 0;
+		 A = 0;
 	}
-	return A;
 }
 
-char* CGEQ(char* registro1, char* registro2){
+void CGEQ(char registro1, char registro2){
 	//Compara si el primer registro es mayor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
-	if(*registro1 >= *registro2){
-		*A = 1;
+	if( registro1 >=  registro2){
+		 A = 1;
 	}
 	else{
-		*A = 0;
+		 A = 0;
 	}
-	return A;
 }
 
-char* CLEQ(char* registro1, char* registro2){
+void CLEQ(char registro1, char registro2){
 	//Compara si el primer registro es menor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
-	if(*registro1 <= *registro2){
-		*A = 1;
+	if( registro1 <=  registro2){
+		 A = 1;
 	}
 	else{
-	    *A = 0;
+	     A = 0;
 	}
-	return A;
 }
 
-int* GOTO(int * registro){
+void GOTO(char registro){
 	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
-	punteroInstruccionActual = baseSegmentoCodigoActual + *registro;
-	return registro;
+	punteroInstruccionActual = baseSegmentoCodigoActual +  registro;
 }
 
 
@@ -595,7 +577,7 @@ void JPNZ(int direccion){
 	}
 }
 
-void INTE(int* direccion){
+void INTE(int  direccion){
 
 	//INTERRUMPIR EJECUCION PROGRAMA
 	//BLOQUEAR HILO
@@ -614,16 +596,15 @@ void FLCL(){ //limpia registro de flags
 	//TODO: ver tema flags del CPU
 }
 
-char* SHIF(int numero, char* registro){
+void SHIF(int numero, char registro){
 	//Desplaza los bits del registro, tantas veces como se indique en el Número. De ser
 	//desplazamiento positivo, se considera hacia la derecha. De lo contrario hacia la izquierda.
 	if(numero < 0){
-		*registro = *registro << numero;
+		 registro =  registro << numero;
 	}
 	if(numero > 0){
-		*registro = *registro >> numero;
+		 registro =  registro >> numero;
 	}
-	return registro;
 }
 
 void NOPP(){
@@ -635,7 +616,7 @@ void PUSH(int numeroA, int numeroB){
 	//TODO: no entendi que hace
 }
 
-void TAKE(int numero, char* registro){
+void TAKE(int numero, char registro){
 	//Desapila los primeros bytes, indicado por el número, del stack hacia el registro. Modifica el valor del registro de stack de forma acorde.
 	//TODO:  no entiendo que seria apilar.
 }
@@ -657,7 +638,7 @@ void MALC(){
 	//almacena en el registro A. Crea en la MSP un nuevo segmento del tamaño especificado asociado
 	//al programa en ejecución.
 
-	int cantidadMemoria = *A;
+	int cantidadMemoria =  A;
 	int base_segmento = MSP_CrearNuevoSegmento(PIDactual, cantidadMemoria);
 	A = &base_segmento;
 
@@ -667,7 +648,7 @@ void FREE(){
 	//Libera la memoria apuntada por el registro A. Solo se podrá liberar memoria alocada por la
 	//instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.
 	//TODO:
-	MSP_DestruirSegmento(PIDactual, *A);
+	MSP_DestruirSegmento(PIDactual,  A);
 }
 
 void INNN(){
@@ -677,7 +658,7 @@ void INNN(){
 	int numero;
 	printf("Ingrese un numero entre –2.147.483.648 y 2.147.483.647");
 	scanf("%l", numero);
-	*A = numero;
+	 A = numero;
 }
 
 //TODO: a que refiere con invoca al servicio correspondiente en el proceso Kernel?
@@ -687,24 +668,24 @@ void INNC(){
 	//registro B. La misma será almacenada en la posición de memoria apuntada por el registro A.
 	//Invoca al servicio correspondiente en el proceso Kernel.
 	char cadena[];
-	printf("Ingrese una cadena no mas larga que %d", *B);
+	printf("Ingrese una cadena no mas larga que %d",  B);
 	scanf("%l", cadena);
-	*A = cadena;
+	 A = cadena;
 }
 
 void OUTN(){
 	//Imprime por consola del programa el número, con signo almacenado en el registro A. Invoca al
 	//servicio correspondiente en el proceso Kernel.
-	printf("el numero almacenado en el registro A es: %l", *A);
+	printf("el numero almacenado en el registro A es: %d",  A);
 }
 
 void OUTC(){
 	//Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
 	//encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
 	//proceso Kernel.
-	int tamanio = strlen(*A);
-	if(tamanio <= *B){
-		printf("La cadena apuntada por el registro A es: %l", *A);
+	int tamanio = strlen( A);
+	if(tamanio <=  B){
+		printf("La cadena apuntada por el registro A es: %d",  A);
 	}
 }
 
