@@ -209,7 +209,7 @@ int main(int cantArgs, char** args){
 
 		estaEjecutando = 1; //estado CPU
 
-		while(quantumActual<quantum)
+		while(quantumActual<quantum && KMactual==1)
 		{
 
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
@@ -232,10 +232,10 @@ int main(int cantArgs, char** args){
 
 			quantumActual++;
 
-			//TODO: considerar caso de que sea KM!!! no se tiene en cuenta el q
+
 		}
 
-		if(quantumActual == quantum){
+		if(quantumActual == quantum && KMactual==0){
 			/* 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
@@ -245,6 +245,7 @@ int main(int cantArgs, char** args){
 
 		}
 	}
+		return 0;
 }
 
 void cargarArchivoConfiguracion(int cantArgs, char** args){
@@ -555,16 +556,20 @@ void CLEQ(char registro1, char registro2){
 
 void GOTO(char registro){
 	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
-	punteroInstruccionActual = baseSegmentoCodigoActual +  registro;
+	santarAInstruccion(registro);
 }
 
+void saltarAInstruccion(int direccion){
+	punteroInstruccionActual = baseSegmentoCodigoActual +  direccion;
+}
 
 void JMPZ(int direccion){
 	//Altera el flujo de ejecución sólo si el valor del registro A es cero, para ejecutar la instrucción apuntada por la Dirección.
 	//El valor es el desplazamiento desde el inicio del programa.
 
 	if(A == 0){
-		GOTO(&direccion);
+
+		saltarAInstruccion(direccion);
 	}
 }
 
@@ -573,7 +578,7 @@ void JPNZ(int direccion){
 	// El valor es el desplazamiento desde el inicio del programa.
 
 	if(A != 0){
-		GOTO(&direccion);
+		saltarAInstruccion(direccion);
 	}
 }
 
@@ -639,8 +644,9 @@ void MALC(){
 	//al programa en ejecución.
 
 	int cantidadMemoria =  A;
-	int base_segmento = MSP_CrearNuevoSegmento(PIDactual, cantidadMemoria);
-	A = &base_segmento;
+	int* base_segmento = malloc(sizeof(int*));
+	base_segmento = MSP_CrearNuevoSegmento(PIDactual, cantidadMemoria);
+	A = *base_segmento;
 
 }
 
@@ -683,7 +689,7 @@ void OUTC(){
 	//Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
 	//encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
 	//proceso Kernel.
-	int tamanio = strlen( A);
+	int tamanio = strlen(A);
 	if(tamanio <=  B){
 		printf("La cadena apuntada por el registro A es: %d",  A);
 	}
