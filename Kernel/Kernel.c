@@ -26,18 +26,28 @@ void escribir_memoria(int, int, int, void*);
 void obtenerDatosConfig(char**);
 void sacar_de_ejecucion(TCB_struct *);
 int solicitar_segmento(int, int);
+void iniciar_semaforos();
 
 int main(int argc, char ** argv) {
 
-	printf("KERNEL\n");
+	printf("\n -------------  KERNEL  -------------\n");
+	printf("\n    iniciando...\n");
 	crear_colas();
-
+	iniciar_semaforos();
 	obtenerDatosConfig(argv);
 	TID = 0;
 	PID = 0;
-	boot();
+
+	pthread_t thread_boot;
+	pthread_create(&thread_boot, NULL, (void*) &boot, NULL );
 
 	return 0;
+}
+
+void iniciar_semaforos() {
+	sem_init(&sem_ready, 0, 0);
+	sem_init(&sem_CPU, 0, 0);
+	sem_init(&sem_syscalls, 0, 0);
 }
 
 void obtenerDatosConfig(char ** argv) {
@@ -104,6 +114,7 @@ void loader() {
 					nuevoTCB->registrosProgramacion.E = 0;
 
 					agregar_hilo(NEW, *nuevoTCB);
+					consola_conectada->cantidad_hilos = 1;
 				}
 			}
 		}
@@ -112,6 +123,8 @@ void loader() {
 }
 
 void boot() {
+
+	printf("\n    INICIANDO BOOT   \n");
 	char * syscalls = extraer_syscalls();
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
 
@@ -141,6 +154,8 @@ void boot() {
 
 	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
 
+	printf("Esperando conexiones...");
+
 	socket_gral = crear_servidor(PUERTO, backlog);
 	//TODO: validar socket
 
@@ -162,6 +177,7 @@ void boot() {
 			int pid = obtener_PID();
 			consola_conectada->PID = pid;
 			consola_conectada->socket_consola = socket_conectado;
+			consola_conectada->cantidad_hilos = 0;
 			if (list_is_empty(consola_list)) {
 				descriptor_mas_alto_consola = socket_conectado;
 				pthread_create(&thread_loader, NULL, (void*) &loader, NULL );
@@ -174,12 +190,14 @@ void boot() {
 			cpu_conectada->PID = -1;
 			cpu_conectada->bit_estado = libre;
 			cpu_conectada->socket_CPU = socket_conectado;
+			list_add(CPU_list, cpu_conectada);
+
+			sem_post(&sem_CPU);
 			if (list_is_empty(CPU_list)) {
 				descriptor_mas_alto_cpu = socket_conectado;
 				pthread_create(&thread_planificador, NULL,
 						(void*) &planificador, NULL );
 			}
-			list_add(CPU_list, cpu_conectada);
 		}
 
 		free(datos->datos);
@@ -233,6 +251,8 @@ void crear_hilo(TCB_struct tcb) {
 	reg_programacion nuevosRegistros = tcb.registrosProgramacion;
 	nuevoTCB.registrosProgramacion = nuevosRegistros;
 	agregar_hilo(READY.prioridad_1, nuevoTCB);
+
+
 }
 
 void agregar_hilo(t_queue * COLA, TCB_struct tcb) {

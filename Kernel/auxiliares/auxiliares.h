@@ -18,6 +18,7 @@
 #include <cspecs/cspec.h>
 #include<commons/string.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 enum mensajes{
 
@@ -50,7 +51,7 @@ enum mensajes{
 };
 
 
-/*ESTRUCTURAS*/
+/*          ESTRUCTURAS          */
 
 typedef struct {
 	int A;
@@ -86,6 +87,7 @@ typedef struct {
 typedef struct{
 	int socket_consola;
 	int PID;
+	int cantidad_hilos;
 } struct_consola;
 
 typedef struct {
@@ -102,6 +104,10 @@ typedef struct {
 	int id_recurso;
 	TCB_struct tcb;
 } bloqueado;
+
+
+
+/*        VARIABLES GLOBALES Y COLAS       */
 
 t_colas_prioridades READY;
 t_queue * NEW;
@@ -133,6 +139,13 @@ int socket_gral;
 int descriptor_mas_alto_consola;
 int descriptor_mas_alto_cpu;
 
+/*      SEMÁFOROS      */
+
+sem_t sem_ready;
+sem_t sem_CPU;
+sem_t sem_syscalls;
+
+/*       FUNCIONES        */
 
 int obtener_TID();
 int obtener_PID();
@@ -151,4 +164,6 @@ void finalizo_quantum(TCB_struct*);
 void interrumpir(TCB_struct*, int);
 void planificador();
 struct_consola * obtener_consolaConectada(int);
+
+
 #endif /* AUXILIARES_H_ */

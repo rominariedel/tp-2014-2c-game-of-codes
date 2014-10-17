@@ -145,6 +145,13 @@ struct_consola * obtener_consolaConectada(int socket_consola){
 	bool tiene_mismo_socket(struct_consola estructura){
 		return estructura.socket_consola == socket_consola;
 	}
-	return list_find(consola_list, (void*)&obtener_consolaConectada);
+	return list_find(consola_list, (void*)&tiene_mismo_socket);
 
+}
+
+struct_consola * obtener_consolaAsociada(int PID){
+	bool tiene_mismo_pid(struct_consola estructura){
+		return estructura.PID == PID;
+	}
+	return list_find(consola_list, (void*) tiene_mismo_pid);
 }
