@@ -153,5 +153,12 @@ struct_consola * obtener_consolaAsociada(int PID){
 	bool tiene_mismo_pid(struct_consola estructura){
 		return estructura.PID == PID;
 	}
-	return list_find(consola_list, (void*) tiene_mismo_pid);
+	return list_find(consola_list, (void*) &tiene_mismo_pid);
+}
+
+struct_bloqueado * obtener_bloqueado(int TID){
+	bool tiene_mismo_tid(struct_bloqueado estructura){
+		return estructura.tcb.TID == TID;
+	}
+	return list_find(BLOCK.prioridad_1, (void*)&tiene_mismo_tid);
 }

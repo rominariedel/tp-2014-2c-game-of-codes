@@ -103,8 +103,7 @@ typedef struct {
 typedef struct {
 	int id_recurso;
 	TCB_struct tcb;
-} bloqueado;
-
+} struct_bloqueado;
 
 
 /*        VARIABLES GLOBALES Y COLAS       */
@@ -117,6 +116,7 @@ t_queue * SYS_CALL;
 t_queue * EXIT;
 
 TCB_struct tcb_km;
+TCB_struct * tcb_ejecutandoSysCall;
 fd_set clientes_set;
 fd_set CPU_set;
 fd_set consola_set;
@@ -164,6 +164,7 @@ void finalizo_quantum(TCB_struct*);
 void interrumpir(TCB_struct*, int);
 void planificador();
 struct_consola * obtener_consolaConectada(int);
-
+struct_consola * obtener_consolaAsociada(int PID);
+struct_bloqueado * obtener_bloqueado(int TID);
 
 #endif /* AUXILIARES_H_ */

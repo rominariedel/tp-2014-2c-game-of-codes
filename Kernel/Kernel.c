@@ -21,13 +21,13 @@ void boot();
 void obtenerDatosConfig(char**);
 void agregar_hilo(t_queue*, TCB_struct); //VER
 void boot();
-void ejecutarSysCall(int dirSyscall);
+void ejecutarSysCall();
 void escribir_memoria(int, int, int, void*);
 void obtenerDatosConfig(char**);
 void sacar_de_ejecucion(TCB_struct *);
 int solicitar_segmento(int, int);
 void iniciar_semaforos();
-
+void enviar_a_ejecucion(TCB_struct *);
 int main(int argc, char ** argv) {
 
 	printf("\n -------------  KERNEL  -------------\n");
@@ -51,7 +51,6 @@ void iniciar_semaforos() {
 }
 
 void obtenerDatosConfig(char ** argv) {
-	puts(argv[1]);
 	t_config * configuracion = config_create(argv[1]);
 	PUERTO = config_get_string_value(configuracion, "PUERTO");
 	IP_MSP = config_get_string_value(configuracion, "IP_MSP");
@@ -207,29 +206,28 @@ void boot() {
 }
 
 void interrumpir(TCB_struct * tcb, int dirSyscall) {
-	list_add(BLOCK.prioridad_1, tcb);
 	agregar_hilo(SYS_CALL, *tcb);
-	//Esperar a que haya alguna cpu libre
-	ejecutarSysCall(dirSyscall);
+	struct_bloqueado tcb_bloqueado;
+	tcb_bloqueado.id_recurso = dirSyscall;
+	tcb_bloqueado.tcb = *tcb;
+	list_add(BLOCK.prioridad_1, &tcb_bloqueado);
+	sem_post(&sem_syscalls);
 }
 
-/* la SYS_CALL se ejecuta siempre que hay una CPU disponible y haya algun elemento en la cola de
- * SYS_CALL*/
+void ejecutarSysCall() {
+	while (1) {
+		sem_wait(&sem_syscalls);
+		tcb_ejecutandoSysCall = (TCB_struct*) queue_peek(SYS_CALL);
 
-void ejecutarSysCall(int dirSyscall) {
+		struct_bloqueado * tcb_bloqueado = obtener_bloqueado(tcb_ejecutandoSysCall->TID);
+		tcb_km.registrosProgramacion =
+				tcb_ejecutandoSysCall->registrosProgramacion;
+		tcb_km.PID = tcb_ejecutandoSysCall->PID;
 
-	TCB_struct * tcb_user = queue_peek(SYS_CALL);
-	tcb_km.registrosProgramacion = tcb_user->registrosProgramacion;
-	tcb_km.PID = tcb_user->PID;
+		tcb_km.P = tcb_bloqueado->id_recurso;
 
-	tcb_km.P = dirSyscall;
-
-	//TODO: se envia a ejecutar el tcb a alguna cpu libre
-	agregar_hilo(BLOCK.prioridad_0, tcb_km);
-
-	tcb_user->registrosProgramacion = tcb_km.registrosProgramacion;
-	//queue_pop(BLOCK.prioridad_1);
-	//TODO: re-planificar el tcb_user
+		enviar_a_ejecucion(&tcb_km);
+	}
 }
 
 void crear_hilo(TCB_struct tcb) {
@@ -251,7 +249,6 @@ void crear_hilo(TCB_struct tcb) {
 	reg_programacion nuevosRegistros = tcb.registrosProgramacion;
 	nuevoTCB.registrosProgramacion = nuevosRegistros;
 	agregar_hilo(READY.prioridad_1, nuevoTCB);
-
 
 }
 
@@ -300,16 +297,6 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
 
 }
 
-/*
- int es_CPU(int socket){
-
- bool tiene_mismo_socket(struct_CPU estructura){
- return estructura.socket_CPU == socket;
- }
-
- return list_any_satisfy(CPU_list, (void*)tiene_mismo_socket);
- }*/
-
 void finalizo_quantum(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
 	agregar_hilo(READY.prioridad_1, *tcb);
@@ -339,10 +326,38 @@ void abortar(TCB_struct* tcb) {
 }
 
 void enviar_a_ejecucion(TCB_struct * tcb) {
+	sem_wait(&sem_CPU);
+	list_add(EXEC, tcb);
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	int op = ejecutar;
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, &op, sizeof(int));
 	memcpy(mensaje + sizeof(int), tcb, sizeof(TCB_struct));
 	enviar_datos(cpu->socket_CPU, mensaje);
+}
+
+void enviarAExec() {
+
+	while (1) {
+		sem_wait(&sem_ready);
+		TCB_struct * tcb;
+		if (!queue_is_empty(READY.prioridad_0)) {
+			tcb = queue_pop(READY.prioridad_0);
+		} else {
+			tcb = queue_pop(READY.prioridad_1);
+		}
+		enviar_a_ejecucion(tcb);
+	}
+}
+
+/*El dispatcher se encarga tanto de las llamadas al sistema como de los procesos que estan en la cola de ready*/
+void dispatcher() {
+
+	pthread_t thread_ejecucionDeSyscalls;
+	pthread_create(&thread_ejecucionDeSyscalls, NULL, (void*) &ejecutarSysCall,
+			NULL );
+
+	pthread_t thread_flujoDeReadyAExec;
+	pthread_create(&thread_flujoDeReadyAExec, NULL, (void*) &enviarAExec,
+			NULL );
 }
