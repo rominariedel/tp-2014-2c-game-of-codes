@@ -6,6 +6,7 @@
  */
 
 #include "auxiliares/auxiliares.h"
+#include "auxiliares/variables_globales.h"
 
 #define pid_KM_boot 0
 
@@ -19,19 +20,19 @@ enum bit_de_estado {
 void loader();
 void boot();
 void obtenerDatosConfig(char**);
-void agregar_hilo(t_queue*, TCB_struct); //VER
 void boot();
-void ejecutarSysCall();
 void escribir_memoria(int, int, int, void*);
 void obtenerDatosConfig(char**);
 void sacar_de_ejecucion(TCB_struct *);
 int solicitar_segmento(int, int);
 void iniciar_semaforos();
 void enviar_a_ejecucion(TCB_struct *);
+void dispatcher();
+
 int main(int argc, char ** argv) {
 
 	printf("\n -------------  KERNEL  -------------\n");
-	printf("\n    iniciando...\n");
+	printf("    Iniciando...\n");
 	crear_colas();
 	iniciar_semaforos();
 	obtenerDatosConfig(argv);
@@ -39,19 +40,22 @@ int main(int argc, char ** argv) {
 	PID = 0;
 
 	pthread_t thread_boot;
+	pthread_t thread_dispatcher;
 	pthread_create(&thread_boot, NULL, (void*) &boot, NULL );
-
+	pthread_create(&thread_dispatcher, NULL, (void*) &dispatcher, NULL);
+	pthread_join(thread_boot, NULL );
+	pthread_join(thread_dispatcher, NULL);
+	config_destroy(configuracion);
 	return 0;
 }
 
 void iniciar_semaforos() {
-	sem_init(&sem_ready, 0, 0);
+	sem_init(&sem_procesoListo, 0, 0);
 	sem_init(&sem_CPU, 0, 0);
-	sem_init(&sem_syscalls, 0, 0);
 }
 
 void obtenerDatosConfig(char ** argv) {
-	t_config * configuracion = config_create(argv[1]);
+	configuracion = config_create(argv[1]);
 	PUERTO = config_get_string_value(configuracion, "PUERTO");
 	IP_MSP = config_get_string_value(configuracion, "IP_MSP");
 	PUERTO_MSP = config_get_string_value(configuracion, "PUERTO_MSP");
@@ -112,7 +116,7 @@ void loader() {
 					nuevoTCB->registrosProgramacion.D = 0;
 					nuevoTCB->registrosProgramacion.E = 0;
 
-					agregar_hilo(NEW, *nuevoTCB);
+					queue_push(NEW, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
 				}
 			}
@@ -125,6 +129,8 @@ void boot() {
 
 	printf("\n    INICIANDO BOOT   \n");
 	char * syscalls = extraer_syscalls();
+
+	printf("\n      CONECTANDO CON LA MSP\n");
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
 
 	int base_segmento_codigo = solicitar_segmento(pid_KM_boot,
@@ -206,28 +212,12 @@ void boot() {
 }
 
 void interrumpir(TCB_struct * tcb, int dirSyscall) {
-	agregar_hilo(SYS_CALL, *tcb);
+	queue_push(SYS_CALL, tcb);
 	struct_bloqueado tcb_bloqueado;
 	tcb_bloqueado.id_recurso = dirSyscall;
 	tcb_bloqueado.tcb = *tcb;
 	list_add(BLOCK.prioridad_1, &tcb_bloqueado);
-	sem_post(&sem_syscalls);
-}
-
-void ejecutarSysCall() {
-	while (1) {
-		sem_wait(&sem_syscalls);
-		tcb_ejecutandoSysCall = (TCB_struct*) queue_peek(SYS_CALL);
-
-		struct_bloqueado * tcb_bloqueado = obtener_bloqueado(tcb_ejecutandoSysCall->TID);
-		tcb_km.registrosProgramacion =
-				tcb_ejecutandoSysCall->registrosProgramacion;
-		tcb_km.PID = tcb_ejecutandoSysCall->PID;
-
-		tcb_km.P = tcb_bloqueado->id_recurso;
-
-		enviar_a_ejecucion(&tcb_km);
-	}
+	sem_post(&sem_procesoListo);
 }
 
 void crear_hilo(TCB_struct tcb) {
@@ -248,13 +238,12 @@ void crear_hilo(TCB_struct tcb) {
 	nuevoTCB.P = tcb.P;
 	reg_programacion nuevosRegistros = tcb.registrosProgramacion;
 	nuevoTCB.registrosProgramacion = nuevosRegistros;
-	agregar_hilo(READY.prioridad_1, nuevoTCB);
+	queue_push(READY.prioridad_1, &nuevoTCB);
+	sem_post(&sem_procesoListo);
 
-}
-
-void agregar_hilo(t_queue * COLA, TCB_struct tcb) {
-
-	queue_push(COLA, (void*) &tcb);
+	//Indico que la cantidad de hilos de un proceso aumentó
+	struct_consola * consola_asociada = obtener_consolaAsociada(tcb.PID);
+	consola_asociada->cantidad_hilos++;
 
 }
 
@@ -299,7 +288,8 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
 
 void finalizo_quantum(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
-	agregar_hilo(READY.prioridad_1, *tcb);
+	queue_push(READY.prioridad_1, tcb);
+	sem_post(&sem_procesoListo);
 
 }
 
@@ -310,18 +300,20 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
 	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*) es_TCB);
-	free(tcb_exec);
+	free(tcb_exec); //TODO: sacar de ejecucion, va a exit o a ready?
+
+	sem_post(&sem_CPU);
 
 }
 
 void finalizo_ejecucion(TCB_struct *tcb) {
 	sacar_de_ejecucion(tcb);
-	agregar_hilo(EXIT, *tcb);
+	queue_push(EXIT, tcb);
 }
 
 void abortar(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
-	agregar_hilo(EXIT, *tcb);
+	queue_push(EXIT, tcb);
 	//LOGUEAR que tuvo que abortar el hilo
 }
 
@@ -336,28 +328,34 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	enviar_datos(cpu->socket_CPU, mensaje);
 }
 
-void enviarAExec() {
-
-	while (1) {
-		sem_wait(&sem_ready);
-		TCB_struct * tcb;
-		if (!queue_is_empty(READY.prioridad_0)) {
-			tcb = queue_pop(READY.prioridad_0);
-		} else {
-			tcb = queue_pop(READY.prioridad_1);
-		}
-		enviar_a_ejecucion(tcb);
-	}
-}
-
 /*El dispatcher se encarga tanto de las llamadas al sistema como de los procesos que estan en la cola de ready*/
 void dispatcher() {
+	while (1) {
+		sem_wait(&sem_procesoListo);
 
-	pthread_t thread_ejecucionDeSyscalls;
-	pthread_create(&thread_ejecucionDeSyscalls, NULL, (void*) &ejecutarSysCall,
-			NULL );
+		if (!queue_is_empty(SYS_CALL)) {
+			tcb_ejecutandoSysCall = (TCB_struct*) queue_peek(SYS_CALL);
 
-	pthread_t thread_flujoDeReadyAExec;
-	pthread_create(&thread_flujoDeReadyAExec, NULL, (void*) &enviarAExec,
-			NULL );
+			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
+					tcb_ejecutandoSysCall->TID);
+			tcb_km.registrosProgramacion =
+					tcb_ejecutandoSysCall->registrosProgramacion;
+			tcb_km.PID = tcb_ejecutandoSysCall->PID;
+
+			tcb_km.P = tcb_bloqueado->id_recurso;
+
+			enviar_a_ejecucion(&tcb_km);
+
+		} else {
+			TCB_struct * tcb;
+			if (!queue_is_empty(READY.prioridad_0)) {
+				tcb = queue_pop(READY.prioridad_0);
+			} else {
+				tcb = queue_pop(READY.prioridad_1);
+			}
+			enviar_a_ejecucion(tcb);
+		}
+	}
+
 }
+

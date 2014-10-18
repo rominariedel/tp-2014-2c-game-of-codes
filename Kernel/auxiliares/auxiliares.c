@@ -6,6 +6,7 @@
  */
 
 #include "auxiliares.h"
+#include "variables_globales.h"
 
 int obtener_TID(){
 	return TID++;
@@ -32,9 +33,12 @@ void crear_colas(){
 	consola_list = list_create();
 }
 
-void free_colas(){
+void free_listas(){
 	queue_destroy(NEW);
 	queue_destroy(EXIT);
+
+	queue_destroy(READY.prioridad_0);
+	queue_destroy(READY.prioridad_1);
 }
 
 long tamanio_syscalls(FILE* syscalls){
@@ -56,7 +60,7 @@ void mover_a_exit(TCB_struct * tcb){
 }
 
 
-bool CPU_esta_libre(struct_CPU cpu){
+int CPU_esta_libre(struct_CPU cpu){
 	return cpu.bit_estado;
 }
 

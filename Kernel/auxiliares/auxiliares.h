@@ -15,8 +15,7 @@
 #include <sockets.h>
 #include<commons/collections/queue.h>
 #include <sys/select.h>
-#include <cspecs/cspec.h>
-#include<commons/string.h>
+#include <commons/string.h>
 #include <pthread.h>
 #include <semaphore.h>
 
@@ -73,11 +72,6 @@ typedef struct {
 	reg_programacion registrosProgramacion;
 }TCB_struct;
 
-typedef struct cola{
-	TCB_struct TCB;
-	struct cola * siguiente_TCB;
-}colaPlanificacion;
-
 typedef struct {
 	int socket_CPU;
 	int bit_estado;
@@ -105,45 +99,10 @@ typedef struct {
 	TCB_struct tcb;
 } struct_bloqueado;
 
-
-/*        VARIABLES GLOBALES Y COLAS       */
-
-t_colas_prioridades READY;
-t_queue * NEW;
-t_lista_prioridades BLOCK;
-t_list * EXEC;
-t_queue * SYS_CALL;
-t_queue * EXIT;
-
-TCB_struct tcb_km;
-TCB_struct * tcb_ejecutandoSysCall;
-fd_set clientes_set;
-fd_set CPU_set;
-fd_set consola_set;
-t_list * CPU_list;
-t_list * consola_list;
-
-
-int TID;
-int PID;
-char * SYSCALLS;
-char * PUERTO;
-char * IP_MSP;
-char * PUERTO_MSP;
-int QUANTUM;
-int TAMANIO_STACK;
-int backlog;
-int socket_MSP;
-long tamanio_codigo_syscalls;
-int socket_gral;
-int descriptor_mas_alto_consola;
-int descriptor_mas_alto_cpu;
-
 /*      SEMÁFOROS      */
 
-sem_t sem_ready;
+sem_t sem_procesoListo;
 sem_t sem_CPU;
-sem_t sem_syscalls;
 
 /*       FUNCIONES        */
 
@@ -152,7 +111,7 @@ int obtener_PID();
 TCB_struct * deserializar_TCB(char * datos);
 void crear_colas();
 char * extraer_syscalls();
-bool CPU_esta_libre(struct_CPU cpu);
+int CPU_esta_libre(struct_CPU cpu);
 void planificar(TCB_struct);
 void free_colas();
 long tamanio_syscalls(FILE*);
