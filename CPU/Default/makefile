@@ -22,26 +22,28 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: 
+all: CPU
 
 dependents:
 	-cd /home/utnso/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
 
 # Tool invocations
-: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so
+CPU: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/commons/Debug" -o  $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug" -L"/home/utnso/tp-2014-2c-game-of-codes/commons/Debug" -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) 
+	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) CPU
 	-@echo ' '
 
 .PHONY: all clean dependents
 .SECONDARY:
 /home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
+/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so:
 
 -include ../makefile.targets

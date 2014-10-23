@@ -21,8 +21,8 @@
 #include <semaphore.h>
 #include <math.h>
 #include <error.h>
-
-
+#include <sys/socket.h>
+#include <sockets.h>
 
 /* Estructuras */
 
@@ -37,6 +37,27 @@ typedef struct {
 	int cursorStack;
 	int registrosProgramacion[5];
 }t_TCB;
+
+typedef struct {
+	int A;
+	int B;
+	int C;
+	int D;
+	int E;
+}reg_programacion;
+
+typedef struct {
+	int PID;
+	int TID;
+	int KM;
+	int M;
+	int tamanioSegmentoCodigo;
+	int P;
+	int X;
+	int S;
+	reg_programacion registrosProgramacion;
+}TCB_struct;
+
 
 /*Datos actuales*/
 int PIDactual;
@@ -55,6 +76,8 @@ int C;
 int D;
 int E;
 int F;
+
+
 
 /* Variables Globales */
 int kernelSocket;
@@ -90,9 +113,9 @@ void devolverTCBactual();
 void limpiarRegistros();
 void recibirSuperMensaje(int superMensaje[12]);
 /*Funciones MSP*/
-int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroAInstruccion);
+int MSP_SolicitarProximaInstruccionAEJecutar(int pid, int* punteroAInstruccion);
 void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
-void MSP_DestruirSegmento(int PID, void* segmento);
+void MSP_DestruirSegmento(int PID, int registro);
 
 
 /*Instrucciones*/
@@ -109,9 +132,10 @@ void DECR(char registro);
 void COMP(char registro1, char registro2);
 void CGEQ(char registro1, char registro2);
 void CLEQ(char registro1, char registro2);
-void GOTO(int* registro);
+void GOTO(int registro);
 void JMPZ(int nro, char registro);
-void INTE(int* direccion);
+void JPNZ(int direccion);
+void INTE(int direccion);
 void FLCL();
 void SHIF(int numero, char registro);
 void NOPP();
@@ -128,19 +152,21 @@ void OUTN();
 void OUTC();
 void CREA();
 void JOIN();
-void BLOCK();
+void BLOK();
 void WAKE();
+
+
 
 enum mensajesMSP{
 	/*enviar mensajes*/
-	solicitarProximaInstruccionAEJecutar = 1,
+	solicitarMemoria = 1,
 	crearNuevoSegmento = 2,
 	destruirSegmento = 3,
 
 };
 
 enum instruccionesCPU{
-	_LOAD,
+	_LOAD = 15,
 	_GETM,
 	_MOVR,
 	_ADDR,
@@ -173,7 +199,7 @@ enum instruccionesProtegidas{
 	_OUTC,
 	_CREA,
 	_JOIN,
-	_BLOCK,
+	_BLOK,
 	_WAKE,
 };
 
@@ -193,7 +219,6 @@ int main(int cantArgs, char** args){
 	{
 		conectarConMSP();
 		conectarConKernel();
-
 		int quantumActual = 0;
 
 		//estoy a la espera de que el kernel me mande el TCB y el quantum
@@ -214,7 +239,7 @@ int main(int cantArgs, char** args){
 
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 
-			int proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(&punteroInstruccionActual);
+			int proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, &punteroInstruccionActual);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
 
@@ -256,7 +281,7 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	IPKERNEL = config_get_string_value(configuracion, "IP_KERNEL");
 	RETARDO = config_get_int_value(configuracion, "RETARDO");
 }
-/*
+
 void conectarConMSP()
 {
 	struct addrinfo hintsMSP;
@@ -272,7 +297,7 @@ void conectarConMSP()
 	int estadoConexion = connect(socketMSP, mspInfo->ai_addr, mspInfo->ai_addrlen);
 
 	if(estadoConexion == -1){
-		error("no se pudo realizar la conexion con la MSP");
+		// error("no se pudo realizar la conexion con la MSP");
 		abortarEjecucion();
 	}
 	//TODO: hacer log
@@ -297,7 +322,7 @@ void conectarConKernel()
 	int estadoConexion = connect(kernelSocket, kernelInfo->ai_addr, kernelInfo->ai_addrlen);
 
 	if(estadoConexion == -1){
-		error("no se pudo realizar la conexion con el Kernel");
+		// error("no se pudo realizar la conexion con el Kernel");
 		abortarEjecucion();
 	}
 	//TODO: hacer log
@@ -307,7 +332,7 @@ void conectarConKernel()
 	freeaddrinfo(kernelInfo);	// No lo necesitamos mas
 
 }
-*/
+
 
 void abortarEjecucion(){
 	int mensaje[2];
@@ -411,44 +436,155 @@ void limpiarRegistros(){
 	F = 0;
 }
 
-void ejecutarInstruccion(int proximaInstruccionAEjecutar){
-//TODO: ejecutarb
+void ejecutarInstruccion(int proximaInstruccionAEjecutar, int parametros[1]){
+	/*switch(proximaInstruccionAEjecutar)
+	{
+	case ((int)"LOAD"):
+		LOAD(parametros[0],parametros[1]);
+		break;
+	case "GETM":
+		GETM(parametros[0],parametros[1]);
+		break;
+	case "MOVR":
+		MOVR(parametros[0],parametros[1]);
+		break;
+	case "ADDR":
+		ADDR(parametros[0],parametros[1]);
+		break;
+	case "SUBR":
+		SUBR(parametros[0],parametros[1]);
+		break;
+	case "MULR":
+		MULR(parametros[0],parametros[1]);
+		break;
+	case "MODR":
+		MODR(parametros[0],parametros[1]);
+		break;
+	case "DIVR":
+		DIVR(parametros[0],parametros[1]);
+		break;
+	case "INCR":
+		INCR(parametros[0]);
+		break;
+	case "DECR":
+		DECR(parametros[0]);
+		break;
+	case "COMP":
+		COMP(parametros[0],parametros[1]);
+		break;
+	case "CGEQ":
+		CGEQ(parametros[0],parametros[1]);
+		break;
+	case "CLEQ":
+		CLEQ(parametros[0],parametros[1]);
+		break;
+	case "GOTO":
+		GOTO(parametros[0]);
+		break;
+	case "JMPZ":
+		JMPZ(parametros[0],parametros[1]);
+		break;
+	case "JPNZ":
+		JPNZ(parametros[0]);
+		break;
+	case "INTE":
+		INTE(parametros[0]);
+		break;
+	case "FLCL":
+		FLCL(parametros[0],parametros[1]);
+		break;
+	case "SHIF":
+		SHIF(parametros[0],parametros[1]);
+		break;
+	case "NOPP":
+		NOPP(parametros[0],parametros[1]);
+		break;
+	case "PUSH":
+		PUSH(parametros[0],parametros[1]);
+		break;
+	case "TAKE":
+		TAKE(parametros[0],parametros[1]);
+		break;
+	case "XXXX":
+		XXXX(parametros[0],parametros[1]);
+		break;
+
+	if (KMactual == 1){
+		case "MALC":
+			MALC( );
+			break;
+		case "FREE":
+			FREE( );
+			break;
+		case "INNN":
+			INNN( );
+			break;
+		case "OUTN":
+			OUTN( );
+			break;
+		case "CREA":
+			CREA( );
+			break;
+		case "JOIN":
+			JOIN( );
+			break;
+		case "BLOK":
+			BLOK( );
+			break;
+		case "WAKE":
+			WAKE( );
+			break; */
+
 }
 
 /*Funciones MSP*/
 
+void MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
-int MSP_SolicitarProximaInstruccionAEJecutar(int* punteroInstruccion){
-	int proximaInstruccionAEjecutar;
-	int mensaje[2];
-	mensaje[0]=  solicitarProximaInstruccionAEJecutar; //codigo de operacion 1 solicitar prox instruccion
-	mensaje[1]= *punteroInstruccion;
-	send(socketMSP,mensaje, sizeof(int[2]), 0);
-	recv(socketMSP, &proximaInstruccionAEjecutar, sizeof(char), 0);
-	//me manda la instruccion a ejecutar en forma de numero, el valor de la instruccion en ASCII
-	return proximaInstruccionAEjecutar;
+		char * datos = malloc(2 * sizeof (int));
+		memcpy(datos, &PID, sizeof(int));
+		memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int));
+		t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 2* sizeof(int));
+
+		enviar_datos(socketMSP,paquete);
+		free(datos);
+		t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+
+		int * dir_base = malloc(sizeof(int));
+		memcpy(dir_base, respuesta -> datos, sizeof(int));
 }
 
-void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
-	void* nuevoSegmento;
-	int mensaje[3];
-	mensaje[0]= crearNuevoSegmento; //codigo de operacion 2 crear segmento
-	mensaje[1]= PID;
-	mensaje[2]= tamanioSegmento;
-	send(socketMSP,mensaje, sizeof(int[3]), 0);
-	recv(socketMSP, &nuevoSegmento, sizeof(char), 0);
-	return nuevoSegmento;
+int* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
+	char * datos = malloc(2 * sizeof (int));
+	memcpy(datos, &PID, sizeof(int));
+	memcpy(datos + sizeof(int), &tamanioSegmento, sizeof(int));
+	t_datosAEnviar * paquete = crear_paquete(crearNuevoSegmento, (void*) datos, 2* sizeof(int));
+
+	enviar_datos(socketMSP,paquete);
+	free(datos);
+	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+
+	int * dir_base = malloc(sizeof(int));
+	memcpy(dir_base, respuesta -> datos, sizeof(int));
+
+	return  dir_base;
 }
 
-void MSP_DestruirSegmento(int PID, void* segmento){
-	int confirmacion;
-	int mensaje[3];
-	mensaje[0]= destruirSegmento; //codigo de operacion 3 destruir segmento
-	mensaje[1]= PID;
-//	mensaje[2]= segmento; REVISAR
-	send(socketMSP,mensaje, sizeof(int[3]), 0);
-	recv(socketMSP, &confirmacion, sizeof(char), 0); //REVISAR ESTO
-	if(confirmacion == -1){perror("no se pudo destruir el segmento");}
+t_datosAEnviar * MSP_DestruirSegmento(int PID, int registro){
+	char * datos = malloc(2 * sizeof (int));
+	memcpy(datos, &PID, sizeof(int));
+	memcpy(datos + sizeof(int), &registro, sizeof(int));
+	t_datosAEnviar * paquete = crear_paquete(destruirSegmento, (void*) datos, 2* sizeof(int));
+
+	enviar_datos(socketMSP,paquete);
+	free(datos);
+	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+
+	int * dir_base = malloc(sizeof(int));
+	memcpy(dir_base, respuesta -> datos, sizeof(int));
+
+	return respuesta;
+
 }
 
 
@@ -713,7 +849,7 @@ void JOIN(){
 	//almacenado en el registro A haya finalizado. Invoca al servicio correspondiente en el proceso Kernel.
 }
 
-void BLOCK(){
+void BLOK(){
 	//Bloquea el programa que ejecutó la llamada al sistema hasta que el recurso apuntado por B se libere.
 	//La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema WAIT pre-compilada.
 
