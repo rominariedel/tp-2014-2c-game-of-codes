@@ -5,8 +5,8 @@
  *      Author: utnso
  */
 
-#include "auxiliares.h"
 #include "variables_globales.h"
+
 
 int obtener_TID(){
 	return TID++;
@@ -39,6 +39,14 @@ void free_listas(){
 
 	queue_destroy(READY.prioridad_0);
 	queue_destroy(READY.prioridad_1);
+	queue_destroy(SYS_CALL);
+	queue_destroy(BLOCK.prioridad_0);
+	list_destroy_and_destroy_elements(BLOCK.prioridad_1, &free);
+	list_destroy_and_destroy_elements(EXEC, &free);
+	list_destroy_and_destroy_elements(CPU_list, &free);
+	list_destroy_and_destroy_elements(consola_list, &free);
+
+
 }
 
 long tamanio_syscalls(FILE* syscalls){
@@ -93,31 +101,33 @@ void planificador(){
 				datos = recibir_datos(n_descriptor);
 				int codigo_operacion = datos->codigo_operacion;
 
-				TCB_struct* tcb;
+				TCB_struct* tcb = malloc(sizeof(TCB_struct));
 				int * dirSysCall;
 				switch(codigo_operacion){
 
 					case finaliza_quantum:
-						finalizo_quantum((TCB_struct*)datos->datos);
+						memcpy(tcb, datos->datos, sizeof(TCB_struct));
+						finalizo_quantum(tcb);
 						break;
 					case finaliza_ejecucion:
-						finalizo_ejecucion((TCB_struct*)datos->datos);
+						memcpy(tcb, datos->datos, sizeof(TCB_struct));
+						finalizo_ejecucion(tcb);
 						break;
 					case ejecucion_erronea:
-						abortar((TCB_struct*) datos->datos);
+						memcpy(tcb, datos->datos, sizeof(TCB_struct));
+						abortar(tcb);
 						break;
 					case desconexion:
-						abortar((TCB_struct*) datos->datos);
+						memcpy(tcb, datos->datos, sizeof(TCB_struct));
+						abortar(tcb);
 						break;
 					case interrupcion:
-						tcb = malloc(sizeof(TCB_struct));
 						dirSysCall = malloc(sizeof(int));
 						memcpy(tcb, datos->datos, sizeof(TCB_struct));
 						memcpy(dirSysCall, datos->datos + sizeof(TCB_struct),sizeof(int));
 						interrumpir(tcb, *dirSysCall);
 						break;
 					case creacion_hilo:
-						tcb = malloc(sizeof(TCB_struct));
 						memcpy(tcb, datos->datos, sizeof(TCB_struct));
 						crear_hilo(*tcb);
 						break;
@@ -138,6 +148,7 @@ void planificador(){
 						break;
 
 					}
+				free(datos);
 			}
 			n_descriptor ++;
 		}
@@ -165,4 +176,18 @@ struct_bloqueado * obtener_bloqueado(int TID){
 		return estructura.tcb.TID == TID;
 	}
 	return list_find(BLOCK.prioridad_1, (void*)&tiene_mismo_tid);
+}
+
+void producir_salida_estandar(int pid, char* cadena){
+	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
+	t_datosAEnviar * datos = malloc(sizeof(t_datosAEnviar));
+	datos->codigo_operacion = imprimir_en_pantalla;
+	datos->tamanio = string_length(cadena);
+	datos->datos = (void*) cadena;
+
+	enviar_datos(consola_asociada->socket_consola, datos);
+
+	//TODO: chequear que se enviaron los datos
+
+	free(datos);
 }

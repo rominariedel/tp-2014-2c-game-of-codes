@@ -8,6 +8,8 @@
 #ifndef VARIABLES_GLOBALES_H_
 #define VARIABLES_GLOBALES_H_
 
+#include "auxiliares.h"
+
 t_colas_prioridades READY;
 t_queue * NEW;
 t_lista_prioridades BLOCK;

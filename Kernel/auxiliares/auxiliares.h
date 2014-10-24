@@ -46,7 +46,7 @@ enum mensajes{
 	join = 22,
 	bloquear = 23,
 	despertar = 24,
-	path_codigo_consola = 25,
+	codigo_consola = 25,
 };
 
 
@@ -114,10 +114,10 @@ char * extraer_syscalls();
 int CPU_esta_libre(struct_CPU cpu);
 void planificar(TCB_struct);
 void free_colas();
+void free_listas();
 long tamanio_syscalls(FILE*);
 void abortar(TCB_struct*); //VER
 void crear_hilo(TCB_struct);
-//int es_CPU(int socket);
 void finalizo_ejecucion(TCB_struct*);
 void finalizo_quantum(TCB_struct*);
 void interrumpir(TCB_struct*, int);
@@ -125,5 +125,6 @@ void planificador();
 struct_consola * obtener_consolaConectada(int);
 struct_consola * obtener_consolaAsociada(int PID);
 struct_bloqueado * obtener_bloqueado(int TID);
+void producir_salida_estandar(int pid, char* cadena);
 
 #endif /* AUXILIARES_H_ */

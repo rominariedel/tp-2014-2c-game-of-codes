@@ -37,11 +37,6 @@ clean:
 	-$(RM) $(OBJS)$(C_DEPS)$(LIBRARIES) libSockets.so
 	-@echo ' '
 
-install: all
-	sudo cp libSockets.so /usr/lib
-	sudo cp sockets.h /usr/include
-	make clean
-
 .PHONY: all clean dependents
 .SECONDARY:
 

@@ -46,6 +46,7 @@ int main(int argc, char ** argv) {
 	pthread_join(thread_boot, NULL );
 	pthread_join(thread_dispatcher, NULL);
 	config_destroy(configuracion);
+	free_listas();
 	return 0;
 }
 
@@ -88,7 +89,7 @@ void loader() {
 						n_descriptor);
 				TCB_struct * nuevoTCB;
 				switch (datos->codigo_operacion) {
-				case path_codigo_consola:
+				case codigo_consola:
 					nuevoTCB = malloc(sizeof(TCB_struct));
 
 					nuevoTCB->PID = consola_conectada->PID;
@@ -162,7 +163,10 @@ void boot() {
 	printf("Esperando conexiones...");
 
 	socket_gral = crear_servidor(PUERTO, backlog);
-	//TODO: validar socket
+	if(socket_gral <0){
+		perror("No se pudo crear el servidor");
+		exit(-1);
+	}
 
 	FD_ZERO(&consola_set);
 	FD_ZERO(&CPU_set);
@@ -264,7 +268,11 @@ int solicitar_segmento(int pid, int tamanio) {
 
 	int * dir_base = malloc(sizeof(int));
 	memcpy(dir_base, respuesta->datos, sizeof(int));
-	//TODO: validar si no hay violacion de segmento
+
+	if(*dir_base == error_segmentationFault){
+		//ERROR
+		return -1;
+	}
 
 	return *dir_base;
 }
@@ -314,6 +322,8 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 void abortar(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
 	queue_push(EXIT, tcb);
+	//TODO: buscar la consola asociada para ver si es el ultimo hilo de un proceso, y si lo es terminar la conexion
+	//con esa consola
 	//LOGUEAR que tuvo que abortar el hilo
 }
 

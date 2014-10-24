@@ -9,9 +9,8 @@
 #define SOCKETS_H_
 
 
-/*PARA USAR LA LIBRERIA:
- * Propiedades del proyecto >> C/C++ General >> Path and Symbols >> References >>Tildar Sockets
- * Run configurations>> Environment >> New >> Variable: LD_LIBRARY_PATH Valor: ${workspace_loc}/Sockets/Debug*/
+/*PARA USAR LA LIBRERIA: Propiedades del proyecto >> C/C++ General >> Path and Symbols >> References
+ * >>Tildar Sockets*/
 
 #include <stdio.h>
 #include <string.h>
@@ -35,8 +34,7 @@ int crear_cliente(char*, char *);
 t_datosAEnviar* crear_paquete(int cod_op, void * datos, int tamanio);
 int enviar_datos(int socket, t_datosAEnviar * paquete);
 t_datosAEnviar * recibir_datos(int socket);
-int suma(int cant_args, int arg_tamanio[cant_args]);
-int recibir_conexion(int socket);
+char * serializar_datos(int cant_args, int arg_tamanio[cant_args], void * argumentos[cant_args]);
 
 #endif /* SOCKETS_H_ */
 

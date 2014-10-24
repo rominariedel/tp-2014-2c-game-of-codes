@@ -7,7 +7,9 @@
 
 #include "sockets.h"
 
-static char* serializar_paquete(t_datosAEnviar * paquete){
+int suma(int cant_args, int arg_tamanio[cant_args]);
+
+static char* serializar(t_datosAEnviar * paquete){
 	char * paquete_corrido = malloc(paquete->tamanio + tamanio_header);
 	memcpy(paquete_corrido, paquete, tamanio_header);
 	memcpy(paquete_corrido + tamanio_header, paquete->datos, paquete->tamanio);
@@ -22,9 +24,10 @@ static t_datosAEnviar* deserializar_header(char * buffer){
 	return paquete;
 }
 
-static void serializar_datos(char * buffer, t_datosAEnviar * datos_recibidos){
-	datos_recibidos-> datos = malloc(datos_recibidos->tamanio);
-	memcpy(datos_recibidos->datos, buffer, datos_recibidos->tamanio);
+static void deserializar_datos(char * buffer, t_datosAEnviar * datos_recibidos){
+	void * datos = malloc(datos_recibidos->tamanio);
+	memcpy(datos_recibidos->datos, datos, datos_recibidos->tamanio);
+	free(datos);
 }
 
 
@@ -46,11 +49,11 @@ int crear_servidor(char * PUERTO, int backlog){
 	struct addrinfo *serverInfo;
 
 	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_flags = AI_PASSIVE;
-	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_family = AF_UNSPEC;		// No importa si uso IPv4 o IPv6
+	hints.ai_flags = AI_PASSIVE;		// Asigna el address del localhost: 127.0.0.1
+	hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
 
-	getaddrinfo(NULL, PUERTO, &hints, &serverInfo);
+	getaddrinfo(NULL, PUERTO, &hints, &serverInfo); // Notar que le pasamos NULL como IP, ya que le indicamos que use localhost en AI_PASSIVE
 	int listenningSocket;
 	listenningSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 	bind(listenningSocket,serverInfo->ai_addr, serverInfo->ai_addrlen);
@@ -73,18 +76,14 @@ int crear_cliente(char* IP, char * PUERTO){
 	int serverSocket;
 	serverSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
 
-	connect(serverSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
+	int n = connect(serverSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
+
+	if(n == -1){
+		perror("No se pudo conectar al servidor");
+		return -1;
+	}
 	freeaddrinfo(serverInfo);
 	return serverSocket;
- }
-
-int recibir_conexion(int socket){
-	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
-	socklen_t addrlen = sizeof(addr);
-
-	int socketCliente = accept(socket, (struct sockaddr *) &addr, &addrlen);
-
-	return socketCliente;
 }
 
 int enviar_datos(int socket, t_datosAEnviar * paquete){
@@ -92,7 +91,7 @@ int enviar_datos(int socket, t_datosAEnviar * paquete){
 	int cantidad_enviada;
 	int enviando = 1;
 	int offset = 0;
-	char * buffer = serializar_paquete(paquete);
+	char * buffer = serializar(paquete);
 	int cantidad_total = paquete->tamanio + tamanio_header;
 	while(enviando){
 		cantidad_enviada = send(socket, buffer + offset, cantidad_total-offset, 0);
@@ -132,11 +131,36 @@ t_datosAEnviar * recibir_datos(int socket){
 	}
 
 	//Copia datos
-	serializar_datos(buffer, datos_recibidos);
+	deserializar_datos(buffer, datos_recibidos);
 	free(buffer);
 
 	return datos_recibidos;
 }
 
 
+/* Recibe un número que indica la cantidad de elementos del paquete, un vector que indica el tamaño
+ * de cada elemento del paquete, y un vector con punteros a los elementos del paquete.
+ *
+ * Los elementos de arg_tamanio y argumentos tienen que corresponderse (p.ej arg_tamanio[1] tiene que
+ * tener el tamaño de argumentos[1]), y el buffer que retorna tiene copiados los elementos en orden
+ * inverso al que se mandó en el vector*/
 
+char* serializar_datos(int cant_args, int arg_tamanio[cant_args], void * argumentos[cant_args]){
+	char * buffer = malloc(suma(cant_args, arg_tamanio));
+	int offset = 0;
+	while(cant_args){
+		memcpy(buffer + offset, argumentos[cant_args-1], arg_tamanio[cant_args-1]);
+		offset = offset + arg_tamanio[cant_args-1];
+		cant_args --;
+	}
+	return buffer;
+}
+
+int suma(int cant_args, int arg_tamanio[cant_args]){
+	int total = 0;
+	while(cant_args){
+		total = total + arg_tamanio[cant_args-1];
+		cant_args --;
+	}
+	return total;
+}
