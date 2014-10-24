@@ -20,6 +20,14 @@
 #include <netdb.h>
 #include <unistd.h>
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
+
 #define tamanio_header (2*sizeof(int))
 
 
@@ -34,7 +42,8 @@ int crear_cliente(char*, char *);
 t_datosAEnviar* crear_paquete(int cod_op, void * datos, int tamanio);
 int enviar_datos(int socket, t_datosAEnviar * paquete);
 t_datosAEnviar * recibir_datos(int socket);
-char * serializar_datos(int cant_args, int arg_tamanio[cant_args], void * argumentos[cant_args]);
+int suma(int cant_args, int arg_tamanio[cant_args]);
+int recibir_conexion(int socket);
 
 #endif /* SOCKETS_H_ */
 
