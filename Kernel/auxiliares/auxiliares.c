@@ -103,6 +103,13 @@ void planificador(){
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
 				int * dirSysCall;
+				int * pid;
+				char * cadena;
+
+
+				sem_init(&mutex_entradaSalida, 0, 1);
+				sem_init(&sem_entrada, 0, 0);
+
 				switch(codigo_operacion){
 
 					case finaliza_quantum:
@@ -135,7 +142,11 @@ void planificador(){
 						//pedir_entrada(datos->datos);
 						break;
 					case salida_estandar:
-
+						pid = malloc(sizeof(int));
+						cadena = malloc(datos->tamanio - sizeof(int));
+						memcpy(pid, datos->datos, sizeof(int));
+						memcpy(cadena, datos->datos + sizeof(int), datos->tamanio - sizeof(int));
+						producir_salida_estandar(*pid, cadena);
 						break;
 					case join:
 
@@ -171,6 +182,13 @@ struct_consola * obtener_consolaAsociada(int PID){
 	return list_find(consola_list, (void*) &tiene_mismo_pid);
 }
 
+struct_CPU * obtener_CPUAsociada(int socket_cpu){
+	bool tiene_mismo_socket(struct_CPU estructura){
+		return estructura.socket_CPU == socket_cpu;
+	}
+	return list_find(CPU_list, (void*) &tiene_mismo_socket);
+}
+
 struct_bloqueado * obtener_bloqueado(int TID){
 	bool tiene_mismo_tid(struct_bloqueado estructura){
 		return estructura.tcb.TID == TID;
@@ -190,4 +208,42 @@ void producir_salida_estandar(int pid, char* cadena){
 	//TODO: chequear que se enviaron los datos
 
 	free(datos);
+}
+
+void producir_entrada_estandar(int pid, int id_tipo, int socket_CPU){
+
+	sem_wait(&mutex_entradaSalida);
+	entrada = malloc(sizeof(entrada_salida));
+	entrada->semaforo = sem_entrada;
+
+	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
+	t_datosAEnviar * datos_consola = malloc(sizeof(t_datosAEnviar));
+	datos_consola->codigo_operacion = ingresar_cadena;
+	memcpy(datos_consola->datos, &id_tipo, sizeof(int));
+	datos_consola->tamanio = sizeof(int);
+	enviar_datos(consola_asociada->socket_consola, datos_consola);
+	free(datos_consola);
+
+	sem_wait(&sem_entrada);
+
+	struct_CPU * CPU_asociada = obtener_CPUAsociada(socket_CPU);
+	t_datosAEnviar * datos = malloc(sizeof(t_datosAEnviar));
+	datos->codigo_operacion = devolucion_cadena;
+	datos->datos = entrada->cadena;
+	datos->tamanio = entrada->tamanio;
+	enviar_datos(CPU_asociada->socket_CPU, datos);
+	free(datos);
+	free(entrada);
+	sem_post(&sem_entrada);
+
+	sem_post(&mutex_entradaSalida);
+
+}
+
+void recibir_cadena(void * cadena, int tamanio){
+	entrada->cadena = malloc(tamanio);
+	memcpy(&entrada->cadena, cadena, tamanio);
+	entrada->tamanio = tamanio;
+	sem_post(&sem_entrada);
+
 }

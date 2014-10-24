@@ -29,6 +29,8 @@ enum mensajes{
 	imprimir_en_pantalla = 4,
 	ingresar_cadena = 5,
 	ejecutar = 6,
+	devolucion_cadena = 7,
+
 	//Mensajes recibidos
 
 	finaliza_quantum = 10,
@@ -103,6 +105,8 @@ typedef struct {
 
 sem_t sem_procesoListo;
 sem_t sem_CPU;
+sem_t mutex_entradaSalida;
+sem_t sem_entrada;
 
 /*       FUNCIONES        */
 

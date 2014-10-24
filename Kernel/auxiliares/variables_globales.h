@@ -26,6 +26,13 @@ t_list * CPU_list;
 t_list * consola_list;
 t_config * configuracion;
 
+typedef struct {
+	sem_t semaforo;
+	void * cadena;
+	int tamanio;
+} entrada_salida;
+entrada_salida * entrada;
+
 int TID;
 int PID;
 char * SYSCALLS;
