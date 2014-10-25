@@ -78,7 +78,7 @@ int B;
 int C;
 int D;
 int E;
-int F;
+
 
 
 
@@ -112,12 +112,14 @@ void actualizarRegistrosTCB();
 int cargarDatosTCB();
 int actualizarTCB();
 void ejecutarInstruccion(int instruccion);
-void devolverTCBactual();
+void devolverTCBactual(int codigoOperacion);
 void limpiarRegistros();
 void recibirTCByQuantum(t_datosAEnviar *  datosKernel);
 t_TCB* desempaquetarTCB(char* buffer);
 void inicializarTCB(t_TCB* tcb);
 int interpretarInstruccion(char * proximaInstruccionAEjecutar);
+void saltarAInstruccion(int direccion);
+int devolverRegistro(char registro);
 
 /*Funciones MSP*/
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
@@ -140,10 +142,9 @@ void COMP(char registro1, char registro2);
 void CGEQ(char registro1, char registro2);
 void CLEQ(char registro1, char registro2);
 void GOTO(char registro);
-void JMPZ(int nro, char registro);
+void JMPZ(int direccion);
 void JPNZ(int direccion);
 void INTE(int direccion);
-void FLCL();
 void SHIF(int numero, char registro);
 void NOPP();
 void PUSH(int numeroA, int numeroB);
@@ -170,6 +171,14 @@ enum mensajesMSP{
 	crearNuevoSegmento = 2,
 	destruirSegmento = 3,
 
+};
+
+enum mensajesKernelCodOperacion{
+	finaliza_quantum = 10,
+	finaliza_ejecucion = 11,
+	ejecucion_erronea = 12,
+	desconexion = 13,
+	interrupcion = 14,
 };
 
 enum instruccionesCPU{

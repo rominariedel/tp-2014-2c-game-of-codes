@@ -45,13 +45,13 @@ int main(int cantArgs, char** args){
 		printf("Recibí datos del TCB actual y sus registros de programacion");
 		cargarDatosTCB();
 
-		int quantumActual = 0;
+		int quantumActual = 1;
 		printf("\n quantumActual es: %d \n", quantumActual);
 
 		while(quantumActual>quantum && KMactual==1)
 		{
 
-			printf("Solicitar Proxima Instruccion a Ejecutar");
+			printf("\n %d \n", quantumActual);
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
 
@@ -74,18 +74,25 @@ int main(int cantArgs, char** args){
 
 
 		}
+		if((quantum - quantumActual)== 0){
+			//termino su ejecucion
+			devolverTCBactual(finaliza_ejecucion);
+			limpiarRegistros();
+			break;
+		}
 
 		if(quantumActual == quantum && KMactual==0){
 			// 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			//proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			//tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
 
-			devolverTCBactual();
+			devolverTCBactual(finaliza_quantum);
 			limpiarRegistros();
+			break;
 		}
-		return 0;
-	}
 
+	}
+	return 0;
 }
 
 void cargarArchivoConfiguracion(int cantArgs, char** args){
@@ -172,14 +179,20 @@ int actualizarTCB(){
 }
 
 
-void devolverTCBactual(){
+void devolverTCBactual(int codOperacion){
+	actualizarTCB();
+	int op = codOperacion; //TODO: ver porque lo estoy mandando... termino quantum, por interrupcion, por lo que sea
+	void * mensaje = malloc(sizeof(t_TCB) + sizeof(int));
+	memcpy(mensaje, &op, sizeof(int));
+	memcpy(mensaje + sizeof(int), TCBactual, sizeof(t_TCB));
+	int status = enviar_datos(socketKernel, mensaje);
+	if(status == -1){perror("No se pudo devolver el TCBactual");}
+	free(mensaje);
 
-	//TODO: enviar al Kernel el TCB acutal
-	/*actualizarTCB();
-	cargarTCBenSuperMensaje(TCBactual);
-	int status = send(socketKernel,superMensaje,sizeof(t_TCB),0);
-	if(status){printf("no se pudo devolver el TCBactual");}*/
+	//TODO: ENVIAR QUANTUM TMB!! decirle al Kernel cuanto le quedo por ejecutar..
 }
+
+
 
 void limpiarRegistros(){
 	TIDactual = 0;
@@ -194,7 +207,6 @@ void limpiarRegistros(){
 	C = 0;
 	D = 0;
 	E = 0;
-	F = 0;
 }
 
 void limpiarTCBactual(t_TCB* tcb){
@@ -418,6 +430,29 @@ t_datosAEnviar * MSP_DestruirSegmento(int PID, int registro){
 
 }
 
+int devolverRegistro(char registro){
+
+	switch(registro){
+	case 'A':
+		return A;
+		break;
+	case 'B':
+		return B;
+		break;
+	case 'C':
+		return C;
+		break;
+	case 'D':
+		return D;
+		break;
+	case 'E':
+		return E;
+		break;
+	}
+
+	return -1;
+}
+
 
 /*Codigo ESO*/
 
@@ -446,9 +481,7 @@ void GETM(char registro1, char registro2){ //Obtiene el valor de memoria apuntad
 	registro1 = registro2;
 }
 
-/*
- * la diferencia entre GETM y MOVR seria que en GETM , le estoy asignando al primer registro la direccion de memoria que tiene el segundo registro?
- */
+//TODO: diferencias GETM y MOVR
 
 void MOVR(char registro1, char registro2){ //Copia el valor del segundo registro hacia el primero
 	 registro1 =  registro2;
@@ -521,31 +554,33 @@ void CLEQ(char registro1, char registro2){
 	}
 }
 
-void GOTO(char registro){
-	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
-	//santarAInstruccion(registro);
+void saltarAInstruccion(int direccion){
+	//TODO: ver si esta bien.
+	punteroInstruccionActual = baseSegmentoCodigoActual +  direccion;
 }
 
-//void saltarAInstruccion(int direccion){
-//	punteroInstruccionActual = baseSegmentoCodigoActual +  direccion;
-//}
+void GOTO(char registro){
+	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
+	saltarAInstruccion(devolverRegistro(registro));
+}
 
-//void JMPZ(int direccion){
+
+void JMPZ(int direccion){
 	//Altera el flujo de ejecución sólo si el valor del registro A es cero, para ejecutar la instrucción apuntada por la Dirección.
 	//El valor es el desplazamiento desde el inicio del programa.
 
-	//if(A == 0){
+	if(A == 0){
 
-		//saltarAInstruccion(direccion);
-	//}
-//}
+		saltarAInstruccion(direccion);
+	}
+}
 
 void JPNZ(int direccion){
 	// Altera el flujo de ejecución sólo si el valor del registro A no es cero, para ejecutar la instrucción apuntada por la Dirección.
 	// El valor es el desplazamiento desde el inicio del programa.
 
 	if(A != 0){
-	//	saltarAInstruccion(direccion);
+		saltarAInstruccion(direccion);
 	}
 }
 
@@ -564,23 +599,19 @@ void INTE(int  direccion){
 	tras una interrupción.*/
 }
 
-void FLCL(){ //limpia registro de flags
-	//TODO: ver tema flags del CPU
-}
-
 void SHIF(int numero, char registro){
 	//Desplaza los bits del registro, tantas veces como se indique en el Número. De ser
 	//desplazamiento positivo, se considera hacia la derecha. De lo contrario hacia la izquierda.
 	if(numero < 0){
-		 registro =  registro << numero;
+		 devolverRegistro(registro) =  devolverRegistro(registro) << numero;
 	}
 	if(numero > 0){
-		 registro =  registro >> numero;
+		devolverRegistro(registro)  =  devolverRegistro(registro)  >> numero;
 	}
 }
 
 void NOPP(){
-	//nO HAGO NADA
+	//NO HAGO NADA
 }
 
 void PUSH(int numeroA, int numeroB){
@@ -594,8 +625,10 @@ void TAKE(int numero, char registro){
 }
 
 void XXXX(){
-	// finaliza ejecucion del programa
-	//TODO: hacer funcion. finalizarEjecucion();
+	//Finaliza la ejecucion
+	devolverTCBactual(interrupcion); //es interrupcion? o simplemente termino su ejecucion.
+	abortarEjecucion();
+	//TODO:ver si falta hacer algo mas
 }
 
 
@@ -609,12 +642,13 @@ void MALC(){
 	//Reserva una cantidad de memoria especificada por el registro A. La direccion de esta se
 	//almacena en el registro A. Crea en la MSP un nuevo segmento del tamaño especificado asociado
 	//al programa en ejecución.
-/*
+
 	int cantidadMemoria =  A;
 	int* base_segmento = malloc(sizeof(int*));
 	base_segmento = MSP_CrearNuevoSegmento(PIDactual, cantidadMemoria);
-	A = *base_segmento;
-*/
+	A = &base_segmento;
+	free(base_segmento);
+
 }
 
 void FREE(){
