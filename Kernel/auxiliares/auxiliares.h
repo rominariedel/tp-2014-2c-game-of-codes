@@ -130,5 +130,6 @@ struct_consola * obtener_consolaConectada(int);
 struct_consola * obtener_consolaAsociada(int PID);
 struct_bloqueado * obtener_bloqueado(int TID);
 void producir_salida_estandar(int pid, char* cadena);
+void producir_entrada_estandar(int pid, int id_tipo, int socket_CPU);
 
 #endif /* AUXILIARES_H_ */

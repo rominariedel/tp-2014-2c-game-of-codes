@@ -105,7 +105,7 @@ void planificador(){
 				int * dirSysCall;
 				int * pid;
 				char * cadena;
-
+				int * id_tipo;
 
 				sem_init(&mutex_entradaSalida, 0, 1);
 				sem_init(&sem_entrada, 0, 0);
@@ -139,7 +139,12 @@ void planificador(){
 						crear_hilo(*tcb);
 						break;
 					case entrada_estandar:
-						//pedir_entrada(datos->datos);
+						pid = malloc(sizeof(int));
+						id_tipo = malloc(sizeof(int));
+						memcpy(pid, datos->datos, sizeof(int));
+						memcpy(id_tipo, datos->datos + sizeof(int), sizeof(int));
+						producir_entrada_estandar(*pid, *id_tipo, n_descriptor);
+
 						break;
 					case salida_estandar:
 						pid = malloc(sizeof(int));
