@@ -78,27 +78,27 @@ void inicializarConsola(){
 
 	while(seguimiento){
 		printf(">");
-		fgets(comando,50,stdin);
+		scanf("%s", comando);
 
-		if((string_length(comando) > 0) && ((comando[string_length(comando)]-1) == "\n")){
-			comando[string_length(comando)] = '\O';
-		}
+		//if((string_length(comando) > 0) && ((comando[string_length(comando)]-1) == "\n")){
+		//	comando[string_length(comando)] = '\O';
+		//}
 
 		interpretarComando(comando);
-		printf("\r\n");
+		printf("\r/n");
 	}
 
 }
 
 void interpretarComando (char* comando){
-	char** palabras = string_split(comando,"");
-	char** parametros;
+	char** palabras = string_split(comando," ");
+	char** parametros = NULL;
 	int resultado;
 	if (palabras[1] != NULL){
 		parametros = string_split(palabras[1],",");
 	}
 
-	if (string_equals_ignore_case(palabras[0],"Crear segmento")){
+	if (string_equals_ignore_case(palabras[0],"Crear")){
 		printf("Creando segmento...");
 		uint32_t baseSegmento = *crearSegmento(atoi(parametros[0]), atoi (parametros[1]));
 		if (baseSegmento == ERROR_MEMORIA_LLENA){
@@ -108,7 +108,7 @@ void interpretarComando (char* comando){
 
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Destruir Segmento")){
+	else if (string_equals_ignore_case(palabras[0],"Destruir")){
 		printf("Destruyendo segmento...");
 		int resultado = destruirSegmento(atoi(parametros[0]),(uint32_t) atoi(parametros[1]));
 		if(resultado == 1){
@@ -125,7 +125,7 @@ void interpretarComando (char* comando){
 		}
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Escribir Memoria")){
+	else if (string_equals_ignore_case(palabras[0],"Escribir")){
 		printf("Iniciando proceso de escritura de memoria...");
 		int resultado = escribirMemoria(atoi(parametros[0]),(uint32_t)atoi(parametros[1]),parametros[2], atoi(parametros[3]));
 		switch (resultado){
@@ -150,7 +150,7 @@ void interpretarComando (char* comando){
 		}
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Leer Memoria")){
+	else if (string_equals_ignore_case(palabras[0],"Leer")){
 		printf("Solicitando memoria...");
 		resultado = solicitarMemoria(atoi(parametros[0]),(uint32_t) atoi(parametros[1]),atoi(parametros[2]));
 		switch (resultado){
@@ -175,15 +175,15 @@ void interpretarComando (char* comando){
 		}
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Tabla de Segmentos")){
-		resultado = tablaSegmentos();
+	else if (string_equals_ignore_case(palabras[0],"Tabla")){
+		if(string_equals_ignore_case(palabras[3], "segmentos")){
+			resultado = tablaSegmentos();
+		}else if(string_equals_ignore_case(palabras[0],"páginas")){
+			resultado = tablaPaginas(atoi(parametros[0]));
+		}
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Tabla de Páginas")){
-		resultado = tablaPaginas(atoi(parametros[0]));
-	}
-
-	else if (string_equals_ignore_case(palabras[0],"Listar Marcos")){
+	else if (string_equals_ignore_case(palabras[0],"Listar")){
 		resultado = tablaMarcos();
 	}
 }
@@ -259,7 +259,7 @@ uint32_t* crearSegmento(int PID,int tamanio){
 	T_SEGMENTO *seg = crearSegmentoVacio(*proceso, tamanio);
 	list_add(proceso->segmentos, (void*)seg);
 
-	return seg->direccionVirtual;
+	return seg->baseSegmento;
 
 }
 
@@ -275,7 +275,7 @@ T_SEGMENTO* crearSegmentoVacio (T_PROCESO proceso, int tamanio){
 	direccionLogica.paginaId = 0;
 	direccionLogica.desplazamiento = 0;
 
-	*(segVacio->direccionVirtual) = DireccionLogicaToUint32(direccionLogica);
+	*(segVacio->baseSegmento) = DireccionLogicaToUint32(direccionLogica);
 
 	return segVacio;
 }
@@ -292,7 +292,7 @@ t_list* crearPagsPorTamanioSeg(int tamanio) {
 
 	t_list* paginas = list_create();
 
-	//todo necesario que la cantidadPaginas redondee para arriba
+	//todo necesario que la cantidadPaginas redondee para arriba - fijarme por el resto, si es distinto de 0 le sumo uno
 	int cantidadPaginas = (tamanio / tamanioPag);
 	int i;
 
@@ -325,7 +325,7 @@ int destruirSegmento (int PID, uint32_t baseSegmento){
 	}
 
 	bool segmentoPorBase (T_SEGMENTO* segmento){
-		return segmento->direccionVirtual == &baseSegmento;
+		return segmento->baseSegmento == &baseSegmento;
 	}
 
 	//busco en la lista de procesos el proceso con ese PID
@@ -344,7 +344,7 @@ int destruirSegmento (int PID, uint32_t baseSegmento){
 			//elimino de la lista de segmentos del proceso, el segmento
 			list_remove_by_condition(proceso->segmentos, (void*) segmentoPorBase);
 
-			memoriaDisponible = memoriaDisponible + sizeof(T_SEGMENTO);
+			memoriaDisponible = memoriaDisponible + sizeof(seg->tamanio);
 			free(seg);
 		}
 
@@ -443,7 +443,7 @@ int escribirMemoria(int PID, uint32_t direccionVirtual, char* bytesAEscribir, in
 		return marco->empty == true;
 	}
 
-	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag ) || (list_size(bytesAEscribir) > tamanio)) {
+	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag ) || (list_size(bytesAEscribir) > tamanio)) { //todo: revisar errores de tipo
 		return ERROR_VIOLACION_DE_SEGMENTO_LIMITES_SEG_EXCEDIDOS;
 	}
 
@@ -464,6 +464,7 @@ int escribirMemoria(int PID, uint32_t direccionVirtual, char* bytesAEscribir, in
 					}
 					else{
 						T_MARCO* marcoAsignado; //= list_any_satisfy(marcosVacios, (void*) marcoPorVacio); //list_any_satisfy devuelve un BOOL
+						//todo: inicializarlo
 						asignoMarcoAPagina(PID, marcoAsignado, pag);
 					}
 				}
@@ -472,7 +473,7 @@ int escribirMemoria(int PID, uint32_t direccionVirtual, char* bytesAEscribir, in
 				int final = direccionLogica.desplazamiento + tamanio;
 				int i;
 				for(i = inicio; final > i  ; i++){
-					pag->data[i] = list_take_and_remove(bytesAEscribir, i); //REVISAR
+					pag->data[i] = list_take_and_remove(bytesAEscribir, i); //todo: REVISAR
 				}
 			}
 			else return ERROR_PAGINA_INEXISTENTE;
@@ -562,7 +563,7 @@ int tablaSegmentos(){
 			printf("%c",'\n');
 			printf("Número de segmento: %d", (int)segmento->SID);
 			printf("Tamaño: %d", segmento->tamanio);
-			printf("Dirección virtual base: %d", (int) segmento->direccionVirtual);
+			printf("Dirección virtual base: %d", (int) segmento->baseSegmento);
 		}
 	}
 	printf("%s\n", string_repeat('-',100));

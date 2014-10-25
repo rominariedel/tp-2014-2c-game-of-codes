@@ -27,7 +27,7 @@ t_list * consola_list;
 t_config * configuracion;
 
 typedef struct {
-	sem_t semaforo;
+	sem_t semaforo; //CAMBIAR A SOCKET PARA HACER EL SEND DIRECTAMENTE
 	void * cadena;
 	int tamanio;
 } entrada_salida;

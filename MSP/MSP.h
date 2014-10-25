@@ -32,7 +32,7 @@ typedef struct T_SEGMENTO {
 	int SID;
 	int tamanio;
 	t_list* paginas;
-	uint32_t* direccionVirtual;
+	uint32_t* baseSegmento; //Fijarse si es necesario usar un puntero
 } T_SEGMENTO;
 
 typedef struct T_PAGINA {

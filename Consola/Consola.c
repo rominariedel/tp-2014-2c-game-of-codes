@@ -6,27 +6,17 @@
  */
 
 #include <commons/config.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
 
-
-typedef struct {
-	char ip[15];
-	char puerto[4];
-} t_regConfig;//definicion de la estructura del archivo de configuracion para q sea mas facil leerlo
-char * ESO_CONFIG;
+#include <sockets.h>
 int main(int argc, char ** argv){
-	int puerto = 9;
+	char* puerto;
 	char* ip;
 
 	t_config* config = config_create(argv[1]);
 	ip = config_get_string_value(config, "IP");
-	puerto = config_get_int_value(config, "PUERTO");
+	puerto = config_get_string_value(config, "PUERTO");
+
+
 
 	struct addrinfo hints;
 	struct addrinfo *serverInfo;
@@ -35,7 +25,7 @@ int main(int argc, char ** argv){
 	hints.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
 	hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
 
-	getaddrinfo(ip, (char*) puerto, &hints, &serverInfo);	// Carga en serverInfo los datos de la conexion
+	getaddrinfo(ip, puerto, &hints, &serverInfo);	// Carga en serverInfo los datos de la conexion
 
 	int kernelSocket;
 	kernelSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
