@@ -54,11 +54,12 @@ int main(int cantArgs, char** args){
 			printf("\n %d \n", quantumActual);
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
-
+			int cantidadParametros = calcularCantidadDeParametrosParaLaInstruccion(proximaInstruccionAEjecutar);
+			char parametros[]
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
 
 			int instruccion = interpretarInstruccion(proximaInstruccionAEjecutar);
-			ejecutarInstruccion(instruccion);
+		//	ejecutarInstruccion(instruccion);
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 
@@ -66,7 +67,7 @@ int main(int cantArgs, char** args){
 
 			// 5. Incrementa el Puntero de Instrucción.
 
-			punteroInstruccionActual++;
+			punteroInstruccionActual++; //TODO
 
 			// Incrementar quantum
 
@@ -132,7 +133,7 @@ void conectarConKernel(){
 void abortarEjecucion(){
 	printf("Desconectar CPU");
 
-	kill(getpid(), SIGKILL);
+	exit(0); //TODO
 	//TODO: abortar ejecucion, limpiar registros y enviar TCB a Kernel
 }
 
@@ -225,112 +226,54 @@ void limpiarTCBactual(t_TCB* tcb){
 		 tcb ->  registrosProgramacion[4] = 0;
 }
 
-int interpretarInstruccion(char * proximaInstruccionAEjecutar){
+//TODO:este seria el ejecutar instruccion. o un interpretar y ejecutar instruccion
+int interpretarYEjecutarInstruccion(char* instruccion){
+	if(strcmp(instruccion,"LOAD")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, /*sizeof(tparam_load)*/ 1);
+		tparam_load* parametros = respuesta;
+		LOAD(parametros);
+		return (4 + sizeof(tparam_load));
 
-	//TODO: aca tendria que mirar lo de primeros 4 bits es la instruccion, los otros dos son los parametros.
-	return 0;
-}
+		//TODO: cambiar parametros de las instrucciones y que sean LOAD(t_parametro_load)
+		//solicitar_msp(proInstr + 4, sizeof(t_parametro_load))
+		//t_parametro_load* param = rta;
 
-void ejecutarInstruccion(int instruccion){
-
-	/*switch(proximaInstruccionAEjecutar)
-	{
-	//case ((int)"LOAD"):
-		LOAD(parametros[0],parametros[1]);
-		break;
-	case "GETM":
-		GETM(parametros[0],parametros[1]);
-		break;
-	case "MOVR":
-		MOVR(parametros[0],parametros[1]);
-		break;
-	case "ADDR":
-		ADDR(parametros[0],parametros[1]);
-		break;
-	case "SUBR":
-		SUBR(parametros[0],parametros[1]);
-		break;
-	case "MULR":
-		MULR(parametros[0],parametros[1]);
-		break;
-	case "MODR":
-		MODR(parametros[0],parametros[1]);
-		break;
-	case "DIVR":
-		DIVR(parametros[0],parametros[1]);
-		break;
-	case "INCR":
-		INCR(parametros[0]);
-		break;
-	case "DECR":
-		DECR(parametros[0]);
-		break;
-	case "COMP":
-		COMP(parametros[0],parametros[1]);
-		break;
-	case "CGEQ":
-		CGEQ(parametros[0],parametros[1]);
-		break;
-	case "CLEQ":
-		CLEQ(parametros[0],parametros[1]);
-		break;
-	case "GOTO":
-		GOTO(parametros[0]);
-		break;
-	case "JMPZ":
-		JMPZ(parametros[0],parametros[1]);
-		break;
-	case "JPNZ":
-		JPNZ(parametros[0]);
-		break;
-	case "INTE":
-		INTE(parametros[0]);
-		break;
-	case "FLCL":
-		FLCL(parametros[0],parametros[1]);
-		break;
-	case "SHIF":
-		SHIF(parametros[0],parametros[1]);
-		break;
-	case "NOPP":
-		NOPP(parametros[0],parametros[1]);
-		break;
-	case "PUSH":
-		PUSH(parametros[0],parametros[1]);
-		break;
-	case "TAKE":
-		TAKE(parametros[0],parametros[1]);
-		break;
-	case "XXXX":
-		XXXX(parametros[0],parametros[1]);
-		break;
-
-	if (KMactual == 1){
-		case "MALC":
-			MALC( );
-			break;
-		case "FREE":
-			FREE( );
-			break;
-		case "INNN":
-			INNN( );
-			break;
-		case "OUTN":
-			OUTN( );
-			break;
-		case "CREA":
-			CREA( );
-			break;
-		case "JOIN":
-			JOIN( );
-			break;
-		case "BLOK":
-			BLOK( );
-			break;
-		case "WAKE":
-			WAKE( );
-			break; */
-
+		/*
+		 * struct t_parametro_load
+		 * 	char reg1
+		 * 	char reg2
+		 */
+		//LOAD(param);
+		return 2;};
+	if(strcmp(instruccion,"GETM")){return 2;};
+	if(strcmp(instruccion,"MOVR")){return 2;};
+	if(strcmp(instruccion,"ADDR")){return 2;};
+	if(strcmp(instruccion,"SUBR")){return 2;};
+	if(strcmp(instruccion,"MULR")){return 2;};
+	if(strcmp(instruccion,"MODR")){return 2;};
+	if(strcmp(instruccion,"DIVR")){return 2;};
+	if(strcmp(instruccion,"INCR")){return 1;};
+	if(strcmp(instruccion,"DECR")){return 1;};
+	if(strcmp(instruccion,"COMP")){return 2;};
+	if(strcmp(instruccion,"CGEQ")){return 2;};
+	if(strcmp(instruccion,"CLEQ")){return 2;};
+	if(strcmp(instruccion,"GOTO")){return 1;};
+	if(strcmp(instruccion,"JMPZ")){return 1;};
+	if(strcmp(instruccion,"JPNZ")){return 1;};
+	if(strcmp(instruccion,"INTE")){return 2;};
+	if(strcmp(instruccion,"NOPP")){return 0;};
+	if(strcmp(instruccion,"PUSH")){return 2;};
+	if(strcmp(instruccion,"TAKE")){return 2;};
+	if(strcmp(instruccion,"XXXX")){return 0;};
+	if(strcmp(instruccion,"MALC")){return 0;};
+	if(strcmp(instruccion,"FREE")){return 0;};
+	if(strcmp(instruccion,"INNN")){return 0;};
+	if(strcmp(instruccion,"OUTN")){return 0;};
+	if(strcmp(instruccion,"CREA")){return 0;};
+	if(strcmp(instruccion,"JOIN")){return 0;};
+	if(strcmp(instruccion,"BLOK")){return 0;};
+	if(strcmp(instruccion,"WAKE")){return 0;};
+	return -1; //No se encontro la instruccion
 }
 
 
@@ -364,16 +307,14 @@ void recibirTCByQuantum(t_datosAEnviar *  datosKernel){
 
 }
 
-char* deserializarInstruccion(t_datosAEnviar* paqueteMSP){
-	//TODO: hacer que desarme el paquete que me mando la MSP y lo convierta en un int
-	char* proximaInstruccion;
-	int tamanioPaqueteMSP = sizeof(paqueteMSP -> datos);
-	char* buffer  = malloc(tamanioPaqueteMSP);
-	memcpy(buffer,paqueteMSP,tamanioPaqueteMSP);
-	proximaInstruccion = buffer;
-	free(buffer);
-	return proximaInstruccion;
+char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP){
+	//TODO: hacer que desarme el paquete que me mando la MSP
+
+	char* buffer  = malloc(paqueteMSP->tamanio);
+	memcpy(buffer,paqueteMSP->datos,paqueteMSP->tamanio);
+	return buffer;
 }
+
 
 /*Funciones MSP*/
 
@@ -391,10 +332,27 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	int * dir_base = malloc(sizeof(int));
 	memcpy(dir_base, respuesta -> datos, sizeof(int));
 
-	char* proximaInstruccion = deserializarInstruccion(respuesta);
-	//TODO: deserializar instruccion. tener un int que sea LOAD15B (en nros)
+	char* proximaInstruccion = deserializarPaqueteMSP(respuesta);
 
 	return proximaInstruccion;
+}
+
+char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
+	char * datos = malloc(2 * sizeof (int));
+	memcpy(datos, &PIDactual, sizeof(int));
+	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
+	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 2* sizeof(int));
+	enviar_datos(socketMSP,paquete);
+	free(datos);
+	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+
+	int * dir_base = malloc(sizeof(int));
+	memcpy(dir_base, respuesta -> datos, sizeof(int));
+
+	char* parametros = deserializarPaqueteMSP(respuesta);
+
+	return parametros;
+
 }
 
 int* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
@@ -430,27 +388,26 @@ t_datosAEnviar * MSP_DestruirSegmento(int PID, int registro){
 
 }
 
-int devolverRegistro(char registro){
+int* devolverRegistro(char registro){
 
 	switch(registro){
 	case 'A':
-		return A;
+		return &A;
 		break;
 	case 'B':
-		return B;
+		return &B;
 		break;
 	case 'C':
-		return C;
+		return &C;
 		break;
 	case 'D':
-		return D;
+		return &D;
 		break;
 	case 'E':
-		return E;
+		return &E;
 		break;
 	}
-
-	return -1;
+	return 0;
 }
 
 
@@ -464,8 +421,8 @@ instrucción “MOVR”, es 1297045074 en un número entero, que en hexadecimal 
 binario es: 01001101 (M) 01001111 (O)01010110 (V) 01010010 (R).
 */
 
-void LOAD(char registro, int numero){ //Carga en el registro, el número dado.
-	registro = numero;
+void LOAD(tparam_load){ //Carga en el registro, el número dado.
+	devolverRegistro(registro) = numero;
 }
 
 void SETM(int numero, char registro1, char registro2){
@@ -478,10 +435,9 @@ void SETM(int numero, char registro1, char registro2){
 
 
 void GETM(char registro1, char registro2){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	registro1 = registro2;
+	registro1 = registro2; //TODO: PEDIR A MSP
 }
 
-//TODO: diferencias GETM y MOVR
 
 void MOVR(char registro1, char registro2){ //Copia el valor del segundo registro hacia el primero
 	 registro1 =  registro2;
@@ -536,22 +492,12 @@ void COMP(char registro1, char registro2){
 
 void CGEQ(char registro1, char registro2){
 	//Compara si el primer registro es mayor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
-	if( registro1 >=  registro2){
-		 A = 1;
-	}
-	else{
-		 A = 0;
-	}
+	A = registro1 >=  registro2;
 }
 
 void CLEQ(char registro1, char registro2){
 	//Compara si el primer registro es menor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
-	if( registro1 <=  registro2){
-		 A = 1;
-	}
-	else{
-	     A = 0;
-	}
+	 A = registro1 <=  registro2;
 }
 
 void saltarAInstruccion(int direccion){
@@ -654,21 +600,22 @@ void MALC(){
 void FREE(){
 	//Libera la memoria apuntada por el registro A. Solo se podrá liberar memoria alocada por la
 	//instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.
-	//TODO:
-//	MSP_DestruirSegmento(PIDactual,  A);
+	//TODO: que no sea ninguno de los que crea el LOADER
+	MSP_DestruirSegmento(PIDactual,  A);
 }
-/*
+
 void INNN(){
 	// Pide por consola del programa que se ingrese un número, con signo entre –2.147.483.648 y
 	// 2.147.483.647. El mismo será almacenado en el registro A. Invoca al servicio correspondiente en
 	// el proceso Kernel.
+
+	//TODO: pedirle al kernel
 	int numero;
 	printf("Ingrese un numero entre –2.147.483.648 y 2.147.483.647");
 	scanf("%l", numero);
 	 A = numero;
 }
 
-//TODO: a que refiere con invoca al servicio correspondiente en el proceso Kernel?
 
 void INNC(){
 	//Pide por consola del programa que se ingrese una cadena no más larga de lo indicado por el
@@ -683,6 +630,8 @@ void INNC(){
 void OUTN(){
 	//Imprime por consola del programa el número, con signo almacenado en el registro A. Invoca al
 	//servicio correspondiente en el proceso Kernel.
+
+	//TODO: kernel
 	printf("el numero almacenado en el registro A es: %d",  A);
 }
 
@@ -696,7 +645,7 @@ void OUTC(){
 	}
 }
 
-*/
+
 void CREA(){
 	/*Crea un hilo, hijo del TCB que ejecutó la llamada al sistema correspondiente. El nuevo hilo
 	tendrá su Program Counter apuntado al número almacenado en el registro B. El identificador del

@@ -61,6 +61,102 @@ typedef struct {
 	reg_programacion registrosProgramacion;
 }TCB_struct;
 
+/*Tipos parametros instruccion*/
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_load;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_getm;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_addr;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_subr;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_mulr;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_modr;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_divr;
+
+typedef struct{
+	char reg1;
+}tparam_incr;
+
+typedef struct{
+	char reg1;
+}tparam_decr;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_comp;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_cgeq;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_cleq;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_divr;
+
+typedef struct{
+	char reg1;
+}tparam_goto;
+
+typedef struct{
+	int direccion;
+}tparam_jmpz;
+
+typedef struct{
+	int direccion;
+}tparam_jpnz;
+
+typedef struct{
+	int direccion;
+}tparam_inte;
+
+typedef struct{
+	int numero;
+	char registro;
+}tparam_shif;
+
+typedef struct{
+	int num1;
+	int num2;
+}tparam_push;
+
+typedef struct{
+	int numero;
+	char registro;
+}tparam_take;
+
 
 /*Datos actuales*/
 int PIDactual;
@@ -73,11 +169,11 @@ int baseStackActual;
 int cursorStackActual;
 
 /*Registros CPU*/
-int A;
-int B;
-int C;
-int D;
-int E;
+int A = 0;
+int B = 0;
+int C = 0;
+int D = 0;
+int E = 0;
 
 
 
@@ -111,7 +207,7 @@ void cargarRegistrosCPU();
 void actualizarRegistrosTCB();
 int cargarDatosTCB();
 int actualizarTCB();
-void ejecutarInstruccion(int instruccion);
+//void ejecutarInstruccion(char instruccion[4], int parametros[3]);
 void devolverTCBactual(int codigoOperacion);
 void limpiarRegistros();
 void recibirTCByQuantum(t_datosAEnviar *  datosKernel);
@@ -119,16 +215,19 @@ t_TCB* desempaquetarTCB(char* buffer);
 void inicializarTCB(t_TCB* tcb);
 int interpretarInstruccion(char * proximaInstruccionAEjecutar);
 void saltarAInstruccion(int direccion);
-int devolverRegistro(char registro);
+int* devolverRegistro(char registro);
+int calcularCantidadDeParametrosParaLaInstruccion(char instruccion[4]);
+int interpretarYEjecutarInstruccion(char* instruccion);
 
 /*Funciones MSP*/
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
 int* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
 t_datosAEnviar*  MSP_DestruirSegmento(int PID, int registro);
+char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros);
 
 
 /*Instrucciones*/
-void LOAD(char registro, int numero);
+void LOAD(tparam_load);
 void GETM(char registro1, char registro2);
 void MOVR(char registro1, char registro2);
 void ADDR(char registro1, char registro2);
