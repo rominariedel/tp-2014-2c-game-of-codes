@@ -11,47 +11,54 @@
 int main(int cantArgs, char** args){
 
 	printf("\n ------Bienvenido al CPU----- \n");
+	printf("\n Cargando archivos configuración... \n");
 	cargarArchivoConfiguracion(cantArgs,args);
-	printf("\n Cargando archivos configuración \n");
+
+	printf("\n IP MSP : %d \n", (int)IPMSP);
+	printf("\n PUERTO MSP : %d \n", (int)PUERTOMSP);
+	printf("\n IP KERNEL : %d \n", (int)IPKERNEL);
+	printf("\n PUERTO KERNEL : %d \n", (int)PUERTOKERNEL);
+	printf("\n RETARDO : %d \n", RETARDO);
+
+
+	printf("\n Conectando con la MSP ...\n");
 	conectarConMSP();
-	printf("\n Conectado con MSP \n");
+
+	printf("\n Conectando con el Kernel ...\n");
 	conectarConKernel();
-	printf("\n Conectado con Kernel \n");
 
 	while(1)
 	{
-		//estoy a la espera de que el kernel me mande el TCB y el quantum
 		printf("Estoy a la espera de que el Kernel me mande el TCB y el quantum correspondiente");
-		int recibidoTCBactual = 0;
-//		recibidoTCBactual = recv(kernelSocket,superMensaje,sizeof(t_TCB),0);
-		int recibidoquantum = 0;
-//		recibidoquantum = recv(kernelSocket,&quantum,sizeof(int),0);
-		if (recibidoTCBactual == -1)perror("error al recibir TCB PUTO");
-		if (recibidoquantum == -1)perror("error al recibir quantum");
+		t_datosAEnviar *  datosKernel = recibir_datos(socketKernel);
+		if (datosKernel == NULL){
+			perror("Fallo al recibir TCB y quantum");
+			abortarEjecucion();
+		}
+
+
+		recibirTCByQuantum(datosKernel);
+		//TODO: ver ocmo me envia el quantum
 
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
 		printf("Recibí datos del TCB actual y sus registros de programacion");
-		//cargarDatosTCB();
-
-		estaEjecutando = 1; //estado CPU
+		cargarDatosTCB();
 
 		int quantumActual = 0;
 		printf("\n quantumActual es: %d \n", quantumActual);
-		int quantum = -1;
-		while(quantumActual<quantum && KMactual==1)
+
+		while(quantumActual>quantum && KMactual==1)
 		{
 
+			printf("Solicitar Proxima Instruccion a Ejecutar");
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
-			int proximaInstruccionAEjecutar = 0;
-			//int proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, &punteroInstruccionActual);
+			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
-			int parametros[2];
-			parametros[0] = 0;
-			parametros[1] = 0;
 
-			ejecutarInstruccion(proximaInstruccionAEjecutar,parametros);
+			int instruccion = interpretarInstruccion(proximaInstruccionAEjecutar);
+			ejecutarInstruccion(instruccion);
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 
@@ -75,7 +82,6 @@ int main(int cantArgs, char** args){
 
 			devolverTCBactual();
 			limpiarRegistros();
-
 		}
 		return 0;
 	}
@@ -91,46 +97,36 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	RETARDO = config_get_int_value(configuracion, "RETARDO");
 }
 
-void conectarConMSP()
-{
+void conectarConMSP(){
+
 	socketMSP = crear_cliente(IPMSP, PUERTOMSP);
 
+	if(socketMSP == -1){
+		perror("\n No se pudo realizar la conexion con la MSP");
+		abortarEjecucion();
+	}else {
+		printf("\n Se conectó con la MSP, IP: %s , PUERTO: %s \n", IPMSP, PUERTOMSP);
+	}
 }
 
-void conectarConKernel()
-{
-	struct addrinfo hintsKernel;
-	struct addrinfo *kernelInfo;
+void conectarConKernel(){
 
-	memset(&hintsKernel, 0, sizeof(hintsKernel));
-	hintsKernel.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
-	hintsKernel.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
+	socketKernel = crear_cliente(IPKERNEL, PUERTOKERNEL);
 
-	getaddrinfo(IPKERNEL, PUERTOKERNEL, &hintsKernel, &kernelInfo);	// Carga en serverInfo los datos de la conexion
-	kernelSocket = socket(kernelInfo->ai_family, kernelInfo->ai_socktype, kernelInfo->ai_protocol);
-
-	int estadoConexion = connect(kernelSocket, kernelInfo->ai_addr, kernelInfo->ai_addrlen);
-
-	if(estadoConexion == -1){
-		// error("no se pudo realizar la conexion con el Kernel");
+	if(socketKernel == -1){
+		perror("no se pudo realizar la conexion con el Kernel");
 		abortarEjecucion();
+	}else {
+		printf("\n Se conectó con el Kernel, IP: %s , PUERTO: %s \n", IPKERNEL, PUERTOKERNEL);
 	}
-	//TODO: hacer log
-
-	printf("Se conecto al Kernel");
-
-	freeaddrinfo(kernelInfo);	// No lo necesitamos mas
-
 }
 
 
 void abortarEjecucion(){
-	int mensaje[2];
-	mensaje[0]=  1; //abortar ejecucion, matar cpu
-	//mensaje[1]= TCBactual; TCBactual no es un int. REVISAR
-	int status = send(kernelSocket,mensaje, sizeof(int[2]), 0);
-	if (status == -1){printf("No se pudo conectar con el Kernel");}
+	printf("Desconectar CPU");
 
+	kill(getpid(), SIGKILL);
+	//TODO: abortar ejecucion, limpiar registros y enviar TCB a Kernel
 }
 
 void cargarRegistrosCPU(){
@@ -149,20 +145,7 @@ void actualizarRegistrosTCB(){
 	TCBactual -> registrosProgramacion[4] = E;
 }
 
-void recibirSuperMensaje(int superMensaje[12]){
-	TCBactual -> TID = superMensaje[0];
-	TCBactual -> KM = superMensaje[1];
-	TCBactual -> baseSegmentoCodigo = superMensaje[2];
-	TCBactual -> tamanioSegmentoCodigo = superMensaje[3];
-	TCBactual -> punteroInstruccion = superMensaje[4];
-	TCBactual -> baseStack = superMensaje[5];
-	TCBactual -> cursorStack = superMensaje[6];
-	TCBactual -> registrosProgramacion[0] = superMensaje[7];
-	TCBactual -> registrosProgramacion[1] = superMensaje[8];
-	TCBactual -> registrosProgramacion[2] = superMensaje[9];
-	TCBactual -> registrosProgramacion[3] = superMensaje[10];
-	TCBactual -> registrosProgramacion[4] = superMensaje[11];
-}
+
 
 int cargarDatosTCB(){
 	TIDactual = TCBactual -> TID;
@@ -188,26 +171,14 @@ int actualizarTCB(){
 	return 0;
 }
 
-void cargarTCBenSuperMensaje(t_TCB* TCBactual){
-	superMensaje[0] = TCBactual -> TID;
-	superMensaje[1] = TCBactual -> KM;
-	superMensaje[2] = TCBactual -> baseSegmentoCodigo;
-	superMensaje[3] = TCBactual -> tamanioSegmentoCodigo;
-	superMensaje[4] = TCBactual -> punteroInstruccion;
-	superMensaje[5] = TCBactual -> baseStack;
-	superMensaje[6] = TCBactual -> cursorStack;
-	superMensaje[7] = TCBactual -> registrosProgramacion[0];
-	superMensaje[8] = TCBactual -> registrosProgramacion[1];
-	superMensaje[9] = TCBactual -> registrosProgramacion[2];
-	superMensaje[10] = TCBactual -> registrosProgramacion[3];
-	superMensaje[11] = TCBactual -> registrosProgramacion[4];
-}
 
 void devolverTCBactual(){
-	actualizarTCB();
+
+	//TODO: enviar al Kernel el TCB acutal
+	/*actualizarTCB();
 	cargarTCBenSuperMensaje(TCBactual);
-	int status = send(kernelSocket,superMensaje,sizeof(t_TCB),0);
-	if(status){printf("no se pudo devolver el TCBactual");}
+	int status = send(socketKernel,superMensaje,sizeof(t_TCB),0);
+	if(status){printf("no se pudo devolver el TCBactual");}*/
 }
 
 void limpiarRegistros(){
@@ -226,10 +197,33 @@ void limpiarRegistros(){
 	F = 0;
 }
 
-void ejecutarInstruccion(int proximaInstruccionAEjecutar, int parametros[2]){
+void limpiarTCBactual(t_TCB* tcb){
+		 tcb -> PID = 0;
+		 tcb -> TID = 0;
+		 tcb ->   KM = 0;
+		 tcb ->   baseSegmentoCodigo = 0;
+		 tcb ->  tamanioSegmentoCodigo = 0;
+		 tcb -> punteroInstruccion = 0;
+		 tcb ->  baseStack = 0;
+		 tcb ->  cursorStack = 0;
+		 tcb ->  registrosProgramacion[0] = 0;
+		 tcb ->  registrosProgramacion[1] = 0;
+		 tcb ->  registrosProgramacion[2] = 0;
+		 tcb ->  registrosProgramacion[3] = 0;
+		 tcb ->  registrosProgramacion[4] = 0;
+}
+
+int interpretarInstruccion(char * proximaInstruccionAEjecutar){
+
+	//TODO: aca tendria que mirar lo de primeros 4 bits es la instruccion, los otros dos son los parametros.
+	return 0;
+}
+
+void ejecutarInstruccion(int instruccion){
+
 	/*switch(proximaInstruccionAEjecutar)
 	{
-	case ((int)"LOAD"):
+	//case ((int)"LOAD"):
 		LOAD(parametros[0],parametros[1]);
 		break;
 	case "GETM":
@@ -327,9 +321,51 @@ void ejecutarInstruccion(int proximaInstruccionAEjecutar, int parametros[2]){
 
 }
 
+
+t_TCB* desempaquetarTCB(char* buffer){
+	t_TCB* tcb = malloc(sizeof(t_TCB));
+	tcb -> TID = buffer[0];
+	tcb -> KM = buffer[1];
+	tcb -> baseSegmentoCodigo = buffer[2];
+	tcb -> tamanioSegmentoCodigo = buffer[3];
+	tcb -> punteroInstruccion = buffer[4];
+	tcb -> baseStack = buffer[5];
+	tcb -> cursorStack = buffer[6];
+	tcb -> registrosProgramacion[0] = buffer[7];
+	tcb -> registrosProgramacion[1] = buffer[8];
+	tcb -> registrosProgramacion[2] = buffer[9];
+	tcb -> registrosProgramacion[3] = buffer[10];
+	tcb -> registrosProgramacion[4] = buffer[11];
+
+	return tcb;
+}
+
+void recibirTCByQuantum(t_datosAEnviar *  datosKernel){
+	//TODO: recibir quantum
+	//TODO: se hace asi???????
+	int tamanioBuffer = sizeof(TCB_struct) + sizeof(int);
+	char* buffer  = malloc(tamanioBuffer);
+	memcpy(buffer,datosKernel,tamanioBuffer);
+	printf("el contenido del Buffer es: %s", buffer);
+	TCBactual = desempaquetarTCB(buffer);
+	cargarDatosTCB(TCBactual);
+
+}
+
+char* deserializarInstruccion(t_datosAEnviar* paqueteMSP){
+	//TODO: hacer que desarme el paquete que me mando la MSP y lo convierta en un int
+	char* proximaInstruccion;
+	int tamanioPaqueteMSP = sizeof(paqueteMSP -> datos);
+	char* buffer  = malloc(tamanioPaqueteMSP);
+	memcpy(buffer,paqueteMSP,tamanioPaqueteMSP);
+	proximaInstruccion = buffer;
+	free(buffer);
+	return proximaInstruccion;
+}
+
 /*Funciones MSP*/
-/*
-void MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
+
+char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
@@ -342,6 +378,11 @@ void MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 	int * dir_base = malloc(sizeof(int));
 	memcpy(dir_base, respuesta -> datos, sizeof(int));
+
+	char* proximaInstruccion = deserializarInstruccion(respuesta);
+	//TODO: deserializar instruccion. tener un int que sea LOAD15B (en nros)
+
+	return proximaInstruccion;
 }
 
 int* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
@@ -376,7 +417,7 @@ t_datosAEnviar * MSP_DestruirSegmento(int PID, int registro){
 	return respuesta;
 
 }
-*/
+
 
 /*Codigo ESO*/
 

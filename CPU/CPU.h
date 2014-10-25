@@ -83,7 +83,7 @@ int F;
 
 
 /* Variables Globales */
-int kernelSocket;
+int socketKernel;
 int socketMSP;
 
 char* PUERTOMSP;
@@ -94,7 +94,7 @@ int RETARDO;
 
 int superMensaje[13];
 t_TCB* TCBactual;
-int quantum;
+int quantum = 0;
 
 
 /*Estados del CPU*/
@@ -111,14 +111,18 @@ void cargarRegistrosCPU();
 void actualizarRegistrosTCB();
 int cargarDatosTCB();
 int actualizarTCB();
-void ejecutarInstruccion(int proximaInstruccionAEjecutar, int parametros[2]);
+void ejecutarInstruccion(int instruccion);
 void devolverTCBactual();
 void limpiarRegistros();
-void recibirSuperMensaje(int superMensaje[12]);
+void recibirTCByQuantum(t_datosAEnviar *  datosKernel);
+t_TCB* desempaquetarTCB(char* buffer);
+void inicializarTCB(t_TCB* tcb);
+int interpretarInstruccion(char * proximaInstruccionAEjecutar);
+
 /*Funciones MSP*/
-//void MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
-//void* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
-//void MSP_DestruirSegmento(int PID, int registro);
+char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
+int* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
+t_datosAEnviar*  MSP_DestruirSegmento(int PID, int registro);
 
 
 /*Instrucciones*/
