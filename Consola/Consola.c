@@ -6,44 +6,79 @@
  */
 
 #include <commons/config.h>
-
 #include <sockets.h>
+#include<stdio.h>
+#include<stddef.h>
+#include <commons/config.h>
+#include<commons/collections/list.h>
+#include <sockets.h>
+#include<commons/collections/queue.h>
+#include <sys/select.h>
+#include <commons/string.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+enum mensajes{
+	codigo_consola = 25,
+};
+
+char * extraer_data(char * path);
+int tamanio_codigo;
+
 int main(int argc, char ** argv){
-	char* puerto;
-	char* ip;
+	char* puerto = "1122";
+	char* ip = "127.0.0.1";
+	printf("INICIANDO CONSOLA\n");
+	//t_config* config = config_create(argv[1]);
+	//ip = config_get_string_value(config, "IP");
+	//puerto = config_get_string_value(config, "PUERTO");
 
-	t_config* config = config_create(argv[1]);
-	ip = config_get_string_value(config, "IP");
-	puerto = config_get_string_value(config, "PUERTO");
-
-
-
-	struct addrinfo hints;
-	struct addrinfo *serverInfo;
-
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
-	hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
-
-	getaddrinfo(ip, puerto, &hints, &serverInfo);	// Carga en serverInfo los datos de la conexion
+	char * buffer = extraer_data(argv[1]);
 
 	int kernelSocket;
-	kernelSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
-
-	connect(kernelSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
-	freeaddrinfo(serverInfo);	// No lo necesitamos mas
-
+	printf("iniciando la creacion del cliente\n");
+	kernelSocket = crear_cliente(ip, puerto);
+	if(kernelSocket<0){
+		printf("FALLO en la conexion con el kernel \n");
+		return EXIT_FAILURE;
+	}
 	printf("Conectado al Kernel. Ya se puede enviar el codigo ESO\n");
 
-	// cargar el contenido del archivo con el codigo ESO;
-
-	//send(kernelSocket, ACA VA LO QUE LE ENVIAMOS,ACA HAY QUE PONER CUANTO PESA LO UQE LE ENVIAMOS sizeof(char), 0);
-	//recv(kernelSocket, &conf, sizeof(char), 0);
-
-	//log_info(logger, "Se establecio conexion con la UMV");
+	t_datosAEnviar * paquete = crear_paquete(codigo_consola, buffer, tamanio_codigo);
+	if(enviar_datos(kernelSocket, paquete) < 0) {
+		printf("FALLO al enviar datos al kernel\n");
+		return EXIT_FAILURE;
+	}
+	printf("Se enviaron los primeros datos exitosamente\n");
+	free(paquete);
+	while(1){
+		paquete = recibir_datos(kernelSocket);
+		switch(paquete->codigo_operacion){
+		 //ACCIONES
+		}
+		free(paquete);
+	}
 
 
 	close(kernelSocket);
 
 	return 0;
+}
+
+long tamanio_archivo(FILE* archivo){
+	fseek(archivo, 0, SEEK_SET);
+	int tamanio= ftell(archivo);
+	rewind(archivo);
+	return tamanio;
+}
+
+char * extraer_data(char * path){
+	printf("Extrayendo datos del archivo\n");
+	FILE* archivo = fopen(path, "read");
+	tamanio_codigo = tamanio_archivo(archivo);
+	char * buffer = malloc(tamanio_codigo); //MMAP
+	fread((void*) buffer, 1, tamanio_codigo, archivo);
+	fclose(archivo);
+	printf("Datos copiados exitosamente\n");
+	return buffer;
 }

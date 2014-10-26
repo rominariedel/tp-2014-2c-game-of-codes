@@ -49,21 +49,6 @@ void free_listas(){
 
 }
 
-long tamanio_syscalls(FILE* syscalls){
-	fseek(syscalls, 0, SEEK_END);
-	int tamanio= ftell(syscalls);
-	rewind(syscalls);
-	return tamanio;
-}
-
-char * extraer_syscalls(){
-	FILE* archivo_syscalls = fopen(SYSCALLS, "read");
-	tamanio_codigo_syscalls = tamanio_syscalls(archivo_syscalls);
-	char * syscalls = malloc(tamanio_codigo_syscalls); //MMAP
-	fread((void*) syscalls, 1, tamanio_codigo_syscalls, archivo_syscalls);
-	fclose(archivo_syscalls);
-	return syscalls;
-}
 
 void mover_a_exit(TCB_struct * tcb){
 	queue_push(EXIT, tcb);

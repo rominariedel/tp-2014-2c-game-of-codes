@@ -120,26 +120,56 @@ void loader() {
 					queue_push(NEW, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
 				}
+				free(datos);
 			}
+			n_descriptor ++;
 		}
 
 	}
 }
 
+char * recibir_syscalls(int socket){
+	printf("Esperando conexion de la consola \n");
+	int socket_consola = recibir_conexion(socket);
+	printf("Conectado a la consola\n");
+	t_datosAEnviar * datos = recibir_datos(socket_consola);
+	if(datos == NULL){
+		printf("Fallo en la recepcion de datos\n");
+		return NULL;
+	}
+	printf("Se recibieron las syscalls");
+	if(datos->codigo_operacion == codigo_consola){
+		return datos->datos;
+	}
+	printf("No se recibieron las syscalls exitosamente");
+	return NULL;
+}
+
 void boot() {
 
 	printf("\n    INICIANDO BOOT   \n");
-	char * syscalls = extraer_syscalls();
+
+	socket_gral = crear_servidor(PUERTO, backlog);
+	if(socket_gral <0){
+		printf("No se pudo crear el servidor\n");
+		exit(-1);
+	}
+	printf("Se ha creado el servidor exitosamente\n");
+
+	char * syscalls = recibir_syscalls(socket_gral);
 
 	printf("\n      CONECTANDO CON LA MSP\n");
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
-
+	if(socket_MSP <0){
+		printf("FALLO al conectar con la MSP\n");
+		exit(-1);
+	}
 	int base_segmento_codigo = solicitar_segmento(pid_KM_boot,
 			tamanio_codigo_syscalls);
 	//TODO: validar la base del segmento
-	escribir_memoria(pid_KM_boot, base_segmento_codigo,
-			(int) tamanio_codigo_syscalls, (void*) syscalls);
-	free(syscalls);
+	//escribir_memoria(pid_KM_boot, base_segmento_codigo,
+	//		(int) tamanio_codigo_syscalls, (void*) syscalls);
+	//free(syscalls);
 
 	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
 	//TODO: validar la base del stack
@@ -162,11 +192,6 @@ void boot() {
 
 	printf("Esperando conexiones...");
 
-	socket_gral = crear_servidor(PUERTO, backlog);
-	if(socket_gral <0){
-		perror("No se pudo crear el servidor");
-		exit(-1);
-	}
 
 	FD_ZERO(&consola_set);
 	FD_ZERO(&CPU_set);

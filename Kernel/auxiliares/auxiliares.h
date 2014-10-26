@@ -114,7 +114,6 @@ int obtener_TID();
 int obtener_PID();
 TCB_struct * deserializar_TCB(char * datos);
 void crear_colas();
-char * extraer_syscalls();
 int CPU_esta_libre(struct_CPU cpu);
 void planificar(TCB_struct);
 void free_colas();

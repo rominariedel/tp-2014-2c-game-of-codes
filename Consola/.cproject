@@ -25,6 +25,7 @@
 								<option id="gnu.c.compiler.option.include.paths.1950144565" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/commons}&quot;"/>
 								</option>
+								<option id="gnu.c.compiler.option.misc.other.1260884381" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -Wno-unused-result" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.803633304" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.186195252" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">

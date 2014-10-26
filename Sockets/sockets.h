@@ -42,7 +42,6 @@ int crear_cliente(char*, char *);
 t_datosAEnviar* crear_paquete(int cod_op, void * datos, int tamanio);
 int enviar_datos(int socket, t_datosAEnviar * paquete);
 t_datosAEnviar * recibir_datos(int socket);
-int suma(int cant_args, int arg_tamanio[cant_args]);
 int recibir_conexion(int socket);
 
 #endif /* SOCKETS_H_ */

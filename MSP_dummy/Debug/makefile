@@ -4,11 +4,10 @@
 
 -include ../makefile.init
 
-RM := rm
+RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include auxiliares/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -23,28 +22,22 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: Kernel
-
-dependents:
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
+all: Servidor
 
 # Tool invocations
-Kernel: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
+Servidor: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug" -L"/home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug" -o "Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "Servidor" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) Kernel
+	-$(RM) $(OBJS)$(C_DEPS)$(EXECUTABLES) Servidor
 	-@echo ' '
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
-/home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so:
 
 -include ../makefile.targets

@@ -16,7 +16,7 @@ static char* serializar_paquete(t_datosAEnviar * paquete){
 
 
 static t_datosAEnviar* deserializar_header(char * buffer){
-	t_datosAEnviar * paquete = malloc(tamanio_header);
+	t_datosAEnviar * paquete = malloc(sizeof(t_datosAEnviar));
 	memcpy(&paquete->codigo_operacion, buffer, sizeof(int));
 	memcpy(&paquete->tamanio, buffer + sizeof(int), sizeof(int));
 	return paquete;
@@ -60,19 +60,19 @@ int crear_servidor(char * PUERTO, int backlog){
 }
 
 int crear_cliente(char* IP, char * PUERTO){
+	printf("iniciando la creacion del cliente\n");
 	struct addrinfo hints;
 	struct addrinfo *serverInfo;
-
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;		// Permite que la maquina se encargue de verificar si usamos IPv4 o IPv6
 	hints.ai_socktype = SOCK_STREAM;	// Indica que usaremos el protocolo TCP
-
+	printf("Obteniendo datos de la conexion\n");
 	getaddrinfo(IP, PUERTO, &hints, &serverInfo);	// Carga en serverInfo los datos de la conexion
-
+	printf("Exito. IP %s y PUERTO %s\n", IP, PUERTO);
 
 	int serverSocket;
 	serverSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
-
+	printf("socket creado \n");
 	if(connect(serverSocket, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1){
 		return -1;
 	}
@@ -99,6 +99,7 @@ int enviar_datos(int socket, t_datosAEnviar * paquete){
 	int cantidad_total = paquete->tamanio + tamanio_header;
 	while(enviando){
 		cantidad_enviada = send(socket, buffer + offset, cantidad_total-offset, 0);
+		printf("Se enviaron %d bytes\n", cantidad_enviada);
 		if(cantidad_enviada==-1){
 			//TODO: Loguear error
 			return -1;
