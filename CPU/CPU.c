@@ -227,53 +227,114 @@ void limpiarTCBactual(t_TCB* tcb){
 }
 
 //TODO:este seria el ejecutar instruccion. o un interpretar y ejecutar instruccion
-int interpretarYEjecutarInstruccion(char* instruccion){
+void interpretarYEjecutarInstruccion(char* instruccion){
 	if(strcmp(instruccion,"LOAD")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, /*sizeof(tparam_load)*/ 1);
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
 		tparam_load* parametros = respuesta;
 		LOAD(parametros);
-		return (4 + sizeof(tparam_load));
+	};
+	if(strcmp(instruccion,"GETM")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
+		tparam_getm* parametros = respuesta;
+		GETM(parametros);
+	};
+	if(strcmp(instruccion,"MOVR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
+		tparam_movr* parametros = respuesta;
+		MOVR(parametros);
+	};
+	if(strcmp(instruccion,"ADDR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
+		tparam_addr* parametros = respuesta;
+		ADDR(parametros);
+	};
+	if(strcmp(instruccion,"SUBR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
+		tparam_subr* parametros = respuesta;
+		SUBR(parametros);
+	};
+	if(strcmp(instruccion,"MULR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
+		tparam_mulr* parametros = respuesta;
+		MULR(parametros);
+	};
+	if(strcmp(instruccion,"MODR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
+		tparam_modr* parametros = respuesta;
+		MODR(parametros);
+	};
+	if(strcmp(instruccion,"DIVR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
+		tparam_divr* parametros = respuesta;
+		DIVR(parametros);
+	};
+	if(strcmp(instruccion,"INCR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
+		tparam_incr* parametros = respuesta;
+		INCR(parametros);
+	};
+	if(strcmp(instruccion,"DECR")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
+		tparam_decr* parametros = respuesta;
+		DECR(parametros);
+	};
+	if(strcmp(instruccion,"COMP")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
+		tparam_comp* parametros = respuesta;
+		COMP(parametros);
+	};
+	if(strcmp(instruccion,"CGEQ")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
+		tparam_cgeq* parametros = respuesta;
+		CGEQ(parametros);
+	};
+	if(strcmp(instruccion,"CLEQ")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
+		tparam_cleq* parametros = respuesta;
+		CLEQ(parametros);
+	};
+	if(strcmp(instruccion,"GOTO")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_goto));
+		tparam_goto* parametros = respuesta;
+		GOTO(parametros);
+	};
+	if(strcmp(instruccion,"JMPZ")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
+		tparam_jmpz* parametros = respuesta;
+		JMPZ(parametros);
+	}
 
-		//TODO: cambiar parametros de las instrucciones y que sean LOAD(t_parametro_load)
-		//solicitar_msp(proInstr + 4, sizeof(t_parametro_load))
-		//t_parametro_load* param = rta;
+	if(strcmp(instruccion,"JPNZ")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
+		tparam_goto* parametros = respuesta;
+		GOTO(parametros);
+	};
+	if(strcmp(instruccion,"INTE")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
+		tparam_inte* parametros = respuesta;
+		INTE(parametros);
+	};
+	if(strcmp(instruccion,"NOPP")){NOPP();};
+	if(strcmp(instruccion,"PUSH")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
+		tparam_push* parametros = respuesta;
+		PUSH(parametros);
+	};
+	if(strcmp(instruccion,"TAKE")){
+		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
+		tparam_take* parametros = respuesta;
+		TAKE(parametros);
+	};
+	if(strcmp(instruccion,"XXXX")){XXXX();};
+	if(strcmp(instruccion,"MALC")){MALC();};
+	if(strcmp(instruccion,"FREE")){FREE();};
+	if(strcmp(instruccion,"INNN")){INNN();};
+	if(strcmp(instruccion,"OUTN")){OUTN();};
+	if(strcmp(instruccion,"CREA")){CREA();};
+	if(strcmp(instruccion,"JOIN")){JOIN();};
+	if(strcmp(instruccion,"BLOK")){BLOK();};
+	if(strcmp(instruccion,"WAKE")){WAKE();};
 
-		/*
-		 * struct t_parametro_load
-		 * 	char reg1
-		 * 	char reg2
-		 */
-		//LOAD(param);
-		return 2;};
-	if(strcmp(instruccion,"GETM")){return 2;};
-	if(strcmp(instruccion,"MOVR")){return 2;};
-	if(strcmp(instruccion,"ADDR")){return 2;};
-	if(strcmp(instruccion,"SUBR")){return 2;};
-	if(strcmp(instruccion,"MULR")){return 2;};
-	if(strcmp(instruccion,"MODR")){return 2;};
-	if(strcmp(instruccion,"DIVR")){return 2;};
-	if(strcmp(instruccion,"INCR")){return 1;};
-	if(strcmp(instruccion,"DECR")){return 1;};
-	if(strcmp(instruccion,"COMP")){return 2;};
-	if(strcmp(instruccion,"CGEQ")){return 2;};
-	if(strcmp(instruccion,"CLEQ")){return 2;};
-	if(strcmp(instruccion,"GOTO")){return 1;};
-	if(strcmp(instruccion,"JMPZ")){return 1;};
-	if(strcmp(instruccion,"JPNZ")){return 1;};
-	if(strcmp(instruccion,"INTE")){return 2;};
-	if(strcmp(instruccion,"NOPP")){return 0;};
-	if(strcmp(instruccion,"PUSH")){return 2;};
-	if(strcmp(instruccion,"TAKE")){return 2;};
-	if(strcmp(instruccion,"XXXX")){return 0;};
-	if(strcmp(instruccion,"MALC")){return 0;};
-	if(strcmp(instruccion,"FREE")){return 0;};
-	if(strcmp(instruccion,"INNN")){return 0;};
-	if(strcmp(instruccion,"OUTN")){return 0;};
-	if(strcmp(instruccion,"CREA")){return 0;};
-	if(strcmp(instruccion,"JOIN")){return 0;};
-	if(strcmp(instruccion,"BLOK")){return 0;};
-	if(strcmp(instruccion,"WAKE")){return 0;};
-	return -1; //No se encontro la instruccion
 }
 
 
