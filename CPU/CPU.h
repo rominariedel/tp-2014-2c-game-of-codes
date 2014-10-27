@@ -65,13 +65,24 @@ typedef struct {
 
 typedef struct{
 	char reg1;
-	char reg2;
+	int num;
 }tparam_load;
+
+typedef struct{
+	int num;
+	char reg1;
+	char reg2;
+}tparam_setm;
 
 typedef struct{
 	char reg1;
 	char reg2;
 }tparam_getm;
+
+typedef struct{
+	char reg1;
+	char reg2;
+}tparam_movr;
 
 typedef struct{
 	char reg1;
@@ -120,11 +131,6 @@ typedef struct{
 	char reg1;
 	char reg2;
 }tparam_cleq;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}tparam_divr;
 
 typedef struct{
 	char reg1;
@@ -213,10 +219,8 @@ void limpiarRegistros();
 void recibirTCByQuantum(t_datosAEnviar *  datosKernel);
 t_TCB* desempaquetarTCB(char* buffer);
 void inicializarTCB(t_TCB* tcb);
-int interpretarInstruccion(char * proximaInstruccionAEjecutar);
 void saltarAInstruccion(int direccion);
 int* devolverRegistro(char registro);
-int calcularCantidadDeParametrosParaLaInstruccion(char instruccion[4]);
 int interpretarYEjecutarInstruccion(char* instruccion);
 
 /*Funciones MSP*/
@@ -227,27 +231,28 @@ char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros);
 
 
 /*Instrucciones*/
-void LOAD(tparam_load);
-void GETM(char registro1, char registro2);
-void MOVR(char registro1, char registro2);
-void ADDR(char registro1, char registro2);
-void SUBR(char registro1, char registro2);
-void MULR(char registro1, char registro2);
-void MODR(char registro1, char registro2);
-void DIVR(char registro1, char registro2);
-void INCR(char registro);
-void DECR(char registro);
-void COMP(char registro1, char registro2);
-void CGEQ(char registro1, char registro2);
-void CLEQ(char registro1, char registro2);
-void GOTO(char registro);
-void JMPZ(int direccion);
-void JPNZ(int direccion);
-void INTE(int direccion);
-void SHIF(int numero, char registro);
+void LOAD(tparam_load*);
+void SETM(tparam_setm*);
+void GETM(tparam_getm*);
+void MOVR(tparam_movr*);
+void ADDR(tparam_addr*);
+void SUBR(tparam_subr*);
+void MULR(tparam_mulr*);
+void MODR(tparam_modr*);
+void DIVR(tparam_divr*);
+void INCR(tparam_incr*);
+void DECR(tparam_decr*);
+void COMP(tparam_comp*);
+void CGEQ(tparam_cgeq*);
+void CLEQ(tparam_cleq*);
+void GOTO(tparam_goto*);
+void JMPZ(tparam_jmpz*);
+void JPNZ(tparam_jpnz*);
+void INTE(tparam_inte*);
+void SHIF(tparam_shif*);
 void NOPP();
-void PUSH(int numeroA, int numeroB);
-void TAKE(int numero, char registro);
+void PUSH(tparam_push*);
+void TAKE(tparam_take*);
 void XXXX();
 
 /*Instrucciones Protegidas*/

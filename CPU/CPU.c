@@ -54,8 +54,8 @@ int main(int cantArgs, char** args){
 			printf("\n %d \n", quantumActual);
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
-			int cantidadParametros = calcularCantidadDeParametrosParaLaInstruccion(proximaInstruccionAEjecutar);
-			char parametros[]
+
+
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
 
 			int instruccion = interpretarInstruccion(proximaInstruccionAEjecutar);
@@ -421,11 +421,11 @@ instrucción “MOVR”, es 1297045074 en un número entero, que en hexadecimal 
 binario es: 01001101 (M) 01001111 (O)01010110 (V) 01010010 (R).
 */
 
-void LOAD(tparam_load){ //Carga en el registro, el número dado.
-	devolverRegistro(registro) = numero;
+void LOAD(tparam_load* parametrosLoad){ //Carga en el registro, el número dado.
+	&(devolverRegistro(parametrosLoad->reg1)) == parametrosLoad->num;
 }
 
-void SETM(int numero, char registro1, char registro2){
+void SETM(tparam_setm* parametrosSetm){
 	//Pone tantos bytes desde el segundo registro, hacia la memoria apuntada por el primer registro
 	//explicacion Gaston: pone en los n bytes del registro bx en la dirección de memoria apuntanda por el registro ax
 	//(ax = numero que es una posición de memoria)
@@ -434,32 +434,32 @@ void SETM(int numero, char registro1, char registro2){
 }
 
 
-void GETM(char registro1, char registro2){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
+void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
 	registro1 = registro2; //TODO: PEDIR A MSP
 }
 
 
-void MOVR(char registro1, char registro2){ //Copia el valor del segundo registro hacia el primero
+void MOVR(tparam_movr* parametrosMovr){ //Copia el valor del segundo registro hacia el primero
 	 registro1 =  registro2;
 }
 
-void ADDR(char registro1, char registro2){ //Suma el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+void ADDR(tparam_addr* parametrosAddr){ //Suma el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
 	A = registro1 + registro2;
 }
 
-void SUBR(char registro1, char registro2){ //Resta el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+void SUBR(tparam_subr* parametrosSubr){ //Resta el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
 	 A =  registro1 -  registro2;
 }
 
-void MULR(char registro1, char registro2){ //Multiplica el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+void MULR(tparam_mulr* parametrosMulr){ //Multiplica el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
 	 A = registro1 * registro2;
 }
 
-void MODR(char registro1, char registro2){ //Obtiene el resto de la división del primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
+void MODR(tparam_modr* parametrosModr){ //Obtiene el resto de la división del primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
 	 A = ( registro1) % ( registro2);
 }
 
-void DIVR(char registro1, char registro2){
+void DIVR(tparam_divr* parametrosDivr){
 	//Divide el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A; a menos que el segundo operando sea 0,
 	//en cuyo caso tira error de division por cero
 
@@ -471,15 +471,15 @@ void DIVR(char registro1, char registro2){
 	}
 }
 
-void INCR(char registro){ //incrementar una unidad al registro
+void INCR(tparam_incr* parametrosIncr){ //incrementar una unidad al registro
 	 registro =+ 1;
 }
 
-void DECR(char registro){ //decrementar una unidad al registro
+void DECR(tparam_decr* parametrosDecr){ //decrementar una unidad al registro
 	 registro =- 1;
 }
 
-void COMP(char registro1, char registro2){
+void COMP(tparam_comp* parametrosComp){
 	//Compara si el primer registro es igual al segundo. De ser verdadero, se almacena el valor 1. De lo
 	//contrario el valor 0. El resultado de la operación se almacena en el registro A.
 	if( registro1 ==  registro2){
@@ -490,12 +490,12 @@ void COMP(char registro1, char registro2){
 	}
 }
 
-void CGEQ(char registro1, char registro2){
+void CGEQ(tparam_cgeq* parametrosCgeq){
 	//Compara si el primer registro es mayor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
 	A = registro1 >=  registro2;
 }
 
-void CLEQ(char registro1, char registro2){
+void CLEQ(tparam_cleq* parametrosCleq){
 	//Compara si el primer registro es menor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
 	 A = registro1 <=  registro2;
 }
@@ -505,13 +505,13 @@ void saltarAInstruccion(int direccion){
 	punteroInstruccionActual = baseSegmentoCodigoActual +  direccion;
 }
 
-void GOTO(char registro){
+void GOTO(tparam_goto* parametrosGoto){
 	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
 	saltarAInstruccion(devolverRegistro(registro));
 }
 
 
-void JMPZ(int direccion){
+void JMPZ(tparam_jmpz* parametrosJmpz){
 	//Altera el flujo de ejecución sólo si el valor del registro A es cero, para ejecutar la instrucción apuntada por la Dirección.
 	//El valor es el desplazamiento desde el inicio del programa.
 
@@ -521,7 +521,7 @@ void JMPZ(int direccion){
 	}
 }
 
-void JPNZ(int direccion){
+void JPNZ(tparam_jpnz* parametrosJpnz){
 	// Altera el flujo de ejecución sólo si el valor del registro A no es cero, para ejecutar la instrucción apuntada por la Dirección.
 	// El valor es el desplazamiento desde el inicio del programa.
 
@@ -530,7 +530,7 @@ void JPNZ(int direccion){
 	}
 }
 
-void INTE(int  direccion){
+void INTE(tparam_inte* parametrosInte){
 
 	//INTERRUMPIR EJECUCION PROGRAMA
 	//BLOQUEAR HILO
@@ -545,7 +545,7 @@ void INTE(int  direccion){
 	tras una interrupción.*/
 }
 
-void SHIF(int numero, char registro){
+void SHIF(tparam_shif* parametrosShif){
 	//Desplaza los bits del registro, tantas veces como se indique en el Número. De ser
 	//desplazamiento positivo, se considera hacia la derecha. De lo contrario hacia la izquierda.
 	if(numero < 0){
@@ -560,12 +560,12 @@ void NOPP(){
 	//NO HAGO NADA
 }
 
-void PUSH(int numeroA, int numeroB){
+void PUSH(tparam_push* parametrosPush){
 	//Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del registro cursor de stack de forma acorde.
 	//TODO: no entendi que hace
 }
 
-void TAKE(int numero, char registro){
+void TAKE(tparam_take* parametrosTake){
 	//Desapila los primeros bytes, indicado por el número, del stack hacia el registro. Modifica el valor del registro de stack de forma acorde.
 	//TODO:  no entiendo que seria apilar.
 }
