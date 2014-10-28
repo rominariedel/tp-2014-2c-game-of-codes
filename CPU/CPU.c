@@ -493,7 +493,7 @@ binario es: 01001101 (M) 01001111 (O)01010110 (V) 01010010 (R).
 */
 
 void LOAD(tparam_load* parametrosLoad){ //Carga en el registro, el número dado.
-	&(devolverRegistro(parametrosLoad->reg1)) == parametrosLoad->num;
+	(devolverRegistro(parametrosLoad->reg1)) = parametrosLoad->num;
 }
 
 void SETM(tparam_setm* parametrosSetm){
@@ -588,7 +588,7 @@ void JMPZ(tparam_jmpz* parametrosJmpz){
 
 	if(A == 0){
 
-		saltarAInstruccion(direccion);
+		saltarAInstruccion(parametrosJmpz->direccion);
 	}
 }
 
@@ -603,10 +603,14 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 
 void INTE(tparam_inte* parametrosInte){
 
-	//INTERRUMPIR EJECUCION PROGRAMA
-	//BLOQUEAR HILO
-	//EJECUTAR RUTINA KERNEL
+	XXXX();
+	KERNEL_ejecutarRutinaKernel(parametrosInte->direccion);
 
+	/*
+	cuando el proceso CPU notifique al Kernel que un hilo desea ejecutar una llamada al
+	sistema que requiere su atención (INTE), el Kernel recibirá el TCB de este hilo cargado y la dirección en
+	memoria de la llamada a ejecutar y lo encolará en el estado BLOCK5. Luego agregará una entrada en la
+	cola de llamadas al sistema con el TCB en cuestión.*/
 
 	/*Interrumpe la ejecución del programa para ejecutar la rutina del kernel que se encuentra en la
 	posición apuntada por la direccion. El ensamblador admite ingresar una cadena indicando el
@@ -644,7 +648,7 @@ void TAKE(tparam_take* parametrosTake){
 void XXXX(){
 	//Finaliza la ejecucion
 	devolverTCBactual(finaliza_ejecucion);
-	//TODO:ver si falta hacer algo mas
+	//TODO:hacer que vuelva al while(1)
 }
 
 
