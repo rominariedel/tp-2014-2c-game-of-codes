@@ -33,22 +33,36 @@ int main(int cantArgs, char** args){
 		t_datosAEnviar *  datosKernel = recibir_datos(socketKernel);
 		if (datosKernel == NULL){
 			perror("Fallo al recibir TCB y quantum");
-			abortarEjecucion();
+			//TODO: hacer que insista en recibir en TCB y quantum
 		}
 
 
-		recibirTCByQuantum(datosKernel);
-		//TODO: ver ocmo me envia el quantum
+		int quantumActual = recibirTCByQuantum(datosKernel);
+
+		printf("Recibí datos del TCB actual y sus registros de programacion");
+		printf("PID: %d \n", PIDactual);
+		printf("TID: %d \n", TIDactual);
+		printf("KM: %d \n",KMactual);
+		printf("BASE SEGMENTO CODIGO: %d \n",baseSegmentoCodigoActual);
+		printf("TAMANIO SEGMENTO CODIGO %d \n", tamanioSegmentoCodigoActual);
+		printf("PUNTERO INSTRUCCION %d \n", punteroInstruccionActual);
+		printf("BASE STACK %d \n",baseStackActual);
+		printf("CURSOR STACK %d \n",cursorStackActual);
+		printf("A: %d \n",A);
+		printf("B: %d \n",B);
+		printf("C: %d \n",C);
+		printf("D: %d \n",D);
+		printf("E: %d \n",E);
+
 
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
-		printf("Recibí datos del TCB actual y sus registros de programacion");
 		cargarDatosTCB();
 
-		int quantumActual = 1;
-		printf("\n quantumActual es: %d \n", quantumActual);
 
-		while(quantumActual>quantum && KMactual==1)
+		printf("\n quantum a ejecutar para %d es: %d \n",PIDactual, quantumActual);
+
+		while(quantumActual>quantum || KMactual==1)
 		{
 
 			printf("\n %d \n", quantumActual);
@@ -57,9 +71,8 @@ int main(int cantArgs, char** args){
 
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
-
-			int instruccion = interpretarInstruccion(proximaInstruccionAEjecutar);
-		//	ejecutarInstruccion(instruccion);
+			usleep(RETARDO);
+			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 
@@ -67,28 +80,25 @@ int main(int cantArgs, char** args){
 
 			// 5. Incrementa el Puntero de Instrucción.
 
-			punteroInstruccionActual++; //TODO
+			if(respuesta ==-1){
+				printf("No se encontro la instruccion o no tiene los permisos necesarios");
+				devolverTCBactual(error_al_interpretar_instruccion);
+				break;
+			}else{
+				punteroInstruccionActual =+ respuesta;}
 
 			// Incrementar quantum
 
 			quantumActual++;
 
-
-		}
-		if((quantum - quantumActual)== 0){
-			//termino su ejecucion
-			devolverTCBactual(finaliza_ejecucion);
-			limpiarRegistros();
-			break;
-		}
-
-		if(quantumActual == quantum && KMactual==0){
+		if(quantumActual == quantum && KMactual == 0){
 			// 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			//proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			//tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
 
 			devolverTCBactual(finaliza_quantum);
 			limpiarRegistros();
+			actualizarTCB();
 			break;
 		}
 
@@ -130,11 +140,9 @@ void conectarConKernel(){
 }
 
 
-void abortarEjecucion(){
+void abortarEjecucion(){ //este abortarEjecucion es solo para el principio, cuando intenta conectarse con la MSP y el Kernel
 	printf("Desconectar CPU");
-
-	exit(0); //TODO
-	//TODO: abortar ejecucion, limpiar registros y enviar TCB a Kernel
+	exit(0);
 }
 
 void cargarRegistrosCPU(){
@@ -210,133 +218,148 @@ void limpiarRegistros(){
 	E = 0;
 }
 
-void limpiarTCBactual(t_TCB* tcb){
-		 tcb -> PID = 0;
-		 tcb -> TID = 0;
-		 tcb ->   KM = 0;
-		 tcb ->   baseSegmentoCodigo = 0;
-		 tcb ->  tamanioSegmentoCodigo = 0;
-		 tcb -> punteroInstruccion = 0;
-		 tcb ->  baseStack = 0;
-		 tcb ->  cursorStack = 0;
-		 tcb ->  registrosProgramacion[0] = 0;
-		 tcb ->  registrosProgramacion[1] = 0;
-		 tcb ->  registrosProgramacion[2] = 0;
-		 tcb ->  registrosProgramacion[3] = 0;
-		 tcb ->  registrosProgramacion[4] = 0;
-}
 
-//TODO:este seria el ejecutar instruccion. o un interpretar y ejecutar instruccion
-void interpretarYEjecutarInstruccion(char* instruccion){
+int interpretarYEjecutarInstruccion(char* instruccion){
 	if(strcmp(instruccion,"LOAD")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
-		tparam_load* parametros = respuesta;
+		tparam_load* parametros;
+		memcpy(parametros, respuesta, sizeof(tparam_load));
 		LOAD(parametros);
-	};
+	return sizeof(tparam_load); }
 	if(strcmp(instruccion,"GETM")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
-		tparam_getm* parametros = respuesta;
+		tparam_getm * parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_getm));
 		GETM(parametros);
-	};
+	return sizeof(tparam_getm); }
 	if(strcmp(instruccion,"MOVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
-		tparam_movr* parametros = respuesta;
+		tparam_movr * parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_movr));
 		MOVR(parametros);
-	};
+	return sizeof(tparam_movr); }
 	if(strcmp(instruccion,"ADDR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
-		tparam_addr* parametros = respuesta;
+		tparam_addr* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_addr));
 		ADDR(parametros);
-	};
+	return sizeof(tparam_addr); }
 	if(strcmp(instruccion,"SUBR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
-		tparam_subr* parametros = respuesta;
+		tparam_subr* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_subr));
 		SUBR(parametros);
-	};
+	return sizeof(tparam_subr); }
 	if(strcmp(instruccion,"MULR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
-		tparam_mulr* parametros = respuesta;
+		tparam_mulr * parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_mulr));
 		MULR(parametros);
-	};
+	return sizeof(tparam_mulr); }
 	if(strcmp(instruccion,"MODR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
-		tparam_modr* parametros = respuesta;
+		tparam_modr * parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_modr));
 		MODR(parametros);
-	};
+	return  sizeof(tparam_modr); }
 	if(strcmp(instruccion,"DIVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
-		tparam_divr* parametros = respuesta;
+		tparam_divr* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_divr));
 		DIVR(parametros);
-	};
+	return sizeof(tparam_divr); }
 	if(strcmp(instruccion,"INCR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
-		tparam_incr* parametros = respuesta;
-		INCR(parametros);
-	};
+		tparam_incr* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_incr));
+ 		INCR(parametros);
+	return sizeof(tparam_incr); }
 	if(strcmp(instruccion,"DECR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
-		tparam_decr* parametros = respuesta;
-		DECR(parametros);
-	};
+		tparam_decr* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_decr));
+ 		DECR(parametros);
+	return sizeof(tparam_decr); }
 	if(strcmp(instruccion,"COMP")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
-		tparam_comp* parametros = respuesta;
-		COMP(parametros);
-	};
+		tparam_comp* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_comp));
+ 		COMP(parametros);
+	return sizeof(tparam_comp); }
 	if(strcmp(instruccion,"CGEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
-		tparam_cgeq* parametros = respuesta;
-		CGEQ(parametros);
-	};
+		tparam_cgeq* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_cgeq));
+ 		CGEQ(parametros);
+	return  sizeof(tparam_cgeq); }
 	if(strcmp(instruccion,"CLEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
-		tparam_cleq* parametros = respuesta;
+		tparam_cleq* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_cleq));
 		CLEQ(parametros);
-	};
+	return sizeof(tparam_cleq); }
 	if(strcmp(instruccion,"GOTO")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_goto));
-		tparam_goto* parametros = respuesta;
+		tparam_goto* parametros;
+		memcpy(parametros,respuesta, sizeof(tparam_goto));
 		GOTO(parametros);
-	};
+	return sizeof(tparam_goto); }
 	if(strcmp(instruccion,"JMPZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
-		tparam_jmpz* parametros = respuesta;
-		JMPZ(parametros);
-	}
+		tparam_jmpz*  parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_jmpz));
+ 		JMPZ(parametros);
+	return sizeof(tparam_jmpz); }
 
 	if(strcmp(instruccion,"JPNZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
-		tparam_goto* parametros = respuesta;
-		GOTO(parametros);
-	};
+		tparam_goto*  parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_goto));
+ 		GOTO(parametros);
+	return sizeof(tparam_goto); }
 	if(strcmp(instruccion,"INTE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
-		tparam_inte* parametros = respuesta;
-		INTE(parametros);
-	};
-	if(strcmp(instruccion,"NOPP")){NOPP();};
+		tparam_inte*  parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_inte));
+ 		INTE(parametros);
+	return  sizeof(tparam_inte); }
+	if(strcmp(instruccion,"NOPP")){NOPP();return 1; }
 	if(strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
-		tparam_push* parametros = respuesta;
+		tparam_push* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_push));
 		PUSH(parametros);
-	};
+	return sizeof(tparam_push); }
 	if(strcmp(instruccion,"TAKE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
-		tparam_take* parametros = respuesta;
+		tparam_take* parametros;
+		memcpy(parametros, respuesta , sizeof(tparam_take));
 		TAKE(parametros);
-	};
-	if(strcmp(instruccion,"XXXX")){XXXX();};
-	if(strcmp(instruccion,"MALC")){MALC();};
-	if(strcmp(instruccion,"FREE")){FREE();};
-	if(strcmp(instruccion,"INNN")){INNN();};
-	if(strcmp(instruccion,"OUTN")){OUTN();};
-	if(strcmp(instruccion,"CREA")){CREA();};
-	if(strcmp(instruccion,"JOIN")){JOIN();};
-	if(strcmp(instruccion,"BLOK")){BLOK();};
-	if(strcmp(instruccion,"WAKE")){WAKE();};
+	return sizeof(tparam_take); }
+	if(strcmp(instruccion,"XXXX") && KMactual == 1){XXXX();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"MALC") && KMactual == 1){MALC();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"FREE") && KMactual == 1){FREE();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"INNN") && KMactual == 1){INNN();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"OUTN") && KMactual == 1){OUTN();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"CREA") && KMactual == 1){CREA();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"JOIN") && KMactual == 1){JOIN();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"BLOK") && KMactual == 1){BLOK();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"WAKE") && KMactual == 1){WAKE();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+
+	return -1;
 
 }
 
+int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
+	//TODO: verificar que Romi me envie tmb el quantum, y que vaya dsp del tcb.
+	char* buffer  = malloc(datosKernel -> tamanio);
+	memcpy(buffer,datosKernel,datosKernel -> tamanio);
+	TCBactual = desempaquetarTCB(buffer);
+	cargarDatosTCB(TCBactual);
+	int quantum = buffer[12];
+	return quantum;
+
+}
 
 t_TCB* desempaquetarTCB(char* buffer){
 	t_TCB* tcb = malloc(sizeof(t_TCB));
@@ -356,21 +379,8 @@ t_TCB* desempaquetarTCB(char* buffer){
 	return tcb;
 }
 
-void recibirTCByQuantum(t_datosAEnviar *  datosKernel){
-	//TODO: recibir quantum
-	//TODO: se hace asi???????
-	int tamanioBuffer = sizeof(TCB_struct) + sizeof(int);
-	char* buffer  = malloc(tamanioBuffer);
-	memcpy(buffer,datosKernel,tamanioBuffer);
-	printf("el contenido del Buffer es: %s", buffer);
-	TCBactual = desempaquetarTCB(buffer);
-	cargarDatosTCB(TCBactual);
-
-}
-
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP){
 	//TODO: hacer que desarme el paquete que me mando la MSP
-
 	char* buffer  = malloc(paqueteMSP->tamanio);
 	memcpy(buffer,paqueteMSP->datos,paqueteMSP->tamanio);
 	return buffer;
@@ -401,7 +411,7 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PIDactual, sizeof(int));
-	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
+	memcpy(datos + sizeof(int), &punteroInstruccion, cantidadParametros); //ese puntero instruccion es el punteroInstruccionActual + 4
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 2* sizeof(int));
 	enviar_datos(socketMSP,paquete);
 	free(datos);
@@ -633,8 +643,7 @@ void TAKE(tparam_take* parametrosTake){
 
 void XXXX(){
 	//Finaliza la ejecucion
-	devolverTCBactual(interrupcion); //es interrupcion? o simplemente termino su ejecucion.
-	abortarEjecucion();
+	devolverTCBactual(finaliza_ejecucion);
 	//TODO:ver si falta hacer algo mas
 }
 

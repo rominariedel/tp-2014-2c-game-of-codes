@@ -216,7 +216,7 @@ int actualizarTCB();
 //void ejecutarInstruccion(char instruccion[4], int parametros[3]);
 void devolverTCBactual(int codigoOperacion);
 void limpiarRegistros();
-void recibirTCByQuantum(t_datosAEnviar *  datosKernel);
+int recibirTCByQuantum(t_datosAEnviar *  datosKernel);
 t_TCB* desempaquetarTCB(char* buffer);
 void inicializarTCB(t_TCB* tcb);
 void saltarAInstruccion(int direccion);
@@ -283,6 +283,7 @@ enum mensajesKernelCodOperacion{
 	ejecucion_erronea = 12,
 	desconexion = 13,
 	interrupcion = 14,
+	error_al_interpretar_instruccion = 15,
 };
 
 enum instruccionesCPU{
