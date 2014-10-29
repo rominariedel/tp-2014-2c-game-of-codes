@@ -195,6 +195,8 @@ int RETARDO;
 t_TCB* TCBactual;
 int quantum = 0;
 
+t_log * LOGGER;
+
 
 /*Definicion de funciones*/
 void cargarArchivoConfiguracion(int cantArgs, char** args);
@@ -284,6 +286,8 @@ enum mensajesKernelCodOperacion{
 
 	entrada_estandar = 20,
 	salida_estandar = 21,
+
+	soy_CPU = 19,
 };
 
 enum instruccionesCPU{

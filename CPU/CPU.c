@@ -9,35 +9,59 @@
 
 
 int main(int cantArgs, char** args){
+	LOGGER = log_create(NULL, "CPU", 0, LOG_LEVEL_TRACE);
 
+	log_trace(LOGGER, "\n ------Bienvenido al CPU----- \n");
 	printf("\n ------Bienvenido al CPU----- \n");
+	log_trace(LOGGER, "\n Cargar archivos configuración\n");
 	printf("\n Cargando archivos configuración... \n");
 	cargarArchivoConfiguracion(cantArgs,args);
 
+	log_trace(LOGGER, "IP MSP : %d \n", (int)IPMSP);
 	printf("\n IP MSP : %d \n", (int)IPMSP);
+	log_trace(LOGGER, "\n PUERTO MSP : %d \n", (int)PUERTOMSP);
 	printf("\n PUERTO MSP : %d \n", (int)PUERTOMSP);
+	log_trace(LOGGER,"\n IP KERNEL : %d \n", (int)IPKERNEL);
 	printf("\n IP KERNEL : %d \n", (int)IPKERNEL);
+	log_trace(LOGGER,"\n PUERTO KERNEL : %d \n", (int)PUERTOKERNEL);
 	printf("\n PUERTO KERNEL : %d \n", (int)PUERTOKERNEL);
+	log_trace(LOGGER,"\n RETARDO : %d \n", RETARDO);
 	printf("\n RETARDO : %d \n", RETARDO);
 
 
-	printf("\n Conectando con la MSP ...\n \n");
+	log_trace(LOGGER,"\n Conectando con la MSP ...\n");
+	printf("\n Conectando con la MSP ...\n");
 	conectarConMSP();
 
+	log_trace(LOGGER,"\n Conectando con el Kernel ...\n");
 	printf("\n Conectando con el Kernel ...\n");
 	conectarConKernel();
 
+	log_trace(LOGGER, "Aviso al Kernel que soy_CPU");
+	t_datosAEnviar * paquete = crear_paquete(soy_CPU,NULL,0);
+	enviar_datos(socketKernel,paquete);
+
 	while(1)
 	{
+		log_trace(LOGGER, "recibir TCB y quantum del Kernel");
 		printf("Estoy a la espera de que el Kernel me mande el TCB y el quantum correspondiente");
 		t_datosAEnviar *  datosKernel = recibir_datos(socketKernel);
 		if (datosKernel == NULL){
-			perror("Fallo al recibir TCB y quantum");
+			printf("Fallo al recibir TCB y quantum");
+			log_error(LOGGER, "Fallo al recibir TCB y quantum");
 			//TODO: hacer que insista en recibir en TCB y quantum
+			// break; ??? hace que vuelva al WHILE(1) ??
 		}
 
+		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
 
-		int quantumActual = recibirTCByQuantum(datosKernel);
+		quantum = recibirTCByQuantum(datosKernel);
+
+		int quantumActual = 0;
+		printf("\n quantum a ejecutar para %d es: %d \n",PIDactual, quantumActual);
+
+
+		log_trace(LOGGER, "Quantum a ejecutar para %d es: %d",PIDactual, quantum);
 
 		printf("Recibí datos del TCB actual y sus registros de programacion");
 		printf("PID: %d \n", PIDactual);
@@ -55,24 +79,30 @@ int main(int cantArgs, char** args){
 		printf("E: %d \n",E);
 
 
-
-		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
-		cargarDatosTCB();
-
-
-		printf("\n quantum a ejecutar para %d es: %d \n",PIDactual, quantumActual);
-
 		while(quantumActual>quantum || KMactual==1)
 		{
 
+			log_trace(LOGGER, "\n quantum = %d \n",quantumActual);
 			printf("\n %d \n", quantumActual);
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
-			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
 
+			log_trace(LOGGER, "\n Solicito a MSP proximaInstruccionAEJecutar \n");
+			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
+			log_trace(LOGGER, "\n Proxima Instruccion A Ejecutar: %p \n", *proximaInstruccionAEjecutar);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
+			log_trace(LOGGER, "\n Espero %d segundos de retardo \n", RETARDO);
 			usleep(RETARDO);
+
+			log_trace(LOGGER, "\n Interpretar y Ejecutar Instruccion \n");
 			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
+
+			log_trace(LOGGER, "\n Registro A \n", A);
+			log_trace(LOGGER, "\n Registro B \n", B);
+			log_trace(LOGGER, "\n Registro C \n", C);
+			log_trace(LOGGER, "\n Registro D \n", D);
+			log_trace(LOGGER, "\n Registro E \n", E);
+
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 
@@ -81,21 +111,28 @@ int main(int cantArgs, char** args){
 			// 5. Incrementa el Puntero de Instrucción.
 
 			if(respuesta ==-1){
+				log_error(LOGGER, "No se encontro la instruccion o no tiene los permisos necesarios");
 				printf("No se encontro la instruccion o no tiene los permisos necesarios");
+
+				log_trace(LOGGER, "Devolver TCB %d al Kernel", PIDactual);
+				log_error("Error al interpretar instruccion");
 				devolverTCBactual(error_al_interpretar_instruccion);
 				break;
 			}else{
+				log_trace(LOGGER, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
 				punteroInstruccionActual =+ respuesta;}
+				log_trace(LOGGER, "punteroInstruccion: %d", punteroInstruccionActual);
 
-			// Incrementar quantum
-
+			// 5.b Incrementar quantum
 			quantumActual++;
+			log_trace(LOGGER, "Ejecutando %d de %d quantum", quantumActual, quantum);
 
 		if(quantumActual == quantum && KMactual == 0){
 			// 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			//proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			//tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
-
+			log_trace(LOGGER, "Se completo el quantum! %d == %d", quantumActual, quantum);
+			log_trace(LOGGER, "Devuelvo TCB %d al Kernel", PIDactual);
 			devolverTCBactual(finaliza_quantum);
 			limpiarRegistros();
 			actualizarTCB();
@@ -151,6 +188,12 @@ void cargarRegistrosCPU(){
 	C = TCBactual -> registrosProgramacion[2];
 	D = TCBactual -> registrosProgramacion[3];
 	E = TCBactual -> registrosProgramacion[4];
+	log_trace(LOGGER, "\n Registro A \n", A);
+	log_trace(LOGGER, "\n Registro B \n", B);
+	log_trace(LOGGER, "\n Registro C \n", C);
+	log_trace(LOGGER, "\n Registro D \n", D);
+	log_trace(LOGGER, "\n Registro E \n", E);
+
 }
 
 void actualizarRegistrosTCB(){
@@ -164,14 +207,32 @@ void actualizarRegistrosTCB(){
 
 
 int cargarDatosTCB(){
+
+	log_trace(LOGGER, "\n datos TCB actual \n");
+	PIDactual = TCBactual->PID;
+	log_trace(LOGGER, "\n PID actual: %d \n", PIDactual);
 	TIDactual = TCBactual -> TID;
+	log_trace(LOGGER, "\n TID actual: %d \n", TIDactual);
 	KMactual = TCBactual -> KM;
+	log_trace(LOGGER, "\n KM actual: %d \n", KMactual);
 	baseSegmentoCodigoActual = TCBactual -> baseSegmentoCodigo;
+	log_trace(LOGGER, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
 	tamanioSegmentoCodigoActual = TCBactual -> tamanioSegmentoCodigo;
+	log_trace(LOGGER, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
 	punteroInstruccionActual = TCBactual -> punteroInstruccion;
+	log_trace(LOGGER, "\n Puntero actual: %d \n", punteroInstruccionActual);
 	baseStackActual = TCBactual -> baseStack;
+	log_trace(LOGGER, "\n Base Stack actual: %d \n", baseStackActual);
 	cursorStackActual = TCBactual -> cursorStack;
+	log_trace(LOGGER, "\n Cursor Stack actual: %d \n", cursorStackActual);
+
+	log_trace(LOGGER, "\n Cargar Registros de Programacion \n");
 	cargarRegistrosCPU();
+
+
+
+
+
 	return 0;
 }
 
@@ -189,14 +250,37 @@ int actualizarTCB(){
 
 
 void devolverTCBactual(int codOperacion){
+	log_trace(LOGGER, "Devolviendo TCB actual");
+	log_trace(LOGGER, "Estado TCB actual");
+	log_trace(LOGGER, "\n datos TCB actual \n");
+	log_trace(LOGGER, "\n PID actual: %d \n", PIDactual);
+	log_trace(LOGGER, "\n TID actual: %d \n", TIDactual);
+	log_trace(LOGGER, "\n KM actual: %d \n", KMactual);
+	log_trace(LOGGER, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
+	log_trace(LOGGER, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
+	log_trace(LOGGER, "\n Puntero actual: %d \n", punteroInstruccionActual);
+	log_trace(LOGGER, "\n Base Stack actual: %d \n", baseStackActual);
+	log_trace(LOGGER, "\n Cursor Stack actual: %d \n", cursorStackActual);
+	log_trace(LOGGER, "Estado registros");
+	log_trace(LOGGER, "\n Registro A \n", A);
+	log_trace(LOGGER, "\n Registro B \n", B);
+	log_trace(LOGGER, "\n Registro C \n", C);
+	log_trace(LOGGER, "\n Registro D \n", D);
+	log_trace(LOGGER, "\n Registro E \n", E);
+
 	actualizarTCB();
+
+	log_trace(LOGGER, "Armando paquete con TCB actual PID %d, TID %d", PIDactual, TIDactual);
 	int op = codOperacion; //ver porque lo estoy mandando... termino quantum, por interrupcion, por lo que sea
 	void * mensaje = malloc(sizeof(t_TCB) + sizeof(int));
 	memcpy(mensaje, &op, sizeof(int));
 	memcpy(mensaje + sizeof(int), TCBactual, sizeof(t_TCB));
 	int status = enviar_datos(socketKernel, mensaje);
-	if(status == -1){perror("No se pudo devolver el TCBactual");}
+	if(status == -1){
+		log_trace(LOGGER, "No se pudo devolver el TCB actual");
+		perror("No se pudo devolver el TCBactual");}
 	free(mensaje);
+	log_trace(LOGGER, "Se devolvio TCB al Kernel");
 	//TODO: volver al WHILE(1)
 }
 
@@ -215,6 +299,23 @@ void limpiarRegistros(){
 	C = 0;
 	D = 0;
 	E = 0;
+	log_trace(LOGGER, "\n PID actual: %d \n", PIDactual);
+	log_trace(LOGGER, "\n TID actual: %d \n", TIDactual);
+	log_trace(LOGGER, "\n KM actual: %d \n", KMactual);
+	log_trace(LOGGER, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
+	log_trace(LOGGER, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
+	log_trace(LOGGER, "\n Puntero actual: %d \n", punteroInstruccionActual);
+	log_trace(LOGGER, "\n Base Stack actual: %d \n", baseStackActual);
+	log_trace(LOGGER, "\n Cursor Stack actual: %d \n", cursorStackActual);
+	log_trace(LOGGER, "\n Registro A \n", A);
+	log_trace(LOGGER, "\n Registro B \n", B);
+	log_trace(LOGGER, "\n Registro C \n", C);
+	log_trace(LOGGER, "\n Registro D \n", D);
+	log_trace(LOGGER, "\n Registro E \n", E);
+
+
+	log_trace(LOGGER, "Se limpiaron los registros");
+
 }
 
 
@@ -224,6 +325,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
 		tparam_load* parametros = malloc(sizeof(tparam_load));
 		memcpy(parametros, respuesta, sizeof(tparam_load));
+		log_trace(LOGGER, "LOAD(%d,%c)",parametros->num, parametros->reg1);
 		LOAD(parametros);
 	return sizeof(tparam_load);
 	}
@@ -231,121 +333,191 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
 		tparam_getm * parametros = malloc(sizeof(tparam_getm));
 		memcpy(parametros, respuesta , sizeof(tparam_getm));
+		log_trace(LOGGER, "GETM(%c,%c)",parametros->reg1, parametros->reg2);
 		GETM(parametros);
 	return sizeof(tparam_getm); }
 	if(strcmp(instruccion,"MOVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
 		tparam_movr * parametros = malloc(sizeof(tparam_movr));
 		memcpy(parametros, respuesta , sizeof(tparam_movr));
+		log_trace(LOGGER, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
 		MOVR(parametros);
 	return sizeof(tparam_movr); }
 	if(strcmp(instruccion,"ADDR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
 		tparam_addr* parametros = malloc(sizeof(tparam_addr));
 		memcpy(parametros, respuesta , sizeof(tparam_addr));
+		log_trace(LOGGER, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
 		ADDR(parametros);
 	return sizeof(tparam_addr); }
 	if(strcmp(instruccion,"SUBR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
 		tparam_subr* parametros = malloc(sizeof(tparam_subr));
 		memcpy(parametros, respuesta , sizeof(tparam_subr));
+		log_trace(LOGGER, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
 		SUBR(parametros);
 	return sizeof(tparam_subr); }
 	if(strcmp(instruccion,"MULR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
 		tparam_mulr * parametros = malloc(sizeof(tparam_mulr));
 		memcpy(parametros, respuesta , sizeof(tparam_mulr));
+		log_trace(LOGGER, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
 		MULR(parametros);
 	return sizeof(tparam_mulr); }
 	if(strcmp(instruccion,"MODR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
 		tparam_modr * parametros = malloc(sizeof(tparam_modr));
 		memcpy(parametros, respuesta , sizeof(tparam_modr));
+		log_trace(LOGGER, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
 		MODR(parametros);
 	return  sizeof(tparam_modr); }
 	if(strcmp(instruccion,"DIVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
 		tparam_divr* parametros = malloc(sizeof(tparam_divr));
 		memcpy(parametros, respuesta , sizeof(tparam_divr));
+		log_trace(LOGGER, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
 		DIVR(parametros);
 	return sizeof(tparam_divr); }
 	if(strcmp(instruccion,"INCR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
 		tparam_incr* parametros = malloc(sizeof(tparam_incr));
 		memcpy(parametros, respuesta , sizeof(tparam_incr));
+		log_trace(LOGGER, "INCR(%c)",parametros->reg1);
  		INCR(parametros);
 	return sizeof(tparam_incr); }
 	if(strcmp(instruccion,"DECR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
 		tparam_decr* parametros = malloc(sizeof(tparam_decr));
 		memcpy(parametros, respuesta , sizeof(tparam_decr));
+		log_trace(LOGGER, "DECR(%c)",parametros->reg1);
  		DECR(parametros);
 	return sizeof(tparam_decr); }
 	if(strcmp(instruccion,"COMP")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
 		tparam_comp* parametros = malloc(sizeof(tparam_comp));
 		memcpy(parametros, respuesta , sizeof(tparam_comp));
+		log_trace(LOGGER, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
  		COMP(parametros);
 	return sizeof(tparam_comp); }
 	if(strcmp(instruccion,"CGEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
 		tparam_cgeq* parametros = malloc(sizeof(tparam_cgeq));
 		memcpy(parametros, respuesta , sizeof(tparam_cgeq));
+		log_trace(LOGGER, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
  		CGEQ(parametros);
 	return  sizeof(tparam_cgeq); }
 	if(strcmp(instruccion,"CLEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
 		tparam_cleq* parametros = malloc(sizeof(tparam_cleq));
 		memcpy(parametros, respuesta , sizeof(tparam_cleq));
+		log_trace(LOGGER, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
 		CLEQ(parametros);
 	return sizeof(tparam_cleq); }
 	if(strcmp(instruccion,"GOTO")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_goto));
 		tparam_goto* parametros = malloc(sizeof(tparam_goto));
 		memcpy(parametros,respuesta, sizeof(tparam_goto));
+		log_trace(LOGGER, "GOTO(%c)",parametros->reg1);
 		GOTO(parametros);
 	return sizeof(tparam_goto); }
 	if(strcmp(instruccion,"JMPZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
 		tparam_jmpz* parametros = malloc(sizeof(tparam_jmpz));
 		memcpy(parametros, respuesta , sizeof(tparam_jmpz));
+		log_trace(LOGGER, "JMPZ(%d)",parametros->direccion);
  		JMPZ(parametros);
 	return sizeof(tparam_jmpz); }
-
 	if(strcmp(instruccion,"JPNZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
-		tparam_goto* parametros = malloc(sizeof(tparam_goto));
-		memcpy(parametros, respuesta , sizeof(tparam_goto));
- 		GOTO(parametros);
-	return sizeof(tparam_goto); }
+		tparam_jpnz* parametros = malloc(sizeof(tparam_jpnz));
+		memcpy(parametros, respuesta , sizeof(tparam_jpnz));
+		log_trace(LOGGER, "JPNZ(%d)",parametros->direccion);
+ 		JPNZ(parametros);
+	return sizeof(tparam_jpnz); }
 	if(strcmp(instruccion,"INTE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
 		tparam_inte* parametros = malloc(sizeof(tparam_inte));
 		memcpy(parametros, respuesta , sizeof(tparam_inte));
+		log_trace(LOGGER, "INTE(%d)",parametros->direccion);
  		INTE(parametros);
 	return  sizeof(tparam_inte); }
-	if(strcmp(instruccion,"NOPP")){NOPP();return 1; }
+	if(strcmp(instruccion,"NOPP")){
+		log_trace(LOGGER, "NOPP()");
+		NOPP();
+		return 0; }
 	if(strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
 		tparam_push* parametros = malloc(sizeof(tparam_push));
 		memcpy(parametros, respuesta , sizeof(tparam_push));
+		log_trace(LOGGER, "PUSH(%d,%d)",parametros->num1, parametros->num2);
 		PUSH(parametros);
 	return sizeof(tparam_push); }
 	if(strcmp(instruccion,"TAKE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
 		tparam_take* parametros = malloc(sizeof(tparam_take));
 		memcpy(parametros, respuesta , sizeof(tparam_take));
+		log_trace(LOGGER, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 		TAKE(parametros);
 	return sizeof(tparam_take); }
-	if(strcmp(instruccion,"XXXX") && KMactual == 1){XXXX();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"MALC") && KMactual == 1){MALC();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"FREE") && KMactual == 1){FREE();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"INNN") && KMactual == 1){INNN();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"OUTN") && KMactual == 1){OUTN();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"CREA") && KMactual == 1){CREA();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"JOIN") && KMactual == 1){JOIN();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"BLOK") && KMactual == 1){BLOK();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"WAKE") && KMactual == 1){WAKE();return 1; }else{printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"XXXX")){
+		log_trace(LOGGER,"XXXX()");
+		XXXX();
+		return 0;}
+	if(strcmp(instruccion,"MALC") && KMactual == 1){
+		log_trace(LOGGER,"MALC()");
+		MALC();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar MALC()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1; }
+	if(strcmp(instruccion,"FREE") && KMactual == 1){
+		log_trace(LOGGER,"FREE()");
+		FREE();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar FREE()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1;}
+	if(strcmp(instruccion,"INNN") && KMactual == 1){
+		log_trace(LOGGER,"INNN()");
+		INNN();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar INNN()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1;}
+	if(strcmp(instruccion,"OUTN") && KMactual == 1){
+		log_trace(LOGGER,"OUTN()");
+		OUTN();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar OUTN()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");return -1;}
+	if(strcmp(instruccion,"CREA") && KMactual == 1){
+		log_trace(LOGGER,"CREA()");
+		CREA();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar CREA()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1;}
+	if(strcmp(instruccion,"JOIN") && KMactual == 1){
+		log_trace(LOGGER,"JOIN()");
+		JOIN();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar JOIN()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1;}
+	if(strcmp(instruccion,"BLOK") && KMactual == 1){
+		log_trace(LOGGER,"BLOK()");
+		BLOK();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar BLOK()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1;}
+	if(strcmp(instruccion,"WAKE") && KMactual == 1){
+		log_trace(LOGGER,"WAKE()");
+		WAKE();
+		return 0; }else{
+			log_error(LOGGER, "PID: %d KM = %d, no tiene permiso para ejecutar WAKE()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1;}
 
 	return -1;
 
@@ -353,6 +525,9 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 
 int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
 	//TODO: verificar que Romi me envie tmb el quantum, y que vaya dsp del tcb.
+
+	log_trace(LOGGER, "\n Desempaquetando Paquete \n");
+
 	char* buffer  = malloc(datosKernel -> tamanio);
 	memcpy(buffer,datosKernel,datosKernel -> tamanio);
 	TCBactual = desempaquetarTCB(buffer);
@@ -381,6 +556,7 @@ t_TCB* desempaquetarTCB(char* buffer){
 }
 
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP){
+	log_trace(LOGGER, "\n Deserializar paquete MSP \n");
 	char* buffer  = malloc(paqueteMSP->tamanio);
 	memcpy(buffer,paqueteMSP->datos,paqueteMSP->tamanio);
 	return buffer;
@@ -410,6 +586,7 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
+	log_trace(LOGGER, "\n Envio paquete a MSP \n");
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int));
@@ -417,7 +594,11 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 	enviar_datos(socketMSP,paquete);
 	free(datos);
+	log_trace(LOGGER, "\n Recibo Respuesta MSP \n");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+	if(respuesta == NULL){
+		log_error(LOGGER, "\n No se pudieron recibir datos MSP \n");
+	}
 
 	int * dir_base = malloc(sizeof(int));
 	memcpy(dir_base, respuesta -> datos, sizeof(int));
