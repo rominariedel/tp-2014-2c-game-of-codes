@@ -42,9 +42,9 @@ int main(int argc, char ** argv) {
 	pthread_t thread_boot;
 	pthread_t thread_dispatcher;
 	pthread_create(&thread_boot, NULL, (void*) &boot, NULL );
-	pthread_create(&thread_dispatcher, NULL, (void*) &dispatcher, NULL);
+	pthread_create(&thread_dispatcher, NULL, (void*) &dispatcher, NULL );
 	pthread_join(thread_boot, NULL );
-	pthread_join(thread_dispatcher, NULL);
+	pthread_join(thread_dispatcher, NULL );
 	config_destroy(configuracion);
 	free_listas();
 	return 0;
@@ -88,7 +88,10 @@ void loader() {
 				struct_consola * consola_conectada = obtener_consolaConectada(
 						n_descriptor);
 				TCB_struct * nuevoTCB;
+
+				int * aux;
 				switch (datos->codigo_operacion) {
+
 				case codigo_consola:
 					nuevoTCB = malloc(sizeof(TCB_struct));
 
@@ -119,34 +122,43 @@ void loader() {
 
 					queue_push(NEW, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
+					break;
+
+				case se_produjo_entrada:
+					aux = malloc(sizeof(int));
+					memcpy(aux, &datos->tamanio, sizeof(int));
+					memcpy(entrada->cadena, datos->datos, datos->tamanio);
+					devolver_entrada_aCPU(*aux);
+
+					break;
 				}
 				free(datos);
 			}
-			n_descriptor ++;
+			n_descriptor++;
 		}
 
 	}
 }
 
-char * recibir_syscalls(int socket){
+char * recibir_syscalls(int socket) {
 	printf("Esperando conexion de la consola \n");
 	int socket_consola = recibir_conexion(socket);
-	if(socket_consola<0){
+	if (socket_consola < 0) {
 		printf("FALLO en la conexion con la consola\n");
-		return NULL;
+		return NULL ;
 	}
 	printf("Conectado a la consola\n");
 	t_datosAEnviar * datos = recibir_datos(socket_consola);
-	if(datos == NULL){
+	if (datos == NULL ) {
 		printf("Fallo en la recepcion de datos\n");
-		return NULL;
+		return NULL ;
 	}
 	printf("Se recibieron las syscalls");
-	if(datos->codigo_operacion == codigo_consola){
+	if (datos->codigo_operacion == codigo_consola) {
 		return datos->datos;
 	}
 	printf("No se recibieron las syscalls exitosamente");
-	return NULL;
+	return NULL ;
 }
 
 void boot() {
@@ -154,7 +166,7 @@ void boot() {
 	printf("\n    INICIANDO BOOT   \n");
 
 	socket_gral = crear_servidor(PUERTO, backlog);
-	if(socket_gral <0){
+	if (socket_gral < 0) {
 		printf("No se pudo crear el servidor\n");
 		exit(-1);
 	}
@@ -164,7 +176,7 @@ void boot() {
 
 	printf("\n      CONECTANDO CON LA MSP\n");
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
-	if(socket_MSP <0){
+	if (socket_MSP < 0) {
 		printf("FALLO al conectar con la MSP\n");
 		exit(-1);
 	}
@@ -196,7 +208,6 @@ void boot() {
 	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
 
 	printf("Esperando conexiones...");
-
 
 	FD_ZERO(&consola_set);
 	FD_ZERO(&CPU_set);
@@ -301,7 +312,7 @@ int solicitar_segmento(int pid, int tamanio_del_segmento) {
 	free(respuesta->datos);
 	free(respuesta);
 
-	if(*dir_base == error_segmentationFault){
+	if (*dir_base == error_segmentationFault) {
 		//ERROR
 		return -1;
 	}

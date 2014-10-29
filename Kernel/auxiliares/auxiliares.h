@@ -19,7 +19,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-enum mensajes{
+enum mensajes {
 
 	//Mensajes enviados
 
@@ -33,24 +33,29 @@ enum mensajes{
 
 	//Mensajes recibidos
 
+	//-->CPU
 	finaliza_quantum = 10,
 	finaliza_ejecucion = 11,
 	ejecucion_erronea = 12,
 	desconexion = 13,
 	interrupcion = 14,
 	creacion_hilo = 15,
-	error_memoriaLlena = 16,
-	error_segmentationFault = 17,
-	soy_consola = 18,
 	soy_CPU = 19,
 	entrada_estandar = 20,
 	salida_estandar = 21,
 	join = 22,
 	bloquear = 23,
 	despertar = 24,
-	codigo_consola = 25,
-};
 
+	//-->MSP
+	error_memoriaLlena = 16,
+	error_segmentationFault = 17,
+
+	//-->CONSOLA
+	soy_consola = 18,
+	codigo_consola = 25,
+	se_produjo_entrada = 26,
+};
 
 /*          ESTRUCTURAS          */
 
@@ -60,7 +65,7 @@ typedef struct {
 	int C;
 	int D;
 	int E;
-}reg_programacion;
+} reg_programacion;
 
 typedef struct {
 	int PID;
@@ -72,7 +77,7 @@ typedef struct {
 	int X;
 	int S;
 	reg_programacion registrosProgramacion;
-}TCB_struct;
+} TCB_struct;
 
 typedef struct {
 	int socket_CPU;
@@ -80,7 +85,7 @@ typedef struct {
 	int PID;
 } struct_CPU;
 
-typedef struct{
+typedef struct {
 	int socket_consola;
 	int PID;
 	int cantidad_hilos;
@@ -94,7 +99,7 @@ typedef struct {
 typedef struct {
 	t_queue * prioridad_0;
 	t_list * prioridad_1;
-}t_lista_prioridades;
+} t_lista_prioridades;
 
 typedef struct {
 	int id_recurso;
@@ -128,6 +133,7 @@ struct_consola * obtener_consolaConectada(int);
 struct_consola * obtener_consolaAsociada(int PID);
 struct_bloqueado * obtener_bloqueado(int TID);
 void producir_salida_estandar(int pid, char* cadena);
-void producir_entrada_estandar(int pid, int id_tipo, int socket_CPU);
+void producir_entrada_estandar(int pid, char* id_tipo, int socket_CPU, int tamanio);
+void devolver_entrada_aCPU(int tamanio_datos);
 
 #endif /* AUXILIARES_H_ */

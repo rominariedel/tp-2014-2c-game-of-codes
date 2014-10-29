@@ -7,17 +7,15 @@
 
 #include "variables_globales.h"
 
-
-int obtener_TID(){
+int obtener_TID() {
 	return TID++;
 }
 
-int obtener_PID(){
+int obtener_PID() {
 	return PID++;
 }
 
-
-void crear_colas(){
+void crear_colas() {
 	NEW = queue_create();
 	EXIT = queue_create();
 
@@ -33,7 +31,7 @@ void crear_colas(){
 	consola_list = list_create();
 }
 
-void free_listas(){
+void free_listas() {
 	queue_destroy(NEW);
 	queue_destroy(EXIT);
 
@@ -46,149 +44,151 @@ void free_listas(){
 	list_destroy_and_destroy_elements(CPU_list, &free);
 	list_destroy_and_destroy_elements(consola_list, &free);
 
-
 }
 
-
-void mover_a_exit(TCB_struct * tcb){
+void mover_a_exit(TCB_struct * tcb) {
 	queue_push(EXIT, tcb);
 }
 
-
-int CPU_esta_libre(struct_CPU cpu){
+int CPU_esta_libre(struct_CPU cpu) {
 	return cpu.bit_estado;
 }
 
-
-void planificar(TCB_struct tcb){
+void planificar(TCB_struct tcb) {
 	queue_push(NEW, &tcb);
 	queue_pop(NEW);
 	queue_push(EXIT, &tcb);
 }
 
-void planificador(){
+void planificador() {
 
 	fd_set copia_set;
-	while(1){
+	while (1) {
 
 		copia_set = CPU_set;
-		int i = select(descriptor_mas_alto_cpu +1, &copia_set, NULL, NULL, NULL);
+		int i = select(descriptor_mas_alto_cpu + 1, &copia_set, NULL, NULL,
+				NULL );
 
-		if(i == -1){
+		if (i == -1) {
 			//error
 			break;
 		}
 
 		int n_descriptor = 0;
 
-		while(n_descriptor <= descriptor_mas_alto_cpu){
+		while (n_descriptor <= descriptor_mas_alto_cpu) {
 
-			if(FD_ISSET(n_descriptor, &copia_set)){
+			if (FD_ISSET(n_descriptor, &copia_set)) {
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
-				int * dirSysCall;
+				int * dirSysCall, *tamanio;
 				int * pid;
 				char * cadena;
-				int * id_tipo;
+				char * id_tipo;
 
 				sem_init(&mutex_entradaSalida, 0, 1);
 				sem_init(&sem_entrada, 0, 0);
 
-				switch(codigo_operacion){
+				switch (codigo_operacion) {
 
-					case finaliza_quantum:
-						memcpy(tcb, datos->datos, sizeof(TCB_struct));
-						finalizo_quantum(tcb);
-						break;
-					case finaliza_ejecucion:
-						memcpy(tcb, datos->datos, sizeof(TCB_struct));
-						finalizo_ejecucion(tcb);
-						break;
-					case ejecucion_erronea:
-						memcpy(tcb, datos->datos, sizeof(TCB_struct));
-						abortar(tcb);
-						break;
-					case desconexion:
-						memcpy(tcb, datos->datos, sizeof(TCB_struct));
-						abortar(tcb);
-						break;
-					case interrupcion:
-						dirSysCall = malloc(sizeof(int));
-						memcpy(tcb, datos->datos, sizeof(TCB_struct));
-						memcpy(dirSysCall, datos->datos + sizeof(TCB_struct),sizeof(int));
-						interrumpir(tcb, *dirSysCall);
-						break;
-					case creacion_hilo:
-						memcpy(tcb, datos->datos, sizeof(TCB_struct));
-						crear_hilo(*tcb);
-						break;
-					case entrada_estandar:
-						pid = malloc(sizeof(int));
-						id_tipo = malloc(sizeof(int));
-						memcpy(pid, datos->datos, sizeof(int));
-						memcpy(id_tipo, datos->datos + sizeof(int), sizeof(int));
-						producir_entrada_estandar(*pid, *id_tipo, n_descriptor);
+				case finaliza_quantum:
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					finalizo_quantum(tcb);
+					break;
+				case finaliza_ejecucion:
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					finalizo_ejecucion(tcb);
+					break;
+				case ejecucion_erronea:
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					abortar(tcb);
+					break;
+				case desconexion:
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					abortar(tcb);
+					break;
+				case interrupcion:
+					dirSysCall = malloc(sizeof(int));
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					memcpy(dirSysCall, datos->datos + sizeof(TCB_struct),
+							sizeof(int));
+					interrumpir(tcb, *dirSysCall);
+					break;
+				case creacion_hilo:
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					crear_hilo(*tcb);
+					break;
+				case entrada_estandar:
+					pid = malloc(sizeof(int));
+					id_tipo = malloc(datos->tamanio);
+					tamanio = malloc(sizeof(int));
+					memcpy(tamanio, &datos->tamanio, sizeof(int));
+					memcpy(pid, datos->datos, sizeof(int));
+					memcpy(id_tipo, datos->datos + sizeof(int), datos->tamanio);
+					producir_entrada_estandar(*pid, id_tipo, n_descriptor,
+							*tamanio);
 
-						break;
-					case salida_estandar:
-						pid = malloc(sizeof(int));
-						cadena = malloc(datos->tamanio - sizeof(int));
-						memcpy(pid, datos->datos, sizeof(int));
-						memcpy(cadena, datos->datos + sizeof(int), datos->tamanio - sizeof(int));
-						producir_salida_estandar(*pid, cadena);
-						break;
-					case join:
+					break;
+				case salida_estandar:
+					pid = malloc(sizeof(int));
+					cadena = malloc(datos->tamanio - sizeof(int));
+					memcpy(pid, datos->datos, sizeof(int));
+					memcpy(cadena, datos->datos + sizeof(int),
+							datos->tamanio - sizeof(int));
+					producir_salida_estandar(*pid, cadena);
+					break;
+				case join:
 
-						break;
-					case bloquear:
+					break;
+				case bloquear:
 
-						break;
-					case despertar:
+					break;
+				case despertar:
 
-						break;
+					break;
 
-					}
+				}
 				free(datos);
 			}
-			n_descriptor ++;
+			n_descriptor++;
 		}
 
 	}
 }
 
-struct_consola * obtener_consolaConectada(int socket_consola){
-	bool tiene_mismo_socket(struct_consola estructura){
+struct_consola * obtener_consolaConectada(int socket_consola) {
+	bool tiene_mismo_socket(struct_consola estructura) {
 		return estructura.socket_consola == socket_consola;
 	}
-	return list_find(consola_list, (void*)&tiene_mismo_socket);
+	return list_find(consola_list, (void*) &tiene_mismo_socket);
 
 }
 
-struct_consola * obtener_consolaAsociada(int PID){
-	bool tiene_mismo_pid(struct_consola estructura){
+struct_consola * obtener_consolaAsociada(int PID) {
+	bool tiene_mismo_pid(struct_consola estructura) {
 		return estructura.PID == PID;
 	}
 	return list_find(consola_list, (void*) &tiene_mismo_pid);
 }
 
-struct_CPU * obtener_CPUAsociada(int socket_cpu){
-	bool tiene_mismo_socket(struct_CPU estructura){
+struct_CPU * obtener_CPUAsociada(int socket_cpu) {
+	bool tiene_mismo_socket(struct_CPU estructura) {
 		return estructura.socket_CPU == socket_cpu;
 	}
 	return list_find(CPU_list, (void*) &tiene_mismo_socket);
 }
 
-struct_bloqueado * obtener_bloqueado(int TID){
-	bool tiene_mismo_tid(struct_bloqueado estructura){
+struct_bloqueado * obtener_bloqueado(int TID) {
+	bool tiene_mismo_tid(struct_bloqueado estructura) {
 		return estructura.tcb.TID == TID;
 	}
-	return list_find(BLOCK.prioridad_1, (void*)&tiene_mismo_tid);
+	return list_find(BLOCK.prioridad_1, (void*) &tiene_mismo_tid);
 }
 
-void producir_salida_estandar(int pid, char* cadena){
+void producir_salida_estandar(int pid, char* cadena) {
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
 	t_datosAEnviar * datos = malloc(sizeof(t_datosAEnviar));
 	datos->codigo_operacion = imprimir_en_pantalla;
@@ -202,40 +202,45 @@ void producir_salida_estandar(int pid, char* cadena){
 	free(datos);
 }
 
-void producir_entrada_estandar(int pid, int id_tipo, int socket_CPU){
+void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
+		int tamanio) {
+
+	//Se hace un wait del mutex de entrada_salida al hacerse la solicitud de entrada y un post
+	//cuando se le devuelve la entrada a la CPU, asi si otra CPU solicita entrada salida, espera a
+	//que se libere el recurso compartido (la estructura de entrada salida). De esta forma las demas
+	//CPUS que hagan otras solicitudes pueden ser planificadas
 
 	sem_wait(&mutex_entradaSalida);
 	entrada = malloc(sizeof(entrada_salida));
-	entrada->semaforo = sem_entrada;
+	entrada->cadena = malloc(tamanio);
+	memcpy(&entrada->socket_CPU, &socket_CPU, sizeof(int));
 
+	//Enviando la solicitud a la consola para el ingreso de datos
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
-	t_datosAEnviar * datos_consola = malloc(sizeof(t_datosAEnviar));
-	datos_consola->codigo_operacion = ingresar_cadena;
-	memcpy(datos_consola->datos, &id_tipo, sizeof(int));
-	datos_consola->tamanio = sizeof(int);
+	t_datosAEnviar * datos_consola = crear_paquete(ingresar_cadena, id_tipo,
+			tamanio);
 	enviar_datos(consola_asociada->socket_consola, datos_consola);
 	free(datos_consola);
 
-	sem_wait(&sem_entrada);
+}
 
-	struct_CPU * CPU_asociada = obtener_CPUAsociada(socket_CPU);
-	t_datosAEnviar * datos = malloc(sizeof(t_datosAEnviar));
-	datos->codigo_operacion = devolucion_cadena;
-	datos->datos = entrada->cadena;
-	datos->tamanio = entrada->tamanio;
+void devolver_entrada_aCPU(int tamanio_datos) {
+	//Esta funcion es invocada cuando la consola manda el mensaje de que ya se ingresaron los datos
+	struct_CPU * CPU_asociada = obtener_CPUAsociada(entrada->socket_CPU);
+	t_datosAEnviar * datos = crear_paquete(devolucion_cadena, entrada->cadena,
+			tamanio_datos);
 	enviar_datos(CPU_asociada->socket_CPU, datos);
 	free(datos);
+	free(entrada->cadena);
 	free(entrada);
-	sem_post(&sem_entrada);
-
+	free(&tamanio_datos);
 	sem_post(&mutex_entradaSalida);
-
 }
 
-void recibir_cadena(void * cadena, int tamanio){
-	entrada->cadena = malloc(tamanio);
-	memcpy(&entrada->cadena, cadena, tamanio);
-	entrada->tamanio = tamanio;
-	sem_post(&sem_entrada);
+/*void recibir_cadena(void * cadena, int tamanio) {
+ entrada->cadena = malloc(tamanio);
+ memcpy(&entrada->cadena, cadena, tamanio);
+ entrada->tamanio = tamanio;
+ sem_post(&sem_entrada);
 
-}
+ }*/

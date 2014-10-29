@@ -27,9 +27,8 @@ t_list * consola_list;
 t_config * configuracion;
 
 typedef struct {
-	sem_t semaforo; //El Socket pertenece a la CPU que hizo la solicitud de entrada/salida
+	int socket_CPU; //El Socket pertenece a la CPU que hizo la solicitud de entrada/salida
 	void * cadena;
-	int tamanio;
 } entrada_salida;
 entrada_salida * entrada;
 
@@ -47,6 +46,5 @@ long tamanio_codigo_syscalls;
 int socket_gral;
 int descriptor_mas_alto_consola;
 int descriptor_mas_alto_cpu;
-
 
 #endif /* VARIABLES_GLOBALES_H_ */
