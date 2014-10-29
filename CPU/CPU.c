@@ -389,12 +389,26 @@ char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP){
 
 /*Funciones MSP*/
 
+t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, int codOperacion){
+	char * datos = malloc(2 * sizeof (int));
+	memcpy(datos, &PID, sizeof(int));
+	memcpy(datos + sizeof(int), &direccionALeer, cantidad);
+	t_datosAEnviar * paquete = crear_paquete(codOperacion, (void*) datos, 2* sizeof(int));         //TODO: ver si esta bien esta abstraccion
+
+	enviar_datos(socketMSP,paquete);
+	free(datos);
+	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+
+	return respuesta;
+
+}
+
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int));
-	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 2* sizeof(int));
+	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 2* sizeof(int));  //TODO: 2 * sizeof(int) ??? o 4 ??? por los 4 caracteres de las instrucciones
 
 	enviar_datos(socketMSP,paquete);
 	free(datos);
@@ -459,6 +473,14 @@ t_datosAEnviar * MSP_DestruirSegmento(int PID, int registro){
 
 }
 
+/* Funciones Kernel*/
+
+void KERNEL_ejecutarRutinaKernel(int direccion){
+
+}
+
+
+
 int* devolverRegistro(char registro){
 
 	switch(registro){
@@ -498,15 +520,18 @@ void LOAD(tparam_load* parametrosLoad){ //Carga en el registro, el número dado.
 
 void SETM(tparam_setm* parametrosSetm){
 	//Pone tantos bytes desde el segundo registro, hacia la memoria apuntada por el primer registro
+
 	//explicacion Gaston: pone en los n bytes del registro bx en la dirección de memoria apuntanda por el registro ax
 	//(ax = numero que es una posición de memoria)
 
-	//TODO: sigo sin entender.
+
 }
 
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	registro1 = registro2; //TODO: PEDIR A MSP
+	&(parametrosGetm->reg1) =
+
+	//TODO: pedir a MSP
 }
 
 
