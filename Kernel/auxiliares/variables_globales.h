@@ -27,7 +27,7 @@ t_list * consola_list;
 t_config * configuracion;
 
 typedef struct {
-	sem_t semaforo; //CAMBIAR A SOCKET PARA HACER EL SEND DIRECTAMENTE
+	sem_t semaforo; //El Socket pertenece a la CPU que hizo la solicitud de entrada/salida
 	void * cadena;
 	int tamanio;
 } entrada_salida;

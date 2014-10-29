@@ -9,7 +9,8 @@
 
 static char* serializar_paquete(t_datosAEnviar * paquete){
 	char * paquete_corrido = malloc(paquete->tamanio + tamanio_header);
-	memcpy(paquete_corrido, paquete, tamanio_header);
+	memcpy(paquete_corrido, &paquete->codigo_operacion, sizeof(int));
+	memcpy(paquete_corrido + sizeof(int), &paquete->tamanio, sizeof(int));
 	memcpy(paquete_corrido + tamanio_header, paquete->datos, paquete->tamanio);
 	return paquete_corrido;
 }
@@ -19,6 +20,7 @@ static t_datosAEnviar* deserializar_header(char * buffer){
 	t_datosAEnviar * paquete = malloc(sizeof(t_datosAEnviar));
 	memcpy(&paquete->codigo_operacion, buffer, sizeof(int));
 	memcpy(&paquete->tamanio, buffer + sizeof(int), sizeof(int));
+	printf("Header deserializado para datos de tamanio %d\n", paquete->tamanio);
 	return paquete;
 }
 
@@ -72,8 +74,13 @@ int crear_cliente(char* IP, char * PUERTO){
 
 	int serverSocket;
 	serverSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
+	if(serverSocket<1){
+		printf("Fallo en la creacion del socket");
+		return -1;
+	}
 	printf("socket creado \n");
 	if(connect(serverSocket, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1){
+		printf("No se pudo conectar");
 		return -1;
 	}
 
@@ -84,10 +91,7 @@ int crear_cliente(char* IP, char * PUERTO){
 int recibir_conexion(int socket){
 	struct sockaddr_in addr;			// Esta estructura contendra los datos de la conexion del cliente. IP, puerto, etc.
 	socklen_t addrlen = sizeof(addr);
-
-	int socketCliente = accept(socket, (struct sockaddr *) &addr, &addrlen);
-
-	return socketCliente;
+	return accept(socket, (struct sockaddr *) &addr, &addrlen);
 }
 
 int enviar_datos(int socket, t_datosAEnviar * paquete){
@@ -122,22 +126,25 @@ t_datosAEnviar * recibir_datos(int socket){
 		//TODO: loguear error
 		return NULL;
 	}
+	printf("Se recibio el header de tamanio %d\n", tamanio_recibido_header);
 
 	//Copia header
 	t_datosAEnviar * datos_recibidos = deserializar_header(buffer);
 	free(buffer);
 
 	//Recibe datos
-	buffer = malloc(datos_recibidos ->tamanio);
-	int tamanio_recibido_datos = recv(socket, buffer, datos_recibidos ->tamanio, MSG_WAITALL);
+	char * buffer_datos = malloc(datos_recibidos ->tamanio);
+	printf("Esperando la recepcion de data \n");
+	int tamanio_recibido_datos = recv(socket, buffer_datos, datos_recibidos ->tamanio, MSG_WAITALL);
 	if(tamanio_recibido_datos <0){
 		//TODO: loguear error
 		return NULL;
 	}
+	printf("Se recibieron los datos de tamanio %d\n", tamanio_recibido_datos);
 
 	//Copia datos
-	serializar_datos(buffer, datos_recibidos);
-	free(buffer);
+	serializar_datos(buffer_datos, datos_recibidos);
+	free(buffer_datos);
 
 	return datos_recibidos;
 }

@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
 		return EXIT_FAILURE;
 	}
 	printf("Conectado al Kernel. Ya se puede enviar el codigo ESO\n");
-
+	printf("Tamanio codigo %d\n",tamanio_codigo);
 	t_datosAEnviar * paquete = crear_paquete(codigo_consola, buffer, tamanio_codigo);
 	if(enviar_datos(kernelSocket, paquete) < 0) {
 		printf("FALLO al enviar datos al kernel\n");
@@ -66,7 +66,7 @@ int main(int argc, char ** argv){
 }
 
 long tamanio_archivo(FILE* archivo){
-	fseek(archivo, 0, SEEK_SET);
+	fseek(archivo, 0, SEEK_END);
 	int tamanio= ftell(archivo);
 	rewind(archivo);
 	return tamanio;

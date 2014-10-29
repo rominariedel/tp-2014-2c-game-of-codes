@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//sockets
 #include <sockets.h>
 #define MAXCONEXIONES 10
-#define MAXBUFFER 1024
 
 enum mensajes{
 	reservar_segmento = 1,
@@ -24,6 +22,9 @@ int main(void) {
 
 
 	  	listener = crear_servidor("6667", MAXCONEXIONES);
+	  	if(listener<0){
+	  		printf("FALLO en la creacion del servidor\n");
+	  	}
 		printf("Server conectado \n");
 
 
@@ -39,6 +40,11 @@ int main(void) {
 			while(clienteConectado){
 				printf("Esperando mensaje\n");
 				datos = recibir_datos(cliente);
+				if(datos == NULL){
+					printf("No se recibieron los datos correctamente\n");
+					exit(-1);
+				}
+				printf("Se recibio un mensaje\n");
 				//Recibo mensaje del cliente
 				if(1){
 					switch(datos->codigo_operacion){
@@ -48,7 +54,14 @@ int main(void) {
 					case escribir_en_memoria:
 						printf("ESCRIBIR EN MEMORIA\n");
 						break;
+
 					}
+					free(datos);
+					datos = malloc(sizeof(int));
+					int aux = 4;
+					memcpy(datos, &aux, sizeof(int));
+					t_datosAEnviar * paquete = crear_paquete(0, datos, sizeof(int));
+					enviar_datos(cliente, paquete);
 
 				}else clienteConectado = 0;
 			}

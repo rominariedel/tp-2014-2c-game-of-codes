@@ -131,6 +131,10 @@ void loader() {
 char * recibir_syscalls(int socket){
 	printf("Esperando conexion de la consola \n");
 	int socket_consola = recibir_conexion(socket);
+	if(socket_consola<0){
+		printf("FALLO en la conexion con la consola\n");
+		return NULL;
+	}
 	printf("Conectado a la consola\n");
 	t_datosAEnviar * datos = recibir_datos(socket_consola);
 	if(datos == NULL){
@@ -173,6 +177,7 @@ void boot() {
 
 	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
 	//TODO: validar la base del stack
+	printf("Creando TCB Modo Kernel");
 	tcb_km.KM = 1;
 	tcb_km.M = base_segmento_codigo;
 	tcb_km.tamanioSegmentoCodigo = tamanio_codigo_syscalls;
@@ -187,7 +192,7 @@ void boot() {
 	tcb_km.registrosProgramacion.C = 0;
 	tcb_km.registrosProgramacion.D = 0;
 	tcb_km.registrosProgramacion.E = 0;
-
+	printf("Bloqueando TCB KM");
 	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
 
 	printf("Esperando conexiones...");
@@ -278,11 +283,11 @@ void crear_hilo(TCB_struct tcb) {
 
 /*Esta operacion le solicita a la MSP un segmento, retorna la direccion base del
  * segmento reservado*/
-int solicitar_segmento(int pid, int tamanio) {
+int solicitar_segmento(int pid, int tamanio_del_segmento) {
 
 	char * datos = malloc(2 * sizeof(int));
 	memcpy(datos, &pid, sizeof(int));
-	memcpy(datos + sizeof(int), &tamanio, sizeof(int));
+	memcpy(datos + sizeof(int), &tamanio_del_segmento, sizeof(int));
 
 	t_datosAEnviar * paquete = crear_paquete(reservar_segmento, (void*) datos,
 			2 * sizeof(int));
@@ -293,6 +298,8 @@ int solicitar_segmento(int pid, int tamanio) {
 
 	int * dir_base = malloc(sizeof(int));
 	memcpy(dir_base, respuesta->datos, sizeof(int));
+	free(respuesta->datos);
+	free(respuesta);
 
 	if(*dir_base == error_segmentationFault){
 		//ERROR
