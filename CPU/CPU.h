@@ -195,7 +195,7 @@ int RETARDO;
 t_TCB* TCBactual;
 int quantum = 0;
 
-t_log * LOGGER;
+t_log* LOGCPU;
 
 
 /*Definicion de funciones*/
