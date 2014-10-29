@@ -212,6 +212,8 @@ t_TCB* desempaquetarTCB(char* buffer);
 void saltarAInstruccion(int direccion);
 int* devolverRegistro(char registro);
 int interpretarYEjecutarInstruccion(char* instruccion);
+char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
+char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
 
 /*Funciones MSP*/
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
@@ -221,7 +223,7 @@ char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros);
 
 /*Funciones Kernel*/
 void KERNEL_ejecutarRutinaKernel(int direccion);
-
+int KERNEL_IngreseNumeroPorConsola(int PID);
 
 /*Instrucciones*/
 void LOAD(tparam_load*);
@@ -267,6 +269,8 @@ enum mensajesMSP{
 	solicitarMemoria = 1,
 	crearNuevoSegmento = 2,
 	destruirSegmento = 3,
+	escribirMemoria = 4,
+	errorSegmentationFault = 17,
 
 };
 
@@ -277,6 +281,9 @@ enum mensajesKernelCodOperacion{
 	desconexion = 13,
 	interrupcion = 14,
 	error_al_interpretar_instruccion = 15,
+
+	entrada_estandar = 20,
+	salida_estandar = 21,
 };
 
 enum instruccionesCPU{
