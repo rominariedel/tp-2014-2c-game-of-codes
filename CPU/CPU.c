@@ -101,7 +101,7 @@ int main(int cantArgs, char** args){
 			actualizarTCB();
 			break;
 		}
-
+	  }
 	}
 	return 0;
 }

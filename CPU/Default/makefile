@@ -25,8 +25,8 @@ endif
 all: CPU
 
 dependents:
-	-cd /home/utnso/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) clean all
-	-cd /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) clean all
+	-cd /home/utnso/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
 
 # Tool invocations
 CPU: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
