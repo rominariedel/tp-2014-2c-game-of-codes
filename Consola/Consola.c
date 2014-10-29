@@ -8,13 +8,23 @@
 #include <commons/config.h>
 #include <sockets.h>
 #include <commons/log.h>
+#include <math.h>
+#include <commons/string.h>
 
 enum mensajes {
-	imprimir_en_pantalla = 4, ingresar_cadena = 5, codigo_consola = 25,
+	imprimir_en_pantalla = 4,
+	ingresar_cadena = 5,
+	codigo_consola = 25,
+	se_produjo_entrada = 26,
 };
 
 char * extraer_data(char * path);
+void evaluar_ingreso(char*);
+void ingresar_cadena_menorA(int);
+void ingresar_numero();
+
 int tamanio_codigo;
+int kernelSocket;
 
 int main(int argc, char ** argv) {
 
@@ -32,7 +42,6 @@ int main(int argc, char ** argv) {
 	log_info(logger, "Tamanio codigo %d.", tamanio_codigo, "INFO");
 
 	//Conectando al kernel
-	int kernelSocket;
 	kernelSocket = crear_cliente(ip, puerto);
 	if (kernelSocket < 0) {
 		log_error(logger, "FALLO en la conexion con el kernel.", "ERROR");
@@ -55,6 +64,7 @@ int main(int argc, char ** argv) {
 	while (1) {
 		paquete = recibir_datos(kernelSocket);
 		char * datos_a_imprimir;
+		char* solicitud_ingreso;
 		switch (paquete->codigo_operacion) {
 		case imprimir_en_pantalla:
 			datos_a_imprimir = malloc(paquete->tamanio);
@@ -64,6 +74,9 @@ int main(int argc, char ** argv) {
 					datos_a_imprimir);
 			break;
 		case ingresar_cadena:
+			solicitud_ingreso = malloc(paquete->tamanio);
+			memcpy(solicitud_ingreso, paquete->datos, paquete->tamanio);
+			evaluar_ingreso(solicitud_ingreso);
 			break;
 		}
 		free(paquete);
@@ -74,6 +87,60 @@ int main(int argc, char ** argv) {
 	return 0;
 }
 
+void evaluar_ingreso(char * solicitud) {
+	char primera_letra;
+	memcpy(&primera_letra, solicitud, sizeof(char));
+
+	if (primera_letra == 'N') {
+		//Se ha solicitado que se ingrese un numero entre 0 y 2³¹
+		ingresar_numero();
+	} else if(primera_letra == 'C'){
+		//Se ha solicitado que se ingrese una cadena de longitud menor que el segundo parametro
+		int segunda_letra;
+		memcpy(&segunda_letra, solicitud + sizeof(char), sizeof(int));
+		ingresar_cadena_menorA(segunda_letra);
+	}
+}
+
+void ingresar_cadena_menorA(int tamanio){
+	int recibido_not_success = 1;
+
+	while(recibido_not_success){
+
+		char * cadena = malloc(tamanio);
+		printf("Ingrese una cadena con menos de %d caraceteres", tamanio);
+		scanf("%s", cadena);
+		int largo_cadena = string_length(cadena);
+		if((largo_cadena<= tamanio)&&(largo_cadena>0)){
+			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, cadena, largo_cadena);
+			enviar_datos(kernelSocket, datos);
+			recibido_not_success = 0;
+		}else{
+			printf("La cadena no es valida\n");
+		}
+
+	}
+}
+
+void ingresar_numero() {
+	int recibido_not_success = 1;
+
+	while (recibido_not_success) {
+		int numero;
+		printf("Ingrese un numero entre 0 y 2147483648\n");
+		scanf("%d", &numero);
+		if ((numero > 0) && (numero <= pow(2, 31))) {
+			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, &numero,
+					sizeof(int));
+			enviar_datos(kernelSocket, datos);
+			recibido_not_success = 0;
+		} else {
+			//Si no se ingreso un numero correcto
+			printf(
+					"El numero ingresado no esta dentro de los rangos permitidos\n");
+		}
+	}
+}
 long tamanio_archivo(FILE* archivo) {
 	fseek(archivo, 0, SEEK_END);
 	int tamanio = ftell(archivo);
