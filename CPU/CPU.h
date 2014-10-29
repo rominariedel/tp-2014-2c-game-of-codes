@@ -217,7 +217,7 @@ char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
 
 /*Funciones MSP*/
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
-int* MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
+int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
 t_datosAEnviar*  MSP_DestruirSegmento(int PID, int registro);
 char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros);
 

@@ -218,121 +218,122 @@ void limpiarRegistros(){
 }
 
 
+
 int interpretarYEjecutarInstruccion(char* instruccion){
 	if(strcmp(instruccion,"LOAD")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
-		tparam_load* parametros;
+		tparam_load* parametros = malloc(sizeof(tparam_load));
 		memcpy(parametros, respuesta, sizeof(tparam_load));
 		LOAD(parametros);
 	return sizeof(tparam_load);
 	}
 	if(strcmp(instruccion,"GETM")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
-		tparam_getm * parametros;
+		tparam_getm * parametros = malloc(sizeof(tparam_getm));
 		memcpy(parametros, respuesta , sizeof(tparam_getm));
 		GETM(parametros);
 	return sizeof(tparam_getm); }
 	if(strcmp(instruccion,"MOVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
-		tparam_movr * parametros;
+		tparam_movr * parametros = malloc(sizeof(tparam_movr));
 		memcpy(parametros, respuesta , sizeof(tparam_movr));
 		MOVR(parametros);
 	return sizeof(tparam_movr); }
 	if(strcmp(instruccion,"ADDR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
-		tparam_addr* parametros;
+		tparam_addr* parametros = malloc(sizeof(tparam_addr));
 		memcpy(parametros, respuesta , sizeof(tparam_addr));
 		ADDR(parametros);
 	return sizeof(tparam_addr); }
 	if(strcmp(instruccion,"SUBR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
-		tparam_subr* parametros;
+		tparam_subr* parametros = malloc(sizeof(tparam_subr));
 		memcpy(parametros, respuesta , sizeof(tparam_subr));
 		SUBR(parametros);
 	return sizeof(tparam_subr); }
 	if(strcmp(instruccion,"MULR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
-		tparam_mulr * parametros;
+		tparam_mulr * parametros = malloc(sizeof(tparam_mulr));
 		memcpy(parametros, respuesta , sizeof(tparam_mulr));
 		MULR(parametros);
 	return sizeof(tparam_mulr); }
 	if(strcmp(instruccion,"MODR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
-		tparam_modr * parametros;
+		tparam_modr * parametros = malloc(sizeof(tparam_modr));
 		memcpy(parametros, respuesta , sizeof(tparam_modr));
 		MODR(parametros);
 	return  sizeof(tparam_modr); }
 	if(strcmp(instruccion,"DIVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
-		tparam_divr* parametros;
+		tparam_divr* parametros = malloc(sizeof(tparam_divr));
 		memcpy(parametros, respuesta , sizeof(tparam_divr));
 		DIVR(parametros);
 	return sizeof(tparam_divr); }
 	if(strcmp(instruccion,"INCR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
-		tparam_incr* parametros;
+		tparam_incr* parametros = malloc(sizeof(tparam_incr));
 		memcpy(parametros, respuesta , sizeof(tparam_incr));
  		INCR(parametros);
 	return sizeof(tparam_incr); }
 	if(strcmp(instruccion,"DECR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
-		tparam_decr* parametros;
+		tparam_decr* parametros = malloc(sizeof(tparam_decr));
 		memcpy(parametros, respuesta , sizeof(tparam_decr));
  		DECR(parametros);
 	return sizeof(tparam_decr); }
 	if(strcmp(instruccion,"COMP")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
-		tparam_comp* parametros;
+		tparam_comp* parametros = malloc(sizeof(tparam_comp));
 		memcpy(parametros, respuesta , sizeof(tparam_comp));
  		COMP(parametros);
 	return sizeof(tparam_comp); }
 	if(strcmp(instruccion,"CGEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
-		tparam_cgeq* parametros;
+		tparam_cgeq* parametros = malloc(sizeof(tparam_cgeq));
 		memcpy(parametros, respuesta , sizeof(tparam_cgeq));
  		CGEQ(parametros);
 	return  sizeof(tparam_cgeq); }
 	if(strcmp(instruccion,"CLEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
-		tparam_cleq* parametros;
+		tparam_cleq* parametros = malloc(sizeof(tparam_cleq));
 		memcpy(parametros, respuesta , sizeof(tparam_cleq));
 		CLEQ(parametros);
 	return sizeof(tparam_cleq); }
 	if(strcmp(instruccion,"GOTO")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_goto));
-		tparam_goto* parametros;
+		tparam_goto* parametros = malloc(sizeof(tparam_goto));
 		memcpy(parametros,respuesta, sizeof(tparam_goto));
 		GOTO(parametros);
 	return sizeof(tparam_goto); }
 	if(strcmp(instruccion,"JMPZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
-		tparam_jmpz*  parametros;
+		tparam_jmpz* parametros = malloc(sizeof(tparam_jmpz));
 		memcpy(parametros, respuesta , sizeof(tparam_jmpz));
  		JMPZ(parametros);
 	return sizeof(tparam_jmpz); }
 
 	if(strcmp(instruccion,"JPNZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
-		tparam_goto*  parametros;
+		tparam_goto* parametros = malloc(sizeof(tparam_goto));
 		memcpy(parametros, respuesta , sizeof(tparam_goto));
  		GOTO(parametros);
 	return sizeof(tparam_goto); }
 	if(strcmp(instruccion,"INTE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
-		tparam_inte*  parametros;
+		tparam_inte* parametros = malloc(sizeof(tparam_inte));
 		memcpy(parametros, respuesta , sizeof(tparam_inte));
  		INTE(parametros);
 	return  sizeof(tparam_inte); }
 	if(strcmp(instruccion,"NOPP")){NOPP();return 1; }
 	if(strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
-		tparam_push* parametros;
+		tparam_push* parametros = malloc(sizeof(tparam_push));
 		memcpy(parametros, respuesta , sizeof(tparam_push));
 		PUSH(parametros);
 	return sizeof(tparam_push); }
 	if(strcmp(instruccion,"TAKE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
-		tparam_take* parametros;
+		tparam_take* parametros = malloc(sizeof(tparam_take));
 		memcpy(parametros, respuesta , sizeof(tparam_take));
 		TAKE(parametros);
 	return sizeof(tparam_take); }
