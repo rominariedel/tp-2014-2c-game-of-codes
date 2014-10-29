@@ -21,7 +21,7 @@ int main(int cantArgs, char** args){
 	printf("\n RETARDO : %d \n", RETARDO);
 
 
-	printf("\n Conectando con la MSP ...\n");
+	printf("\n Conectando con la MSP ...\n \n");
 	conectarConMSP();
 
 	printf("\n Conectando con el Kernel ...\n");
