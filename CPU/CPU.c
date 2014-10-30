@@ -9,14 +9,14 @@
 
 
 int main(int cantArgs, char** args){
-	LOGCPU = log_create(NULL, "CPU", 0, LOG_LEVEL_TRACE);
+	LOGCPU = log_create("/home/utnso/Escritorio/LogCPU", "CPU", 0, LOG_LEVEL_TRACE);
 
 	log_trace(LOGCPU, "\n ------Bienvenido al CPU----- \n");
 	printf("\n ------Bienvenido al CPU----- \n");
 	log_trace(LOGCPU, "\n Cargar archivos configuración\n");
 	printf("\n Cargando archivos configuración... \n");
 	cargarArchivoConfiguracion(cantArgs,args);
-
+	log_error(LOGCPU, "erailfjaifa");
 	log_trace(LOGCPU, "IP MSP : %d \n", (int)IPMSP);
 	printf("\n IP MSP : %d \n", (int)IPMSP);
 	log_trace(LOGCPU, "\n PUERTO MSP : %d \n", (int)PUERTOMSP);
@@ -33,13 +33,17 @@ int main(int cantArgs, char** args){
 	printf("\n Conectando con la MSP ...\n\n\n");
 	conectarConMSP();
 
+	log_trace(LOGCPU, "Aviso a la MSP que soy_CPU");
+	t_datosAEnviar * paqueteMSP = crear_paquete(soy_CPU,NULL,0);
+	enviar_datos(socketMSP,paqueteMSP);
+
 	log_trace(LOGCPU,"\n Conectando con el Kernel ...\n\n\n");
 	printf("\n Conectando con el Kernel ...\n");
 	conectarConKernel();
 
 	log_trace(LOGCPU, "Aviso al Kernel que soy_CPU");
-	t_datosAEnviar * paquete = crear_paquete(soy_CPU,NULL,0);
-	enviar_datos(socketKernel,paquete);
+	t_datosAEnviar * paqueteKERNEL = crear_paquete(soy_CPU,NULL,0);
+	enviar_datos(socketKernel,paqueteKERNEL);
 
 	while(1)
 	{
@@ -49,8 +53,7 @@ int main(int cantArgs, char** args){
 		if (datosKernel == NULL){
 			printf("Fallo al recibir TCB y quantum");
 			log_error(LOGCPU, "Fallo al recibir TCB y quantum");
-			//TODO: hacer que insista en recibir en TCB y quantum
-			// break; ??? hace que vuelva al WHILE(1) ??
+			exit(0);
 		}
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
@@ -323,121 +326,104 @@ void limpiarRegistros(){
 int interpretarYEjecutarInstruccion(char* instruccion){
 	if(strcmp(instruccion,"LOAD")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
-		tparam_load* parametros = malloc(sizeof(tparam_load));
-		memcpy(parametros, respuesta, sizeof(tparam_load));
+		tparam_load* parametros = (tparam_load*) respuesta;
 		log_trace(LOGCPU, "LOAD(%d,%c)",parametros->num, parametros->reg1);
 		LOAD(parametros);
 	return sizeof(tparam_load);
 	}
 	if(strcmp(instruccion,"GETM")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
-		tparam_getm * parametros = malloc(sizeof(tparam_getm));
-		memcpy(parametros, respuesta , sizeof(tparam_getm));
+		tparam_getm * parametros = (tparam_getm*)respuesta;
 		log_trace(LOGCPU, "GETM(%c,%c)",parametros->reg1, parametros->reg2);
 		GETM(parametros);
 	return sizeof(tparam_getm); }
 	if(strcmp(instruccion,"MOVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
-		tparam_movr * parametros = malloc(sizeof(tparam_movr));
-		memcpy(parametros, respuesta , sizeof(tparam_movr));
+		tparam_movr * parametros = (tparam_movr *) respuesta;
 		log_trace(LOGCPU, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
 		MOVR(parametros);
 	return sizeof(tparam_movr); }
 	if(strcmp(instruccion,"ADDR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
-		tparam_addr* parametros = malloc(sizeof(tparam_addr));
-		memcpy(parametros, respuesta , sizeof(tparam_addr));
+		tparam_addr* parametros = (tparam_addr*)respuesta;
 		log_trace(LOGCPU, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
 		ADDR(parametros);
 	return sizeof(tparam_addr); }
 	if(strcmp(instruccion,"SUBR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
-		tparam_subr* parametros = malloc(sizeof(tparam_subr));
-		memcpy(parametros, respuesta , sizeof(tparam_subr));
+		tparam_subr* parametros = (tparam_subr *) respuesta;
 		log_trace(LOGCPU, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
 		SUBR(parametros);
 	return sizeof(tparam_subr); }
 	if(strcmp(instruccion,"MULR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
-		tparam_mulr * parametros = malloc(sizeof(tparam_mulr));
-		memcpy(parametros, respuesta , sizeof(tparam_mulr));
+		tparam_mulr * parametros = (tparam_mulr *) respuesta;
 		log_trace(LOGCPU, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
 		MULR(parametros);
 	return sizeof(tparam_mulr); }
 	if(strcmp(instruccion,"MODR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
-		tparam_modr * parametros = malloc(sizeof(tparam_modr));
-		memcpy(parametros, respuesta , sizeof(tparam_modr));
+		tparam_modr * parametros = (tparam_modr *) respuesta;
 		log_trace(LOGCPU, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
 		MODR(parametros);
 	return  sizeof(tparam_modr); }
 	if(strcmp(instruccion,"DIVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
-		tparam_divr* parametros = malloc(sizeof(tparam_divr));
-		memcpy(parametros, respuesta , sizeof(tparam_divr));
+		tparam_divr* parametros = (tparam_divr *) respuesta;
 		log_trace(LOGCPU, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
 		DIVR(parametros);
 	return sizeof(tparam_divr); }
 	if(strcmp(instruccion,"INCR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
-		tparam_incr* parametros = malloc(sizeof(tparam_incr));
-		memcpy(parametros, respuesta , sizeof(tparam_incr));
+		tparam_incr* parametros = (tparam_incr *) respuesta;
 		log_trace(LOGCPU, "INCR(%c)",parametros->reg1);
  		INCR(parametros);
 	return sizeof(tparam_incr); }
 	if(strcmp(instruccion,"DECR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
-		tparam_decr* parametros = malloc(sizeof(tparam_decr));
-		memcpy(parametros, respuesta , sizeof(tparam_decr));
+		tparam_decr* parametros = (tparam_decr *) respuesta;
 		log_trace(LOGCPU, "DECR(%c)",parametros->reg1);
  		DECR(parametros);
 	return sizeof(tparam_decr); }
 	if(strcmp(instruccion,"COMP")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
-		tparam_comp* parametros = malloc(sizeof(tparam_comp));
-		memcpy(parametros, respuesta , sizeof(tparam_comp));
+		tparam_comp* parametros = (tparam_comp *) respuesta;
 		log_trace(LOGCPU, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
  		COMP(parametros);
 	return sizeof(tparam_comp); }
 	if(strcmp(instruccion,"CGEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
-		tparam_cgeq* parametros = malloc(sizeof(tparam_cgeq));
-		memcpy(parametros, respuesta , sizeof(tparam_cgeq));
+		tparam_cgeq* parametros = (tparam_cgeq *) respuesta;
 		log_trace(LOGCPU, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
  		CGEQ(parametros);
 	return  sizeof(tparam_cgeq); }
 	if(strcmp(instruccion,"CLEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
-		tparam_cleq* parametros = malloc(sizeof(tparam_cleq));
-		memcpy(parametros, respuesta , sizeof(tparam_cleq));
+		tparam_cleq* parametros = (tparam_cleq *) respuesta;
 		log_trace(LOGCPU, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
 		CLEQ(parametros);
 	return sizeof(tparam_cleq); }
 	if(strcmp(instruccion,"GOTO")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_goto));
-		tparam_goto* parametros = malloc(sizeof(tparam_goto));
-		memcpy(parametros,respuesta, sizeof(tparam_goto));
+		tparam_goto* parametros = (tparam_goto *) respuesta;
 		log_trace(LOGCPU, "GOTO(%c)",parametros->reg1);
 		GOTO(parametros);
 	return sizeof(tparam_goto); }
 	if(strcmp(instruccion,"JMPZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
-		tparam_jmpz* parametros = malloc(sizeof(tparam_jmpz));
-		memcpy(parametros, respuesta , sizeof(tparam_jmpz));
+		tparam_jmpz* parametros = (tparam_jmpz *) respuesta;
 		log_trace(LOGCPU, "JMPZ(%d)",parametros->direccion);
  		JMPZ(parametros);
 	return sizeof(tparam_jmpz); }
 	if(strcmp(instruccion,"JPNZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
-		tparam_jpnz* parametros = malloc(sizeof(tparam_jpnz));
-		memcpy(parametros, respuesta , sizeof(tparam_jpnz));
+		tparam_jpnz* parametros = (tparam_jpnz *) respuesta;
 		log_trace(LOGCPU, "JPNZ(%d)",parametros->direccion);
  		JPNZ(parametros);
 	return sizeof(tparam_jpnz); }
 	if(strcmp(instruccion,"INTE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
-		tparam_inte* parametros = malloc(sizeof(tparam_inte));
-		memcpy(parametros, respuesta , sizeof(tparam_inte));
+		tparam_inte* parametros = (tparam_inte *) respuesta;
 		log_trace(LOGCPU, "INTE(%d)",parametros->direccion);
  		INTE(parametros);
 	return  sizeof(tparam_inte); }
@@ -447,15 +433,13 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		return 0; }
 	if(strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
-		tparam_push* parametros = malloc(sizeof(tparam_push));
-		memcpy(parametros, respuesta , sizeof(tparam_push));
+		tparam_push* parametros = (tparam_push *) respuesta;
 		log_trace(LOGCPU, "PUSH(%d,%d)",parametros->num1, parametros->num2);
 		PUSH(parametros);
 	return sizeof(tparam_push); }
 	if(strcmp(instruccion,"TAKE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
-		tparam_take* parametros = malloc(sizeof(tparam_take));
-		memcpy(parametros, respuesta , sizeof(tparam_take));
+		tparam_take* parametros = (tparam_take *) respuesta;
 		log_trace(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 		TAKE(parametros);
 	return sizeof(tparam_take); }
@@ -524,7 +508,6 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 }
 
 int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
-	//TODO: verificar que Romi me envie tmb el quantum, y que vaya dsp del tcb.
 
 	log_trace(LOGCPU, "\n Desempaquetando Paquete \n");
 
@@ -574,7 +557,7 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &direccionALeer, cantidad);
-	t_datosAEnviar * paquete = crear_paquete(codOperacion, (void*) datos, 2* sizeof(int));         //TODO: ver si esta bien esta abstraccion
+	t_datosAEnviar * paquete = crear_paquete(codOperacion, (void*) datos, sizeof(int) + cantidad);         //TODO: ver si esta bien esta abstraccion
 
 	enviar_datos(socketMSP,paquete);
 	free(datos);
@@ -585,12 +568,13 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 }
 
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
-
+	int tamanio = 4;
 	log_trace(LOGCPU, "\n Envio paquete a MSP \n");
-	char * datos = malloc(2 * sizeof (int));
+	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int));
-	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 2* sizeof(int));  //TODO: 2 * sizeof(int) ??? o 4 ??? por los 4 caracteres de las instrucciones
+	memcpy(datos + sizeof(int) + sizeof(int), &tamanio , sizeof(int));
+	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
 
 	enviar_datos(socketMSP,paquete);
 	free(datos);
@@ -609,10 +593,11 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 }
 
 char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
-	char * datos = malloc(2 * sizeof (int));
+	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PIDactual, sizeof(int));
-	memcpy(datos + sizeof(int), &punteroInstruccion, cantidadParametros); //ese puntero instruccion es el punteroInstruccionActual + 4
-	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 2* sizeof(int));
+	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
+	memcpy(datos + sizeof(int) + sizeof(int), &cantidadParametros, sizeof(int));
+	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
 	enviar_datos(socketMSP,paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
@@ -648,10 +633,10 @@ int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 
 }
 
-t_datosAEnviar * MSP_DestruirSegmento(int PID, int registro){
+t_datosAEnviar * MSP_DestruirSegmento(int PID, int baseSegmento){
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
-	memcpy(datos + sizeof(int), &registro, sizeof(int));
+	memcpy(datos + sizeof(int), &baseSegmento, sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(destruirSegmento, (void*) datos, 2* sizeof(int));
 
 	enviar_datos(socketMSP,paquete);
@@ -665,16 +650,16 @@ t_datosAEnviar * MSP_DestruirSegmento(int PID, int registro){
 
 }
 
-void MSP_EscribirEnMemoria(int PID, int direccion, int tamanio, void * bytes) {
+void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 
 	char * datos = malloc((3 * sizeof(int)) + tamanio);
 
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &direccion, sizeof(int));
-	memcpy(datos + (2 * sizeof(int)), &tamanio, sizeof(int));
-	memcpy(datos + (3 * sizeof(int)), bytes, tamanio);
+	memcpy(datos + 2 * sizeof(int), bytes, tamanio);
+	memcpy(datos + 2* sizeof(int) + tamanio, &tamanio, sizeof(int));
 
-	t_datosAEnviar * paquete = crear_paquete(escribirMemoria, datos,(3 * sizeof(int)) + sizeof(void*));
+	t_datosAEnviar * paquete = crear_paquete(escribirMemoria, datos,2 * sizeof(int) + tamanio);
 	enviar_datos(socketMSP, paquete);
 	free(datos);
 	free(paquete);
@@ -691,10 +676,9 @@ void KERNEL_ejecutarRutinaKernel(int direccion){
 int KERNEL_IngreseNumeroPorConsola(int PID){
 	//codOperacion = solicitarNumero
 	char codigo = 'N';
-	char * datos = malloc(sizeof (int));
-	memcpy(datos, &PID, sizeof(int));
-	memcpy(datos + sizeof(int), &codigo, sizeof(char));
-	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos,sizeof(int) + sizeof(char));
+	char * datos = malloc(sizeof (char));
+	memcpy(datos, &codigo, sizeof(char));
+	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(char));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	t_datosAEnviar* respuesta = recibir_datos(socketKernel);
@@ -708,11 +692,10 @@ int KERNEL_IngreseNumeroPorConsola(int PID){
 t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 	//codOperacion = solicitarCadena
 	char codigo = 'C';
-	char * datos = malloc(sizeof (int));
-	memcpy(datos, &PID, sizeof(int));
-	memcpy(datos + sizeof(int), &codigo, sizeof(char));
-	memcpy(datos + sizeof(int) + sizeof(char), &tamanioMaxCadena, sizeof(int));
-	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos,2 * sizeof(int) + sizeof(char));
+	char * datos = malloc(sizeof(char) + sizeof (int));
+	memcpy(datos, &codigo, sizeof(char));
+	memcpy(datos + sizeof(char), &tamanioMaxCadena, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(int) + sizeof(char));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	t_datosAEnviar* respuesta = recibir_datos(socketKernel);
@@ -722,10 +705,9 @@ t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
 	char codigo = 'N';
 	char * datos = malloc(sizeof (int));
-	memcpy(datos, &PID, sizeof(int));
-	memcpy(datos + sizeof(int), &codigo, sizeof(char));
-	memcpy(datos + sizeof(int) + sizeof(char), &nro, sizeof(int));
-	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,2 * sizeof(int) + sizeof(char));
+	memcpy(datos, &codigo, sizeof(char));
+	memcpy(datos + sizeof(char), &nro, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos, sizeof(int) + sizeof(char));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	free(paquete);
@@ -734,11 +716,10 @@ void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
 
 void KERNEL_MostrarCadenaPorConsola(int PID, char* cadena){
 	char codigo = 'C';
-	char * datos = malloc(sizeof (int));
-	memcpy(datos, &PID, sizeof(int));
-	memcpy(datos + sizeof(int), &codigo, sizeof(char));
-	memcpy(datos + sizeof(int) + sizeof(char), &cadena, sizeof(cadena));
-	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,sizeof(cadena) +sizeof(int) + sizeof(char));
+	char * datos = malloc(string_length(cadena) + sizeof(char));
+	memcpy(datos, &codigo, sizeof(char));
+	memcpy(datos + sizeof(char), &cadena, string_length(cadena));
+	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos, string_length(cadena) + sizeof(char));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	free(paquete);
@@ -975,7 +956,7 @@ void INNC(){
 	t_datosAEnviar* respuesta = KERNEL_IngreseCadenaPorConsola(PIDactual, B);
 	char cadena[respuesta->tamanio];
 	memcpy(cadena,&respuesta,respuesta->tamanio);
-	MSP_EscribirEnMemoria(PIDactual,A,respuesta->tamanio,cadena);
+	MSP_EscribirEnMemoria(PIDactual,A,cadena,respuesta->tamanio);
 }
 
 void OUTN(){
@@ -1025,7 +1006,7 @@ void CREA(){
 	nuevoTCB->registrosProgramacion[3]=0;
 	nuevoTCB->registrosProgramacion[4]=0;
 
-	//A = &nuevoTCB;
+	A = TIDactual;
 }
 
 void JOIN(){
