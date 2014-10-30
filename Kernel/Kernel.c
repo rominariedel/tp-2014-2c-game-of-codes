@@ -28,6 +28,7 @@ int solicitar_segmento(int, int);
 void iniciar_semaforos();
 void enviar_a_ejecucion(TCB_struct *);
 void dispatcher();
+void copiarRegistros(int registro1[5], int registro2[5]);
 
 int main(int argc, char ** argv) {
 
@@ -297,9 +298,7 @@ void crear_hilo(TCB_struct tcb) {
 	nuevoTCB.M = tcb.M;
 	nuevoTCB.tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
 	nuevoTCB.P = tcb.P;
-	int nuevosRegistros[5];
-	copiarRegistros(nuevosRegistros, tcb.registrosProgramacion);
-	nuevoTCB.registrosProgramacion = nuevosRegistros;
+	copiarRegistros(nuevoTCB.registrosProgramacion, tcb.registrosProgramacion);
 	queue_push(READY.prioridad_1, &nuevoTCB);
 	sem_post(&sem_procesoListo);
 
@@ -307,6 +306,14 @@ void crear_hilo(TCB_struct tcb) {
 	struct_consola * consola_asociada = obtener_consolaAsociada(tcb.PID);
 	consola_asociada->cantidad_hilos++;
 
+}
+
+void copiarRegistros(int registro1[5], int registro2[5]){
+	int n = 5;
+	while(n>0){
+		registro1[n-1] = registro2[n-1];
+		n--;
+	}
 }
 
 /*Esta operacion le solicita a la MSP un segmento, retorna la direccion base del
@@ -418,7 +425,7 @@ void dispatcher() {
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
-			tcb_km->registrosProgramacion = tcb_ejecutandoSysCall->registrosProgramacion;
+			copiarRegistros(tcb_km->registrosProgramacion, tcb_ejecutandoSysCall->registrosProgramacion);
 			tcb_km->PID = tcb_ejecutandoSysCall->PID;
 
 			tcb_km->P = tcb_bloqueado->id_recurso;

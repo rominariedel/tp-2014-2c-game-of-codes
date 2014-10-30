@@ -20,14 +20,6 @@
 #include <netdb.h>
 #include <unistd.h>
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-
 #define tamanio_header (2*sizeof(int))
 
 
@@ -36,7 +28,7 @@ typedef struct{
 	void * datos;
 	int tamanio;
 }t_datosAEnviar;
-
+/*
 enum mensajes {
 
 	//Mensajes enviados
@@ -73,7 +65,7 @@ enum mensajes {
 	soy_consola = 18,
 	codigo_consola = 25,
 	se_produjo_entrada = 26,
-};
+};*/
 
 int crear_servidor(char *, int);
 int crear_cliente(char*, char *);
