@@ -17,7 +17,7 @@ t_list * EXEC;
 t_queue * SYS_CALL;
 t_queue * EXIT;
 
-TCB_struct tcb_km;
+TCB_struct * tcb_km;
 TCB_struct * tcb_ejecutandoSysCall;
 fd_set clientes_set;
 fd_set CPU_set;

@@ -147,8 +147,17 @@ char * recibir_syscalls(int socket) {
 		printf("FALLO en la conexion con la consola\n");
 		return NULL ;
 	}
+	t_datosAEnviar * datos;
+	//AUTENTICACION
+	datos = recibir_datos(socket_consola);
+	if (datos->codigo_operacion != soy_consola) {
+		//ERROR
+		return NULL ;
+	}
+	free(datos);
+
 	printf("Conectado a la consola\n");
-	t_datosAEnviar * datos = recibir_datos(socket_consola);
+	datos = recibir_datos(socket_consola);
 	if (datos == NULL ) {
 		printf("Fallo en la recepcion de datos\n");
 		return NULL ;
@@ -183,31 +192,35 @@ void boot() {
 	int base_segmento_codigo = solicitar_segmento(pid_KM_boot,
 			tamanio_codigo_syscalls);
 	//TODO: validar la base del segmento
-	//escribir_memoria(pid_KM_boot, base_segmento_codigo,
-	//		(int) tamanio_codigo_syscalls, (void*) syscalls);
-	//free(syscalls);
+	escribir_memoria(pid_KM_boot, base_segmento_codigo,
+			(int) tamanio_codigo_syscalls, (void*) syscalls);
+	free(syscalls);
 
 	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
 	//TODO: validar la base del stack
-	printf("Creando TCB Modo Kernel");
-	tcb_km.KM = 1;
-	tcb_km.M = base_segmento_codigo;
-	tcb_km.tamanioSegmentoCodigo = tamanio_codigo_syscalls;
-	tcb_km.P = 0;
-	tcb_km.PID = pid_KM_boot;
-	tcb_km.S = base_segmento_stack;
-	tcb_km.TID = 0;
-	tcb_km.X = base_segmento_stack;
+	printf("Creando TCB Modo Kernel\n");
 
-	tcb_km.registrosProgramacion.A = 0;
-	tcb_km.registrosProgramacion.B = 0;
-	tcb_km.registrosProgramacion.C = 0;
-	tcb_km.registrosProgramacion.D = 0;
-	tcb_km.registrosProgramacion.E = 0;
-	printf("Bloqueando TCB KM");
-	queue_push(BLOCK.prioridad_0, (void *) &tcb_km);
+	tcb_km = malloc(sizeof(TCB_struct));
+	tcb_km->KM = 1;
+	tcb_km->M = base_segmento_codigo;
+	tcb_km->tamanioSegmentoCodigo = tamanio_codigo_syscalls;
+	tcb_km->P = 0;
+	tcb_km->PID = pid_KM_boot;
+	tcb_km->S = base_segmento_stack;
+	tcb_km->TID = 0;
+	tcb_km->X = base_segmento_stack;
 
-	printf("Esperando conexiones...");
+	tcb_km->registrosProgramacion.A = 0;
+	tcb_km->registrosProgramacion.B = 0;
+	tcb_km->registrosProgramacion.C = 0;
+	tcb_km->registrosProgramacion.D = 0;
+	tcb_km->registrosProgramacion.E = 0;
+
+	printf("Bloqueando TCB KM\n");
+
+	queue_push(BLOCK.prioridad_0, (void *) tcb_km);
+
+	printf("Esperando conexiones...\n");
 
 	FD_ZERO(&consola_set);
 	FD_ZERO(&CPU_set);
@@ -217,11 +230,13 @@ void boot() {
 	while (1) {
 
 		int socket_conectado = recibir_conexion(socket_gral);
+		printf("Se recibio una conexion!\n");
 		int modulo_conectado = -1;
 		t_datosAEnviar * datos = recibir_datos(socket_conectado);
 		modulo_conectado = datos->codigo_operacion;
 
 		if (modulo_conectado == soy_consola) {
+			printf("Se conecto una consola\n");
 			FD_SET(socket_conectado, &consola_set);
 			struct_consola * consola_conectada = malloc(sizeof(struct_consola));
 			int pid = obtener_PID();
@@ -235,6 +250,7 @@ void boot() {
 			list_add(consola_list, consola_conectada);
 
 		} else if (modulo_conectado == soy_CPU) {
+			printf("Se conecto una CPU\n");
 			FD_SET(socket_conectado, &CPU_set);
 			struct_CPU* cpu_conectada = malloc(sizeof(struct_CPU));
 			cpu_conectada->PID = -1;
@@ -311,11 +327,11 @@ int solicitar_segmento(int pid, int tamanio_del_segmento) {
 	memcpy(dir_base, respuesta->datos, sizeof(int));
 	free(respuesta->datos);
 	free(respuesta);
-
 	if (*dir_base == error_segmentationFault) {
 		//ERROR
 		return -1;
 	}
+	printf("Se recibio la direccion base: %d\n", *dir_base);
 
 	return *dir_base;
 }
@@ -365,8 +381,17 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 void abortar(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
 	queue_push(EXIT, tcb);
-	//TODO: buscar la consola asociada para ver si es el ultimo hilo de un proceso, y si lo es terminar la conexion
-	//con esa consola
+
+	struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
+	consola_asociada->cantidad_hilos--;
+	if (consola_asociada->cantidad_hilos == 0) {
+		//Si no quedan mas hilos de esa consola hay que terminar la conexion.
+		t_datosAEnviar * paquete = crear_paquete(terminar_conexion, NULL, 0);
+		enviar_datos(consola_asociada->socket_consola, paquete);
+		free(paquete);
+		close(consola_asociada->socket_consola);
+		free(consola_asociada);
+	}
 	//LOGUEAR que tuvo que abortar el hilo
 }
 
@@ -374,11 +399,12 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	sem_wait(&sem_CPU);
 	list_add(EXEC, tcb);
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
-	int op = ejecutar;
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
-	memcpy(mensaje, &op, sizeof(int));
+	memcpy(mensaje, &QUANTUM, sizeof(int));
 	memcpy(mensaje + sizeof(int), tcb, sizeof(TCB_struct));
-	enviar_datos(cpu->socket_CPU, mensaje);
+	t_datosAEnviar * paquete = crear_paquete(ejecutar, mensaje,
+			sizeof(TCB_struct) + sizeof(int));
+	enviar_datos(cpu->socket_CPU, paquete);
 }
 
 /*El dispatcher se encarga tanto de las llamadas al sistema como de los procesos que estan en la cola de ready*/
@@ -391,13 +417,13 @@ void dispatcher() {
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
-			tcb_km.registrosProgramacion =
+			tcb_km->registrosProgramacion =
 					tcb_ejecutandoSysCall->registrosProgramacion;
-			tcb_km.PID = tcb_ejecutandoSysCall->PID;
+			tcb_km->PID = tcb_ejecutandoSysCall->PID;
 
-			tcb_km.P = tcb_bloqueado->id_recurso;
+			tcb_km->P = tcb_bloqueado->id_recurso;
 
-			enviar_a_ejecucion(&tcb_km);
+			enviar_a_ejecucion(tcb_km);
 
 		} else {
 			TCB_struct * tcb;

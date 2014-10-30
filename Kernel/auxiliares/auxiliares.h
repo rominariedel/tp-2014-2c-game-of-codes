@@ -30,7 +30,7 @@ enum mensajes {
 	ingresar_cadena = 5,
 	ejecutar = 6,
 	devolucion_cadena = 7,
-
+	terminar_conexion = 27,
 	//Mensajes recibidos
 
 	//-->CPU
@@ -111,7 +111,6 @@ typedef struct {
 sem_t sem_procesoListo;
 sem_t sem_CPU;
 sem_t mutex_entradaSalida;
-sem_t sem_entrada;
 /*       FUNCIONES        */
 
 int obtener_TID();

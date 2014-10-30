@@ -12,10 +12,12 @@
 #include <commons/string.h>
 
 enum mensajes {
+	soy_consola = 18,
 	imprimir_en_pantalla = 4,
 	ingresar_cadena = 5,
 	codigo_consola = 25,
 	se_produjo_entrada = 26,
+	terminar_conexion = 27,
 };
 
 char * extraer_data(char * path);
@@ -47,11 +49,17 @@ int main(int argc, char ** argv) {
 		log_error(logger, "FALLO en la conexion con el kernel.", "ERROR");
 		return EXIT_FAILURE;
 	}
-
+	t_datosAEnviar * paquete;
 	printf("Conectado al Kernel. Ya se puede enviar el codigo ESO\n");
 	log_info(logger, "Se realizo la conexion con el kernel.", "INFO");
 
-	t_datosAEnviar * paquete = crear_paquete(codigo_consola, buffer,
+	//AUTENTICACION
+	paquete = crear_paquete(soy_consola, NULL, 0);
+	enviar_datos(kernelSocket, paquete);
+	free(paquete);
+
+
+	paquete = crear_paquete(codigo_consola, buffer,
 			tamanio_codigo);
 	if (enviar_datos(kernelSocket, paquete) < 0) {
 		log_error(logger, "FALLO al enviar datos al kernel.", "ERROR");
@@ -78,6 +86,10 @@ int main(int argc, char ** argv) {
 			memcpy(solicitud_ingreso, paquete->datos, paquete->tamanio);
 			evaluar_ingreso(solicitud_ingreso);
 			break;
+		case terminar_conexion:
+			free(paquete);
+			return EXIT_FAILURE;
+			break;
 		}
 		free(paquete);
 	}
@@ -94,7 +106,7 @@ void evaluar_ingreso(char * solicitud) {
 	if (primera_letra == 'N') {
 		//Se ha solicitado que se ingrese un numero entre 0 y 2³¹
 		ingresar_numero();
-	} else if(primera_letra == 'C'){
+	} else if (primera_letra == 'C') {
 		//Se ha solicitado que se ingrese una cadena de longitud menor que el segundo parametro
 		int segunda_letra;
 		memcpy(&segunda_letra, solicitud + sizeof(char), sizeof(int));
@@ -102,20 +114,21 @@ void evaluar_ingreso(char * solicitud) {
 	}
 }
 
-void ingresar_cadena_menorA(int tamanio){
+void ingresar_cadena_menorA(int tamanio) {
 	int recibido_not_success = 1;
 
-	while(recibido_not_success){
+	while (recibido_not_success) {
 
 		char * cadena = malloc(tamanio);
 		printf("Ingrese una cadena con menos de %d caraceteres", tamanio);
 		scanf("%s", cadena);
 		int largo_cadena = string_length(cadena);
-		if((largo_cadena<= tamanio)&&(largo_cadena>0)){
-			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, cadena, largo_cadena);
+		if ((largo_cadena <= tamanio) && (largo_cadena > 0)) {
+			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, cadena,
+					largo_cadena);
 			enviar_datos(kernelSocket, datos);
 			recibido_not_success = 0;
-		}else{
+		} else {
 			printf("La cadena no es valida\n");
 		}
 

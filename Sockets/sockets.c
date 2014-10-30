@@ -19,7 +19,8 @@ static t_datosAEnviar* deserializar_header(char * buffer) {
 	t_datosAEnviar * paquete = malloc(sizeof(t_datosAEnviar));
 	memcpy(&paquete->codigo_operacion, buffer, sizeof(int));
 	memcpy(&paquete->tamanio, buffer + sizeof(int), sizeof(int));
-	printf("\n Header deserializado para datos de tamanio: %d \n", paquete->tamanio);
+	printf("\n Header deserializado para datos de tamanio: %d \n",
+			paquete->tamanio);
 	return paquete;
 }
 
@@ -136,15 +137,17 @@ t_datosAEnviar * recibir_datos(int socket) {
 
 	//Recibe datos
 	char * buffer_datos = malloc(datos_recibidos->tamanio);
-	printf("\n Esperando la recepcion de data \n");
-	int tamanio_recibido_datos = recv(socket, buffer_datos,
-			datos_recibidos->tamanio, MSG_WAITALL);
-	if (tamanio_recibido_datos < 0) {
-		//TODO: loguear error
-		return NULL ;
+	if (datos_recibidos->tamanio > 0) {
+		printf("\n Esperando la recepcion de data \n");
+		int tamanio_recibido_datos = recv(socket, buffer_datos,
+				datos_recibidos->tamanio, MSG_WAITALL);
+		if (tamanio_recibido_datos < 0) {
+			//TODO: loguear error
+			return NULL ;
+		}
+		printf("\n Se recibieron los datos de tamanio %d\n",
+				tamanio_recibido_datos);
 	}
-	printf("\n Se recibieron los datos de tamanio %d\n", tamanio_recibido_datos);
-
 	//Copia datos
 	serializar_datos(buffer_datos, datos_recibidos);
 	free(buffer_datos);
