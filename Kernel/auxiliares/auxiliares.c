@@ -90,7 +90,6 @@ void planificador() {
 				char * id_tipo;
 
 				sem_init(&mutex_entradaSalida, 0, 1);
-				sem_init(&sem_entrada, 0, 0);
 
 				switch (codigo_operacion) {
 
@@ -233,7 +232,6 @@ void devolver_entrada_aCPU(int tamanio_datos) {
 	free(datos);
 	free(entrada->cadena);
 	free(entrada);
-	free(&tamanio_datos);
 	sem_post(&mutex_entradaSalida);
 }
 
