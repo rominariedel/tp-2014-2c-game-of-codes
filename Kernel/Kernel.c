@@ -316,7 +316,7 @@ int solicitar_segmento(int pid, int tamanio_del_segmento) {
 	memcpy(datos, &pid, sizeof(int));
 	memcpy(datos + sizeof(int), &tamanio_del_segmento, sizeof(int));
 
-	t_datosAEnviar * paquete = crear_paquete(reservar_segmento, (void*) datos,
+	t_datosAEnviar * paquete = crear_paquete(crear_segmento, (void*) datos,
 			2 * sizeof(int));
 
 	enviar_datos(socket_MSP, paquete);

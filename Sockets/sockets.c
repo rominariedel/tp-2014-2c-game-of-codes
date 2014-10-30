@@ -51,10 +51,15 @@ int crear_servidor(char * PUERTO, int backlog) {
 	hints.ai_socktype = SOCK_STREAM;
 
 	getaddrinfo(NULL, PUERTO, &hints, &serverInfo);
+
 	int listenningSocket;
 	listenningSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype,
 			serverInfo->ai_protocol);
+
+	int optval = 1;
+	setsockopt(listenningSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
 	bind(listenningSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
+
 	freeaddrinfo(serverInfo);
 	listen(listenningSocket, backlog);
 	return listenningSocket;

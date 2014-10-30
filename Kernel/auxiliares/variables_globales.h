@@ -25,6 +25,7 @@ fd_set consola_set;
 t_list * CPU_list;
 t_list * consola_list;
 t_config * configuracion;
+t_list * hilos_join;
 
 typedef struct {
 	int socket_CPU; //El Socket pertenece a la CPU que hizo la solicitud de entrada/salida

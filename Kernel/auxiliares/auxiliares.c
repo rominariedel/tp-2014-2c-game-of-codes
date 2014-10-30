@@ -29,6 +29,7 @@ void crear_colas() {
 	EXEC = list_create();
 	CPU_list = list_create();
 	consola_list = list_create();
+	hilos_join = list_create();
 }
 
 void free_listas() {
@@ -84,8 +85,7 @@ void planificador() {
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
-				int * dirSysCall, *tamanio;
-				int * pid;
+				int * dirSysCall, *tamanio, *pid, *tid_llamador, *tid_a_esperar, *id_recurso;
 				char * cadena;
 				char * id_tipo;
 
@@ -139,11 +139,18 @@ void planificador() {
 							datos->tamanio - sizeof(int));
 					producir_salida_estandar(*pid, cadena);
 					break;
-				case join:
-
+				case join: //TODO: preguntar si ese hilo llamador esta en ejecucion o que
+					tid_llamador = malloc(sizeof(int));
+					tid_a_esperar = malloc(sizeof(int));
+					memcpy(tid_llamador, datos->datos, sizeof(int));
+					memcpy(tid_a_esperar, datos->datos + sizeof(int),
+							sizeof(int));
+					realizar_join(*tid_llamador, *tid_a_esperar);
 					break;
 				case bloquear:
-
+					id_recurso = malloc(sizeof(int));
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					memcpy(id_recurso, datos->datos + sizeof(TCB_struct), sizeof(int));
 					break;
 				case despertar:
 
@@ -235,10 +242,11 @@ void devolver_entrada_aCPU(int tamanio_datos) {
 	sem_post(&mutex_entradaSalida);
 }
 
-/*void recibir_cadena(void * cadena, int tamanio) {
- entrada->cadena = malloc(tamanio);
- memcpy(&entrada->cadena, cadena, tamanio);
- entrada->tamanio = tamanio;
- sem_post(&sem_entrada);
+void realizar_join(int tid_llamador, int tid_a_esperar) {
+	struct_join * estructura = malloc(sizeof(struct_join));
+	estructura->tid_a_esperar = tid_a_esperar;
+	estructura->tid_llamador = tid_llamador;
+	list_add(hilos_join, estructura);
 
- }*/
+	//TODO: aca hay que mandar un tcb a bloquear..
+}
