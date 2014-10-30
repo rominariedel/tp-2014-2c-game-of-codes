@@ -10,19 +10,6 @@
 
 #include "stdint.h"
 
-// Declaración de variables globales
-#define OPERACION_EXITOSA 1
-#define OPERACION_ERRONEA 0
-
-#define ERROR_MEMORIA_LLENA 								10
-#define ERROR_VIOLACION_DE_SEGMENTO_MEMORIA_INVALIDA 		11
-#define ERROR_VIOLACION_DE_SEGMENTO_LIMITES_SEG_EXCEDIDOS 	12
-#define ERROR_PROCESO_INEXISTENTE 							13
-#define ERROR_SEGMENTO_INEXISTENTE 							14
-#define ERROR_PAGINA_INEXISTENTE 							15
-
-
-
 typedef struct T_PROCESO {
 	int PID;
 	t_list* segmentos;
@@ -32,7 +19,7 @@ typedef struct T_SEGMENTO {
 	int SID;
 	int tamanio;
 	t_list* paginas;
-	uint32_t* baseSegmento; //Fijarse si es necesario usar un puntero
+	uint32_t baseSegmento;
 } T_SEGMENTO;
 
 typedef struct T_PAGINA {
@@ -58,10 +45,10 @@ typedef struct T_DIRECCION_LOG {
 
 
 //Operaciones de interfaz
-uint32_t* 	crearSegmento		(int PID, int tamanio);
-int 		destruirSegmento 	(int PID, uint32_t baseSegmento);
-int 		solicitarMemoria	(int PID, uint32_t direccionLogica, int tamanio);
-int 	escribirMemoria		(int PID, uint32_t direccionLogica, char * bytesAEscribir, int tamanio);
+uint32_t 	crearSegmento		(int PID, int tamanio);
+uint32_t	destruirSegmento 	(int PID, uint32_t baseSegmento);
+char* 		solicitarMemoria	(int PID, uint32_t direccionLogica, int tamanio);
+uint32_t 	escribirMemoria		(int PID, uint32_t direccionLogica, char * bytesAEscribir, int tamanio);
 
 //Operaciones de consola
 void 	inicializarConsola();
@@ -74,11 +61,9 @@ int 	tablaPaginas(int PID);
 void 		inicializar();
 void 		cargarArchivoConfiguracion(void);
 void 		crearMarcos();
-T_MARCO* 	crearMarcoVacio (int marcoId);
 T_SEGMENTO* crearSegmentoVacio (T_PROCESO proceso, int tamanio);
-int 		calcularProximoSID (T_PROCESO proceso);
-t_list* 	crearPagsPorTamanioSeg(int tamanio);
-T_PAGINA* 	crearPaginaVacia (int paginaID);
+int 		calcularProximoSID (T_PROCESO* proceso);
+t_list* 	crearPaginasPorTamanioSegmento(int tamanio);
 static void destruirPag(T_PAGINA* pagina);
 void 		asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag);
 void 		actualizarMarcos();
