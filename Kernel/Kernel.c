@@ -114,11 +114,11 @@ void loader() {
 					nuevoTCB->P = segmento_codigo;
 					nuevoTCB->X = segmento_stack;
 					nuevoTCB->S = segmento_stack;
-					nuevoTCB->registrosProgramacion.A = 0;
-					nuevoTCB->registrosProgramacion.B = 0;
-					nuevoTCB->registrosProgramacion.C = 0;
-					nuevoTCB->registrosProgramacion.D = 0;
-					nuevoTCB->registrosProgramacion.E = 0;
+					nuevoTCB->registrosProgramacion[0] = 0;
+					nuevoTCB->registrosProgramacion[1] = 0;
+					nuevoTCB->registrosProgramacion[2] = 0;
+					nuevoTCB->registrosProgramacion[3] = 0;
+					nuevoTCB->registrosProgramacion[4] = 0;
 
 					queue_push(NEW, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
@@ -210,11 +210,11 @@ void boot() {
 	tcb_km->TID = 0;
 	tcb_km->X = base_segmento_stack;
 
-	tcb_km->registrosProgramacion.A = 0;
-	tcb_km->registrosProgramacion.B = 0;
-	tcb_km->registrosProgramacion.C = 0;
-	tcb_km->registrosProgramacion.D = 0;
-	tcb_km->registrosProgramacion.E = 0;
+	tcb_km->registrosProgramacion[0] = 0;
+	tcb_km->registrosProgramacion[1] = 0;
+	tcb_km->registrosProgramacion[2] = 0;
+	tcb_km->registrosProgramacion[3] = 0;
+	tcb_km->registrosProgramacion[4] = 0;
 
 	printf("Bloqueando TCB KM\n");
 
@@ -297,7 +297,8 @@ void crear_hilo(TCB_struct tcb) {
 	nuevoTCB.M = tcb.M;
 	nuevoTCB.tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
 	nuevoTCB.P = tcb.P;
-	reg_programacion nuevosRegistros = tcb.registrosProgramacion;
+	int nuevosRegistros[5];
+	copiarRegistros(nuevosRegistros, tcb.registrosProgramacion);
 	nuevoTCB.registrosProgramacion = nuevosRegistros;
 	queue_push(READY.prioridad_1, &nuevoTCB);
 	sem_post(&sem_procesoListo);
@@ -342,11 +343,11 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
 
 	memcpy(datos, &pid, sizeof(int));
 	memcpy(datos + sizeof(int), &dir_logica, sizeof(int));
-	memcpy(datos + (2 * sizeof(int)), &tamanio, sizeof(int));
-	memcpy(datos + (3 * sizeof(int)), bytes, tamanio);
+	memcpy(datos + (2 * sizeof(int)), bytes, tamanio);
+	memcpy(datos + (2 * sizeof(int)) + tamanio, &tamanio, sizeof(int));
 
 	t_datosAEnviar * paquete = crear_paquete(escribir_en_memoria, datos,
-			(3 * sizeof(int)) + sizeof(void*));
+			(3 * sizeof(int)) + tamanio);
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
 	free(paquete);
@@ -367,7 +368,7 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
 	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*) es_TCB);
-	free(tcb_exec); //TODO: sacar de ejecucion, va a exit o a ready?
+	free(tcb_exec); //TODO: sacar de ejecucion, va a exit------
 
 	sem_post(&sem_CPU);
 
@@ -400,8 +401,8 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	list_add(EXEC, tcb);
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
-	memcpy(mensaje, &QUANTUM, sizeof(int));
-	memcpy(mensaje + sizeof(int), tcb, sizeof(TCB_struct));
+	memcpy(mensaje, tcb, sizeof(TCB_struct));
+	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(ejecutar, mensaje,
 			sizeof(TCB_struct) + sizeof(int));
 	enviar_datos(cpu->socket_CPU, paquete);
@@ -417,8 +418,7 @@ void dispatcher() {
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
-			tcb_km->registrosProgramacion =
-					tcb_ejecutandoSysCall->registrosProgramacion;
+			tcb_km->registrosProgramacion = tcb_ejecutandoSysCall->registrosProgramacion;
 			tcb_km->PID = tcb_ejecutandoSysCall->PID;
 
 			tcb_km->P = tcb_bloqueado->id_recurso;

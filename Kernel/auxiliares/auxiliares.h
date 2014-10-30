@@ -22,14 +22,6 @@
 /*          ESTRUCTURAS          */
 
 typedef struct {
-	int A;
-	int B;
-	int C;
-	int D;
-	int E;
-} reg_programacion;
-
-typedef struct {
 	int PID;
 	int TID;
 	int KM;
@@ -38,7 +30,7 @@ typedef struct {
 	int P;
 	int X;
 	int S;
-	reg_programacion registrosProgramacion;
+	int registrosProgramacion[5];
 } TCB_struct;
 
 typedef struct {
@@ -102,5 +94,43 @@ void producir_salida_estandar(int pid, char* cadena);
 void producir_entrada_estandar(int pid, char* id_tipo, int socket_CPU, int tamanio);
 void devolver_entrada_aCPU(int tamanio_datos);
 void realizar_join(int tid_llamador, int tid_a_esperar);
+
+enum mensajes {
+
+	//Mensajes enviados
+
+	crear_segmento = 1,
+	escribir_en_memoria = 2,
+	ejecucion_abortada = 3,
+	imprimir_en_pantalla = 4,
+	ingresar_cadena = 5,
+	ejecutar = 6,
+	devolucion_cadena = 7,
+	terminar_conexion = 27,
+	//Mensajes recibidos
+
+	//-->CPU
+	finaliza_quantum = 10,
+	finaliza_ejecucion = 11,
+	ejecucion_erronea = 12,
+	desconexion = 13,
+	interrupcion = 14,
+	creacion_hilo = 15,
+	soy_CPU = 19,
+	entrada_estandar = 20,
+	salida_estandar = 21,
+	join = 22,
+	bloquear = 23,
+	despertar = 24,
+
+	//-->MSP
+	error_memoriaLlena = 16,
+	error_segmentationFault = 17,
+
+	//-->CONSOLA
+	soy_consola = 18,
+	codigo_consola = 25,
+	se_produjo_entrada = 26,
+};
 
 #endif /* AUXILIARES_H_ */
