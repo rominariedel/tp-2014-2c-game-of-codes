@@ -94,6 +94,7 @@ void producir_salida_estandar(int pid, char* cadena);
 void producir_entrada_estandar(int pid, char* id_tipo, int socket_CPU, int tamanio);
 void devolver_entrada_aCPU(int tamanio_datos);
 void realizar_join(int tid_llamador, int tid_a_esperar);
+char * extraer_syscalls(char * PATH);
 
 enum mensajes {
 

@@ -7,12 +7,35 @@
 
 #include "variables_globales.h"
 
+
+long tamanio_del_archivo(FILE* archivo) {
+	fseek(archivo, 0, SEEK_END);
+	int tamanio = ftell(archivo);
+	rewind(archivo);
+	return tamanio;
+}
+
+char * extraer_syscalls(char * PATH) {
+	printf("Extrayendo datos del archivo\n");
+	FILE* archivo = fopen(PATH, "read");
+	int tamanio_archivo = tamanio_del_archivo(archivo);
+	char * buffer = malloc(tamanio_archivo); //MMAP
+	fread((void*) buffer, 1, tamanio_archivo, archivo);
+	fclose(archivo);
+	printf("Datos copiados exitosamente\n");
+	return buffer;
+}
+
+
 int obtener_TID() {
-	return TID++;
+	int aux = TID;
+	aux ++;
+	return aux;
 }
 
 int obtener_PID() {
-	return PID++;
+	PID = PID + 1;
+	return PID;
 }
 
 void crear_colas() {
@@ -166,32 +189,32 @@ void planificador() {
 }
 
 struct_consola * obtener_consolaConectada(int socket_consola) {
-	bool tiene_mismo_socket(struct_consola estructura) {
-		return estructura.socket_consola == socket_consola;
+	bool tiene_mismo_socket(struct_consola * estructura) {
+		return estructura->socket_consola == socket_consola;
 	}
-	return list_find(consola_list, (void*) &tiene_mismo_socket);
+	return list_find(consola_list, (void*) tiene_mismo_socket);
 
 }
 
 struct_consola * obtener_consolaAsociada(int PID) {
-	bool tiene_mismo_pid(struct_consola estructura) {
-		return estructura.PID == PID;
+	bool tiene_mismo_pid(struct_consola * estructura) {
+		return estructura->PID == PID;
 	}
-	return list_find(consola_list, (void*) &tiene_mismo_pid);
+	return list_find(consola_list, (void*) tiene_mismo_pid);
 }
 
 struct_CPU * obtener_CPUAsociada(int socket_cpu) {
-	bool tiene_mismo_socket(struct_CPU estructura) {
-		return estructura.socket_CPU == socket_cpu;
+	bool tiene_mismo_socket(struct_CPU *estructura) {
+		return estructura->socket_CPU == socket_cpu;
 	}
-	return list_find(CPU_list, (void*) &tiene_mismo_socket);
+	return list_find(CPU_list, (void*) tiene_mismo_socket);
 }
 
 struct_bloqueado * obtener_bloqueado(int TID) {
-	bool tiene_mismo_tid(struct_bloqueado estructura) {
-		return estructura.tcb.TID == TID;
+	bool tiene_mismo_tid(struct_bloqueado * estructura) {
+		return estructura->tcb.TID == TID;
 	}
-	return list_find(BLOCK.prioridad_1, (void*) &tiene_mismo_tid);
+	return list_find(BLOCK.prioridad_1, (void*) tiene_mismo_tid);
 }
 
 void producir_salida_estandar(int pid, char* cadena) {

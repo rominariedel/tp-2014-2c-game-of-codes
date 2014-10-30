@@ -134,7 +134,6 @@ t_datosAEnviar * recibir_datos(int socket) {
 		//TODO: loguear error
 		return NULL ;
 	}
-	printf("\n Se recibio el header de tamanio %d\n", tamanio_recibido_header);
 
 	//Copia header
 	t_datosAEnviar * datos_recibidos = deserializar_header(buffer);
@@ -150,8 +149,6 @@ t_datosAEnviar * recibir_datos(int socket) {
 			//TODO: loguear error
 			return NULL ;
 		}
-		printf("\n Se recibieron los datos de tamanio %d\n",
-				tamanio_recibido_datos);
 	}
 	//Copia datos
 	serializar_datos(buffer_datos, datos_recibidos);

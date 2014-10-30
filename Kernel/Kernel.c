@@ -67,7 +67,7 @@ void obtenerDatosConfig(char ** argv) {
 }
 
 void loader() {
-
+	printf("\nSE INICIO EL LOADER\n");
 	fd_set copia_set;
 
 	while (1) {
@@ -84,18 +84,24 @@ void loader() {
 
 		while (n_descriptor <= descriptor_mas_alto_consola) {
 			if (FD_ISSET(n_descriptor, &copia_set)) {
+				struct_consola * consola_conectada = obtener_consolaConectada(n_descriptor);
+				printf("Tamaño de lista de consolas %d\n", list_size(consola_list));
+				printf("Descriptor actual %d\n", n_descriptor);
+				if(consola_conectada ==NULL){
+					printf("La consola no se creo correctamente o no existe\n");
+					exit(-1);
+				}
+				printf("Se encontro una consola activa de PID %d\n", consola_conectada->PID);
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
-				struct_consola * consola_conectada = obtener_consolaConectada(
-						n_descriptor);
 				TCB_struct * nuevoTCB;
 
 				int * aux;
 				switch (datos->codigo_operacion) {
 
 				case codigo_consola:
+					printf("COD OPERACION: CODIGO_CONSOLA\n");
 					nuevoTCB = malloc(sizeof(TCB_struct));
-
 					nuevoTCB->PID = consola_conectada->PID;
 					nuevoTCB->TID = obtener_TID();
 					int segmento_codigo = solicitar_segmento(nuevoTCB->PID,
@@ -120,7 +126,7 @@ void loader() {
 					nuevoTCB->registrosProgramacion[2] = 0;
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
-
+					printf("\nSe inicializo el TCB PADRE\n");
 					queue_push(NEW, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
 					break;
@@ -135,40 +141,11 @@ void loader() {
 				}
 				free(datos);
 			}
-			n_descriptor++;
+			printf("Otra ronda\n");
+			n_descriptor = n_descriptor + 1;
 		}
 
 	}
-}
-
-char * recibir_syscalls(int socket) {
-	printf("Esperando conexion de la consola \n");
-	int socket_consola = recibir_conexion(socket);
-	if (socket_consola < 0) {
-		printf("FALLO en la conexion con la consola\n");
-		return NULL ;
-	}
-	t_datosAEnviar * datos;
-	//AUTENTICACION
-	datos = recibir_datos(socket_consola);
-	if (datos->codigo_operacion != soy_consola) {
-		//ERROR
-		return NULL ;
-	}
-	free(datos);
-
-	printf("Conectado a la consola\n");
-	datos = recibir_datos(socket_consola);
-	if (datos == NULL ) {
-		printf("Fallo en la recepcion de datos\n");
-		return NULL ;
-	}
-	printf("Se recibieron las syscalls");
-	if (datos->codigo_operacion == codigo_consola) {
-		return datos->datos;
-	}
-	printf("No se recibieron las syscalls exitosamente");
-	return NULL ;
 }
 
 void boot() {
@@ -182,7 +159,7 @@ void boot() {
 	}
 	printf("Se ha creado el servidor exitosamente\n");
 
-	char * syscalls = recibir_syscalls(socket_gral);
+	char * syscalls = extraer_syscalls(SYSCALLS);
 
 	printf("\n      CONECTANDO CON LA MSP\n");
 	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
@@ -241,14 +218,22 @@ void boot() {
 			FD_SET(socket_conectado, &consola_set);
 			struct_consola * consola_conectada = malloc(sizeof(struct_consola));
 			int pid = obtener_PID();
+			printf("Se va a agregar una consola de PID: %d y socket: %d\n", pid, socket_conectado);
 			consola_conectada->PID = pid;
 			consola_conectada->socket_consola = socket_conectado;
 			consola_conectada->cantidad_hilos = 0;
-			if (list_is_empty(consola_list)) {
-				descriptor_mas_alto_consola = socket_conectado;
+			list_add(consola_list, consola_conectada);
+			if(list_size(consola_list) == 0){
+				printf("No se agrego la consola correctamente\n");
+				exit(-1);
+			}
+			printf("Se agrego una consola de PID: %d\n", consola_conectada->PID);
+			descriptor_mas_alto_consola = socket_conectado;
+			if (list_size(consola_list) < 2) {
+				printf("Es la primera consola que se conecta \n");
+				//descriptor_mas_alto_consola = socket_conectado;
 				pthread_create(&thread_loader, NULL, (void*) &loader, NULL );
 			}
-			list_add(consola_list, consola_conectada);
 
 		} else if (modulo_conectado == soy_CPU) {
 			printf("Se conecto una CPU\n");
