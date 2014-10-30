@@ -39,7 +39,7 @@ int main (void)
 
 	int hilo = pthread_create(&hiloConsola, NULL, (void*)inicializarConsola, NULL);
 	if(hilo == 0){
-		log_info(logger,"La Consola de MSP se inicializó correctamente");
+		log_info(logger,"La Consola de MSP se inicializó correctamente \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginación: %d", tamanioMemoria, tamanioPag);
 	}
 	else log_error(logger,"Ha ocurrido un error en la  inicialización de la Consola de MSP");
 
@@ -86,7 +86,7 @@ void inicializarConsola(){
 		scanf("%s", comando);
 
 		interpretarComando(comando);
-		printf("\r/n");
+		printf("\r\n");
 	}
 
 }
@@ -137,27 +137,27 @@ void cargarArchivoConfiguracion(void){
 	if(config_has_property(configuracion, "CANTIDAD_MEMORIA")){
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA") * pow(2,10);
 		memoriaDisponible = tamanioMemoria;
-		printf("Tamanio Memoria =  %d /n", tamanioMemoria);
+		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
 
 	if(config_has_property(configuracion,"PUERTO")){
 		puerto= config_get_int_value(configuracion, "PUERTO");
-		printf("Puerto =  %d /n", puerto);
+		printf("Puerto =  %d \n", puerto);
 	}
 
 	if(config_has_property(configuracion,"CANTIDAD_SWAP")){
 		cantidadSwap = config_get_int_value(configuracion, "CANTIDAD_SWAP");
-		printf("Cantidad Swap =  %d /n", cantidadSwap);
+		printf("Cantidad Swap =  %d \n", cantidadSwap);
 	}
 
 	if(config_has_property(configuracion,"SUST_PAGS")){
 		sust_pags = config_get_string_value(configuracion, "SUST_PAGS");
-		printf("Algoritmo de Sustitución de Páginas =  %s /n", sust_pags);
+		printf("Algoritmo de Sustitución de Páginas =  %s \n", sust_pags);
 	}
 
 	if(config_has_property(configuracion,"RUTA_LOG")){
 		rutaLog = config_get_string_value(configuracion, "RUTA_LOG");
-		printf("Ruta del archivo logger =  %s /n", rutaLog);
+		printf("Ruta del archivo logger =  %s \n", rutaLog);
 	}
 
 }
@@ -242,7 +242,8 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio) {
 	//calculo la cantidad de páginas que va a tener el segmento
 	//necesario que la cantidadPaginas redondee para arriba - me fijo por el resto, si es distinto de 0 le sumo uno
 	div_t division = div (tamanio,tamanioPag);
-	int cantidadPaginas = (tamanio / tamanioPag);
+	int cantidadPaginas = division.quot;
+
 	if (division.rem != 0){
 		cantidadPaginas =+ 1;
 	}
@@ -363,7 +364,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio){
 						//todo swapping - ejecutar algoritmo de sustitucion de pags
 					}
 					else{
-						T_MARCO* marcoAsignado = malloc(sizeof(T_MARCO)); //= list_any_satisfy(marcosVacios, (void*) marcoPorVacio); list_any_satisfy devuelve BOOL
+						T_MARCO* marcoAsignado = list_remove(marcosVacios,0); //todo revisar
 						asignoMarcoAPagina(PID, marcoAsignado, pag);
 					}
 				}
@@ -440,7 +441,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir, int 
 						//todo swapping - ejecutar algoritmo de sustitucion de pags
 					}
 					else{
-						T_MARCO* marcoAsignado = malloc(sizeof(T_MARCO)); //todo= list_any_satisfy(marcosVacios, (void*) marcoPorVacio); //list_any_satisfy devuelve un BOOL
+						T_MARCO* marcoAsignado = list_remove(marcosVacios,0); //todo= list_any_satisfy(marcosVacios, (void*) marcoPorVacio); //list_any_satisfy devuelve un BOOL
 						asignoMarcoAPagina(PID, marcoAsignado, pag);
 					}
 				}
