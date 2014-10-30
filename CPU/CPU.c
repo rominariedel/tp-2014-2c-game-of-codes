@@ -16,7 +16,6 @@ int main(int cantArgs, char** args){
 	log_trace(LOGCPU, "\n Cargar archivos configuración\n");
 	printf("\n Cargando archivos configuración... \n");
 	cargarArchivoConfiguracion(cantArgs,args);
-	log_error(LOGCPU, "erailfjaifa");
 	log_trace(LOGCPU, "IP MSP : %d \n", (int)IPMSP);
 	printf("\n IP MSP : %d \n", (int)IPMSP);
 	log_trace(LOGCPU, "\n PUERTO MSP : %d \n", (int)PUERTOMSP);
@@ -181,7 +180,7 @@ void conectarConKernel(){
 
 
 void abortarEjecucion(){ //este abortarEjecucion es solo para el principio, cuando intenta conectarse con la MSP y el Kernel
-	printf("Desconectar CPU");
+	printf("\n Desconectar CPU \n");
 	exit(0);
 }
 
@@ -510,32 +509,14 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
 
 	log_trace(LOGCPU, "\n Desempaquetando Paquete \n");
-
 	char* buffer  = malloc(datosKernel -> tamanio);
-	memcpy(buffer,datosKernel,datosKernel -> tamanio);
-	TCBactual = desempaquetarTCB(buffer);
+	memcpy(buffer,datosKernel->datos,datosKernel -> tamanio - sizeof(int));
+	TCBactual = (t_TCB *) buffer;
 	cargarDatosTCB(TCBactual);
-	int quantum = buffer[12];
+	int quantum;
+	memcpy(&quantum,datosKernel->datos + sizeof(t_TCB),sizeof(int));
 	return quantum;
 
-}
-
-t_TCB* desempaquetarTCB(char* buffer){
-	t_TCB* tcb = malloc(sizeof(t_TCB));
-	tcb -> TID = buffer[0];
-	tcb -> KM = buffer[1];
-	tcb -> baseSegmentoCodigo = buffer[2];
-	tcb -> tamanioSegmentoCodigo = buffer[3];
-	tcb -> punteroInstruccion = buffer[4];
-	tcb -> baseStack = buffer[5];
-	tcb -> cursorStack = buffer[6];
-	tcb -> registrosProgramacion[0] = buffer[7];
-	tcb -> registrosProgramacion[1] = buffer[8];
-	tcb -> registrosProgramacion[2] = buffer[9];
-	tcb -> registrosProgramacion[3] = buffer[10];
-	tcb -> registrosProgramacion[4] = buffer[11];
-
-	return tcb;
 }
 
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP){
@@ -704,7 +685,7 @@ t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 
 void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
 	char codigo = 'N';
-	char * datos = malloc(sizeof (int));
+	char * datos = malloc(sizeof (int) + sizeof(char));
 	memcpy(datos, &codigo, sizeof(char));
 	memcpy(datos + sizeof(char), &nro, sizeof(int));
 	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos, sizeof(int) + sizeof(char));
