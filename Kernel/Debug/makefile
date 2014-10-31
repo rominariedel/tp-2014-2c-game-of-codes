@@ -25,15 +25,11 @@ endif
 # All Target
 all: Kernel
 
-dependents:
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
-
 # Tool invocations
-Kernel: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
+Kernel: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug" -L"/home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug" -o "Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -44,7 +40,5 @@ clean:
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
-/home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so:
 
 -include ../makefile.targets

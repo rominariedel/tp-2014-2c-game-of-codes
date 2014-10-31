@@ -89,6 +89,10 @@ void planificador() {
 	fd_set copia_set;
 	while (1) {
 
+		struct timeval * timeout = malloc(sizeof(struct timeval));
+		timeout->tv_sec = 4;
+		timeout->tv_usec = 0;
+
 		copia_set = CPU_set;
 		int i = select(descriptor_mas_alto_cpu + 1, &copia_set, NULL, NULL,
 				NULL );
@@ -97,7 +101,7 @@ void planificador() {
 			//error
 			break;
 		}
-
+		free(timeout);
 		int n_descriptor = 0;
 
 		while (n_descriptor <= descriptor_mas_alto_cpu) {

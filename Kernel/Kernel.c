@@ -69,19 +69,19 @@ void obtenerDatosConfig(char ** argv) {
 void loader() {
 	printf("\nSE INICIO EL LOADER\n");
 	fd_set copia_set;
-
 	while (1) {
-		sem_wait(&sem_eventoConsola);
+		struct timeval * timeout = malloc(sizeof(struct timeval));
+		timeout->tv_sec = 4;
+		timeout->tv_usec = 0;
 		copia_set = consola_set;
-		printf("\nAntes del select \n");
 
-		int i = select(descriptor_mas_alto_consola + 1, &copia_set, NULL,
-				NULL, NULL );
-		printf("\nDespues del select \n");
+		int i = select(descriptor_mas_alto_consola + 1, &copia_set, NULL, NULL,
+				timeout);
 		if (i == -1) {
 			//ERROR
 			exit(-1);
 		}
+		free(timeout);
 
 		int n_descriptor = 0;
 
@@ -133,8 +133,9 @@ void loader() {
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
 					printf("\nSe inicializo el TCB PADRE\n");
-					queue_push(NEW, nuevoTCB);
+					queue_push(READY.prioridad_1, nuevoTCB); //TODO: ESTO LO PONGO ACA PARA PROBAR LA CPU
 					consola_conectada->cantidad_hilos = 1;
+					sem_post(&sem_procesoListo); //TODO: LO MISMO ACA
 					break;
 
 				case se_produjo_entrada:
@@ -149,7 +150,7 @@ void loader() {
 			}
 			n_descriptor = n_descriptor + 1;
 		}
-		printf("Otra ronda\n");
+		//printf("Otra ronda\n");
 
 	}
 }
@@ -214,7 +215,8 @@ void boot() {
 	pthread_t thread_planificador;
 	pthread_t thread_loader;
 
-	sem_init(&sem_eventoConsola, 0, 0);
+	descriptor_mas_alto_consola = 0;
+	descriptor_mas_alto_cpu = 0;
 
 	while (1) {
 
@@ -241,14 +243,14 @@ void boot() {
 			}
 			printf("Se agrego una consola de PID: %d\n",
 					consola_conectada->PID);
-			if (descriptor_mas_alto_consola < socket_conectado) {
+			if (descriptor_mas_alto_consola == 0) {
 				descriptor_mas_alto_consola = socket_conectado;
-			}
-			if (list_size(consola_list) < 2) {
 				printf("Es la primera consola que se conecta \n");
 				pthread_create(&thread_loader, NULL, (void*) &loader, NULL );
 			}
-			sem_post(&sem_eventoConsola);
+			if (descriptor_mas_alto_consola < socket_conectado) {
+				descriptor_mas_alto_consola = socket_conectado;
+			}
 
 		} else if (modulo_conectado == soy_CPU) {
 			printf("Se conecto una CPU\n");
@@ -260,10 +262,14 @@ void boot() {
 			list_add(CPU_list, cpu_conectada);
 
 			sem_post(&sem_CPU);
-			if (list_is_empty(CPU_list)) {
+			if (descriptor_mas_alto_cpu == 0) {
+				printf("Es la primera CPU que se conecta\n");
 				descriptor_mas_alto_cpu = socket_conectado;
 				pthread_create(&thread_planificador, NULL,
 						(void*) &planificador, NULL );
+			}
+			if (descriptor_mas_alto_cpu < socket_conectado) {
+				descriptor_mas_alto_cpu = socket_conectado;
 			}
 		}
 
@@ -404,12 +410,20 @@ void abortar(TCB_struct* tcb) {
 }
 
 void enviar_a_ejecucion(TCB_struct * tcb) {
+
+	printf(
+			"\nEsperando la activacion de una CPU para enviar a ejecutar un hilo. \n");
 	sem_wait(&sem_CPU);
 	list_add(EXEC, tcb);
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
+	if (cpu == NULL ) {
+		printf("FALLO. NO SE ENCONTRO CPU\n");
+		exit(-1);
+	}
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
+	printf("Se esta por enviar el hilo a ejecutar\n");
 	t_datosAEnviar * paquete = crear_paquete(ejecutar, mensaje,
 			sizeof(TCB_struct) + sizeof(int));
 	enviar_datos(cpu->socket_CPU, paquete);
@@ -417,9 +431,10 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 
 /*El dispatcher se encarga tanto de las llamadas al sistema como de los procesos que estan en la cola de ready*/
 void dispatcher() {
+
 	while (1) {
 		sem_wait(&sem_procesoListo);
-
+		printf("\nSe detectó un nuevo proceso!\n");
 		if (!queue_is_empty(SYS_CALL)) {
 			tcb_ejecutandoSysCall = (TCB_struct*) queue_peek(SYS_CALL);
 
