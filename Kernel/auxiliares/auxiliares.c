@@ -18,9 +18,9 @@ long tamanio_del_archivo(FILE* archivo) {
 char * extraer_syscalls(char * PATH) {
 	printf("Extrayendo datos del archivo\n");
 	FILE* archivo = fopen(PATH, "read");
-	int tamanio_archivo = tamanio_del_archivo(archivo);
-	char * buffer = malloc(tamanio_archivo); //MMAP
-	fread((void*) buffer, 1, tamanio_archivo, archivo);
+	tamanio_codigo_syscalls = tamanio_del_archivo(archivo);
+	char * buffer = malloc(tamanio_codigo_syscalls); //MMAP
+	fread((void*) buffer, 1, tamanio_codigo_syscalls, archivo);
 	fclose(archivo);
 	printf("Datos copiados exitosamente\n");
 	return buffer;

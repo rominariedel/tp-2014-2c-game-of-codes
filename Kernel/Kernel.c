@@ -71,27 +71,33 @@ void loader() {
 	fd_set copia_set;
 
 	while (1) {
+		sem_wait(&sem_eventoConsola);
 		copia_set = consola_set;
-		int i = select(descriptor_mas_alto_consola + 1, &consola_set, NULL,
-				NULL, NULL );
+		printf("\nAntes del select \n");
 
+		int i = select(descriptor_mas_alto_consola + 1, &copia_set, NULL,
+				NULL, NULL );
+		printf("\nDespues del select \n");
 		if (i == -1) {
 			//ERROR
-			break;
+			exit(-1);
 		}
 
 		int n_descriptor = 0;
 
 		while (n_descriptor <= descriptor_mas_alto_consola) {
 			if (FD_ISSET(n_descriptor, &copia_set)) {
-				struct_consola * consola_conectada = obtener_consolaConectada(n_descriptor);
-				printf("Tamaño de lista de consolas %d\n", list_size(consola_list));
+				struct_consola * consola_conectada = obtener_consolaConectada(
+						n_descriptor);
+				printf("Tamaño de lista de consolas %d\n",
+						list_size(consola_list));
 				printf("Descriptor actual %d\n", n_descriptor);
-				if(consola_conectada ==NULL){
+				if (consola_conectada == NULL ) {
 					printf("La consola no se creo correctamente o no existe\n");
 					exit(-1);
 				}
-				printf("Se encontro una consola activa de PID %d\n", consola_conectada->PID);
+				printf("Se encontro una consola activa de PID %d\n",
+						consola_conectada->PID);
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
 				TCB_struct * nuevoTCB;
@@ -141,9 +147,9 @@ void loader() {
 				}
 				free(datos);
 			}
-			printf("Otra ronda\n");
 			n_descriptor = n_descriptor + 1;
 		}
+		printf("Otra ronda\n");
 
 	}
 }
@@ -167,13 +173,16 @@ void boot() {
 		printf("FALLO al conectar con la MSP\n");
 		exit(-1);
 	}
+	printf("\n Solicitando segmento para las syscalls de tamanio %d\n",
+			(int) tamanio_codigo_syscalls);
 	int base_segmento_codigo = solicitar_segmento(pid_KM_boot,
 			tamanio_codigo_syscalls);
 	//TODO: validar la base del segmento
 	escribir_memoria(pid_KM_boot, base_segmento_codigo,
 			(int) tamanio_codigo_syscalls, (void*) syscalls);
-	free(syscalls);
 
+	free(syscalls);
+	printf("\n Solicitando segmento para el stack del tcb km\n");
 	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
 	//TODO: validar la base del stack
 	printf("Creando TCB Modo Kernel\n");
@@ -205,6 +214,8 @@ void boot() {
 	pthread_t thread_planificador;
 	pthread_t thread_loader;
 
+	sem_init(&sem_eventoConsola, 0, 0);
+
 	while (1) {
 
 		int socket_conectado = recibir_conexion(socket_gral);
@@ -218,22 +229,26 @@ void boot() {
 			FD_SET(socket_conectado, &consola_set);
 			struct_consola * consola_conectada = malloc(sizeof(struct_consola));
 			int pid = obtener_PID();
-			printf("Se va a agregar una consola de PID: %d y socket: %d\n", pid, socket_conectado);
+			printf("Se va a agregar una consola de PID: %d y socket: %d\n", pid,
+					socket_conectado);
 			consola_conectada->PID = pid;
 			consola_conectada->socket_consola = socket_conectado;
 			consola_conectada->cantidad_hilos = 0;
 			list_add(consola_list, consola_conectada);
-			if(list_size(consola_list) == 0){
+			if (list_size(consola_list) == 0) {
 				printf("No se agrego la consola correctamente\n");
 				exit(-1);
 			}
-			printf("Se agrego una consola de PID: %d\n", consola_conectada->PID);
-			descriptor_mas_alto_consola = socket_conectado;
+			printf("Se agrego una consola de PID: %d\n",
+					consola_conectada->PID);
+			if (descriptor_mas_alto_consola < socket_conectado) {
+				descriptor_mas_alto_consola = socket_conectado;
+			}
 			if (list_size(consola_list) < 2) {
 				printf("Es la primera consola que se conecta \n");
-				//descriptor_mas_alto_consola = socket_conectado;
 				pthread_create(&thread_loader, NULL, (void*) &loader, NULL );
 			}
+			sem_post(&sem_eventoConsola);
 
 		} else if (modulo_conectado == soy_CPU) {
 			printf("Se conecto una CPU\n");
@@ -293,10 +308,10 @@ void crear_hilo(TCB_struct tcb) {
 
 }
 
-void copiarRegistros(int registro1[5], int registro2[5]){
+void copiarRegistros(int registro1[5], int registro2[5]) {
 	int n = 5;
-	while(n>0){
-		registro1[n-1] = registro2[n-1];
+	while (n > 0) {
+		registro1[n - 1] = registro2[n - 1];
 		n--;
 	}
 }
@@ -410,7 +425,8 @@ void dispatcher() {
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
-			copiarRegistros(tcb_km->registrosProgramacion, tcb_ejecutandoSysCall->registrosProgramacion);
+			copiarRegistros(tcb_km->registrosProgramacion,
+					tcb_ejecutandoSysCall->registrosProgramacion);
 			tcb_km->PID = tcb_ejecutandoSysCall->PID;
 
 			tcb_km->P = tcb_bloqueado->id_recurso;

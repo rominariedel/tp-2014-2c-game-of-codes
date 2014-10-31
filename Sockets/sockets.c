@@ -145,6 +145,7 @@ t_datosAEnviar * recibir_datos(int socket) {
 		printf("\n Esperando la recepcion de data \n");
 		int tamanio_recibido_datos = recv(socket, buffer_datos,
 				datos_recibidos->tamanio, MSG_WAITALL);
+		printf("\nSe recibieron %d bytes del socket %d\n", tamanio_recibido_datos, socket);
 		if (tamanio_recibido_datos < 0) {
 			//TODO: loguear error
 			return NULL ;

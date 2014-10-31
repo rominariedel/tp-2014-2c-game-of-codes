@@ -67,7 +67,9 @@ int main(int argc, char ** argv) {
 	}
 	log_info(logger, "Se enviaron los primeros datos exitosamente.", "INFO");
 	free(paquete);
+	while(1){
 
+	}
 	//Comienza la recepcion de datos
 	while (1) {
 		paquete = recibir_datos(kernelSocket);
