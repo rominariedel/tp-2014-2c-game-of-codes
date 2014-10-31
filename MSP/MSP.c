@@ -433,7 +433,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir, int 
 		return marco->empty == true;
 	}
 
-	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag ) || (string_length(bytesAEscribir) > tamanio)) { //todo: revisar errores de tipo
+	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag ) || (string_length(bytesAEscribir) > tamanio)) {
 		log_error(logger,"Segmentation Fault: Se excedieron los límites del segmento");
 		return -1;
 	}
@@ -485,12 +485,23 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir, int 
 	return 1;
 }
 
-void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag){
+void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag){ //todo actualizarlo
+	//Primero me fijo si la pagina no tiene un marco asignado
+	//me fijo si tengo marcos libres y acá haría esto:
 	pag->marcoID = marcoAsignado->marcoID;
 	marcoAsignado->pagina = pag;
 	marcoAsignado->PID = PID;
 	marcoAsignado->empty = false;
 	actualizarMarcos();
+
+	//si no tiene marcos libres, entonces:
+		//me fijo su tiene memoriaDisponibleParaSwapping
+			//si la swappeo entonces borro el archivo segun su FilePath
+			//Bajo a disco la pagina que contiene
+			//Indico que ya no contiene ningun marco y que está swappeada
+			//Bajo a disco el archivo y disminuyo la cantidad de memoriaDisponibleParaSwapping -- swapOut
+		//si no tengo memoriaDisponibleParaSwapping
+			//tengo que volver a sumar la capacidad del archivo que le hice swapOut
 }
 
 void actualizarMarcos(){
@@ -734,4 +745,34 @@ void interpretarOperacion(){
 
 		}
 
+}
+
+T_PAGINA* swapInPagina (int PID, T_SEGMENTO* seg, T_PAGINA* pag){
+	//char* filePath = hago un metodo que me obtenga el nombre a partir del pid, seg, pag->pagid
+	//armo un archivo de tipo FILE* con la funcion txt_open_for_append(filePath)
+
+	//si mi archivo es distinto de NULL
+		//primero instancio la data
+
+		//cierro el archivo
+
+		//hago un for donde a la data de la pagina le asigno lo que voy leyendo
+		//le indico a la pag que no está mas swappeada
+		//le sumo a memoriaDisponibleParaSwapping el tamanioPag
+
+	return pag; //puse esto provisorio para que no me de error
+}
+
+int swapOutPagina(int PID, int SID, T_PAGINA* pag){
+	//creo un filePath
+	//creo el archivo con ese filePath
+
+	//si el file es distinto de NULL
+		//char* contenidoDelArchivo = metodo que rellene el archivo
+		//uso la funcion txt_write_in_file(contenidoDelArchivo)
+		//cierro el archivo
+
+	//le resto a la memoriaDisponibleParaSwapping el tamanioPag
+
+	return 0;
 }
