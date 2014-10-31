@@ -67,10 +67,16 @@ int main(int argc, char ** argv) {
 	}
 	log_info(logger, "Se enviaron los primeros datos exitosamente.", "INFO");
 	free(paquete);
+	while(1){
 
+	}
 	//Comienza la recepcion de datos
 	while (1) {
 		paquete = recibir_datos(kernelSocket);
+		if(paquete == NULL){
+			printf("FALLO al recibir datos \n");
+			return EXIT_FAILURE;
+		}
 		char * datos_a_imprimir;
 		char* solicitud_ingreso;
 		switch (paquete->codigo_operacion) {

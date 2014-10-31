@@ -51,10 +51,15 @@ int crear_servidor(char * PUERTO, int backlog) {
 	hints.ai_socktype = SOCK_STREAM;
 
 	getaddrinfo(NULL, PUERTO, &hints, &serverInfo);
+
 	int listenningSocket;
 	listenningSocket = socket(serverInfo->ai_family, serverInfo->ai_socktype,
 			serverInfo->ai_protocol);
+
+	int optval = 1;
+	setsockopt(listenningSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
 	bind(listenningSocket, serverInfo->ai_addr, serverInfo->ai_addrlen);
+
 	freeaddrinfo(serverInfo);
 	listen(listenningSocket, backlog);
 	return listenningSocket;
@@ -129,7 +134,6 @@ t_datosAEnviar * recibir_datos(int socket) {
 		//TODO: loguear error
 		return NULL ;
 	}
-	printf("\n Se recibio el header de tamanio %d\n", tamanio_recibido_header);
 
 	//Copia header
 	t_datosAEnviar * datos_recibidos = deserializar_header(buffer);
@@ -141,12 +145,11 @@ t_datosAEnviar * recibir_datos(int socket) {
 		printf("\n Esperando la recepcion de data \n");
 		int tamanio_recibido_datos = recv(socket, buffer_datos,
 				datos_recibidos->tamanio, MSG_WAITALL);
+		printf("\nSe recibieron %d bytes del socket %d\n", tamanio_recibido_datos, socket);
 		if (tamanio_recibido_datos < 0) {
 			//TODO: loguear error
 			return NULL ;
 		}
-		printf("\n Se recibieron los datos de tamanio %d\n",
-				tamanio_recibido_datos);
 	}
 	//Copia datos
 	serializar_datos(buffer_datos, datos_recibidos);

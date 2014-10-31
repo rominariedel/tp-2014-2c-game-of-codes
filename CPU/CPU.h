@@ -66,102 +66,102 @@ typedef struct {
 typedef struct{
 	char reg1;
 	int num;
-}tparam_load;
+}__attribute__ ((__packed__))  tparam_load;
 
 typedef struct{
 	int num;
 	char reg1;
 	char reg2;
-}tparam_setm;
+}__attribute__ ((__packed__))  tparam_setm;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_getm;
+}__attribute__ ((__packed__))  tparam_getm;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_movr;
+}__attribute__ ((__packed__))  tparam_movr;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_addr;
+}__attribute__ ((__packed__))  tparam_addr;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_subr;
+}__attribute__ ((__packed__))  tparam_subr;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_mulr;
+}__attribute__ ((__packed__))  tparam_mulr;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_modr;
+}__attribute__ ((__packed__))  tparam_modr;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_divr;
+}__attribute__ ((__packed__))  tparam_divr;
 
 typedef struct{
 	char reg1;
-}tparam_incr;
+}__attribute__ ((__packed__))  tparam_incr;
 
 typedef struct{
 	char reg1;
-}tparam_decr;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}tparam_comp;
+}__attribute__ ((__packed__))  tparam_decr;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_cgeq;
+}__attribute__ ((__packed__))  tparam_comp;
 
 typedef struct{
 	char reg1;
 	char reg2;
-}tparam_cleq;
+}__attribute__ ((__packed__))  tparam_cgeq;
 
 typedef struct{
 	char reg1;
-}tparam_goto;
+	char reg2;
+}__attribute__ ((__packed__))  tparam_cleq;
+
+typedef struct{
+	char reg1;
+}__attribute__ ((__packed__))  tparam_goto;
 
 typedef struct{
 	int direccion;
-}tparam_jmpz;
+}__attribute__ ((__packed__))  tparam_jmpz;
 
 typedef struct{
 	int direccion;
-}tparam_jpnz;
+}__attribute__ ((__packed__))  tparam_jpnz;
 
 typedef struct{
 	int direccion;
-}tparam_inte;
+}__attribute__ ((__packed__))  tparam_inte;
 
 typedef struct{
 	int numero;
 	char registro;
-}tparam_shif;
+}__attribute__ ((__packed__))  tparam_shif;
 
 typedef struct{
 	int num1;
 	int num2;
-}tparam_push;
+}__attribute__ ((__packed__))  tparam_push;
 
 typedef struct{
 	int numero;
 	char registro;
-}tparam_take;
+}__attribute__ ((__packed__))  tparam_take;
 
 
 /*Datos actuales*/
@@ -190,7 +190,7 @@ char* IPMSP;
 char* PUERTOKERNEL;
 char* IPKERNEL;
 int RETARDO;
-
+char* LOGRUTA;
 
 t_TCB* TCBactual;
 int quantum = 0;
