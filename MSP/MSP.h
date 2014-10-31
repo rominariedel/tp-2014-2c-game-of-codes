@@ -10,6 +10,15 @@
 
 #include "stdint.h"
 
+enum mensajes {
+	soy_CPU = 19,
+	soy_kernel = 18,
+	crear_segmento = 1,
+	destruir_segmento =2,
+	solicitar_memoria = 3,
+	escribir_memoria = 4,
+};
+
 typedef struct T_PROCESO {
 	int PID;
 	t_list* segmentos;

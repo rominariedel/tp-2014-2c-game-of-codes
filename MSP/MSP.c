@@ -16,19 +16,27 @@
 #include "MSP.h"
 #include <commons/error.h>
 #include <commons/log.h>
+#include <sockets.h>
+#include <sys/select.h>
 
 int tamanioMemoria;
 int memoriaDisponible;
-int puerto;
+char* puerto;
 int cantidadSwap;
 char* sust_pags;
 char* rutaLog;
 char* MSP_CONFIG;
 int tamanioPag = 256;
+int socket_general;
+int backlog;
+
+int descriptor_mas_alto_cpu;
+fd_set CPU_set;
 
 t_list* procesos;
 t_list* marcosVacios;
 t_list* marcosLlenos;
+t_list* cpu_list;
 
 pthread_t hiloConsola;
 t_log* logger;
@@ -70,11 +78,12 @@ int main (void)
 
 void inicializar(){
 	cargarArchivoConfiguracion();
+	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 	crearMarcos();
 
-	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
-
 	procesos = list_create();
+
+	iniciarConexiones();
 }
 
 void inicializarConsola(){
@@ -141,8 +150,8 @@ void cargarArchivoConfiguracion(void){
 	}
 
 	if(config_has_property(configuracion,"PUERTO")){
-		puerto= config_get_int_value(configuracion, "PUERTO");
-		printf("Puerto =  %d \n", puerto);
+		puerto= config_get_string_value(configuracion, "PUERTO");
+		printf("Puerto =  %s \n", puerto);
 	}
 
 	if(config_has_property(configuracion,"CANTIDAD_SWAP")){
@@ -160,6 +169,10 @@ void cargarArchivoConfiguracion(void){
 		printf("Ruta del archivo logger =  %s \n", rutaLog);
 	}
 
+	if(config_has_property(configuracion,"BACKLOG")){
+		backlog = config_get_int_value(configuracion, "BACKLOG");
+		printf("Backlog =  %d \n", backlog);
+		}
 }
 
 void crearMarcos(){
@@ -420,7 +433,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir, int 
 		return marco->empty == true;
 	}
 
-	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag ) || (string_length(bytesAEscribir) > tamanio)) { //todo: revisar errores de tipo
+	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag ) || (string_length(bytesAEscribir) > tamanio)) {
 		log_error(logger,"Segmentation Fault: Se excedieron los límites del segmento");
 		return -1;
 	}
@@ -472,12 +485,23 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir, int 
 	return 1;
 }
 
-void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag){
+void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag){ //todo actualizarlo
+	//Primero me fijo si la pagina no tiene un marco asignado
+	//me fijo si tengo marcos libres y acá haría esto:
 	pag->marcoID = marcoAsignado->marcoID;
 	marcoAsignado->pagina = pag;
 	marcoAsignado->PID = PID;
 	marcoAsignado->empty = false;
 	actualizarMarcos();
+
+	//si no tiene marcos libres, entonces:
+		//me fijo su tiene memoriaDisponibleParaSwapping
+			//si la swappeo entonces borro el archivo segun su FilePath
+			//Bajo a disco la pagina que contiene
+			//Indico que ya no contiene ningun marco y que está swappeada
+			//Bajo a disco el archivo y disminuyo la cantidad de memoriaDisponibleParaSwapping -- swapOut
+		//si no tengo memoriaDisponibleParaSwapping
+			//tengo que volver a sumar la capacidad del archivo que le hice swapOut
 }
 
 void actualizarMarcos(){
@@ -621,4 +645,134 @@ uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica) {
 	intDireccion += direccionLogica.desplazamiento;
 
 	return intDireccion;
+}
+
+void iniciarConexiones(){
+	//crear el servidor. el descriptor mas alto lo declaro en 0 y dps cada vez que me llega una nueva conexxion me fijo si es cpu o kernel, entonces
+	//si es cpu me fijo si el descriptor mas alto es 0 y guardo el descriptor en el descriptor mas alto
+	socket_general = crear_servidor(puerto,backlog);
+	if (socket_general < 0) {
+		log_error(logger,"No se pudo crear el servidor");
+		exit(-1);
+	}
+	log_info(logger,"Se ha creado el servidor exitósamente");
+
+	printf("Esperando conexiones...\n");
+
+		FD_ZERO(&CPU_set);
+		pthread_t hiloPlanificador;
+
+		while (1) {
+
+			int socket_conectado = recibir_conexion(socket_general);
+			printf("Se recibio una conexion!\n");
+			int modulo_conectado = -1;
+			t_datosAEnviar* datos = recibir_datos(socket_conectado);
+			modulo_conectado = datos->codigo_operacion;
+
+			if (modulo_conectado == soy_CPU) {
+				printf("Se conecto una consola\n");
+				FD_SET(socket_conectado,&CPU_set);
+
+				int* cpu_conectada = 0; //todo fijarse que tipo va a ser
+
+				if (list_is_empty(cpu_list)) {
+					descriptor_mas_alto_cpu = socket_conectado;
+					//int hilo = pthread_create(&hiloPlanificador, NULL, (void*)interpretarOperacion, NULL);
+			}
+				list_add(cpu_list, cpu_conectada);
+
+			} else if (modulo_conectado == soy_kernel) {
+				printf("Se conecto el Kernal\n");
+				FD_SET(socket_conectado, &CPU_set);
+			}
+
+			free(datos->datos);
+			free(datos);
+
+		}
+
+}
+
+void interpretarOperacion(){
+	fd_set copia_set;
+
+	while (1) {
+		copia_set = CPU_set;
+		int i = select(descriptor_mas_alto_cpu + 1, &CPU_set, NULL,
+					NULL, NULL );
+
+			if (i == -1) {
+				//ERROR
+				break;
+			}
+
+			int n_descriptor = 0;
+
+			while (n_descriptor <= descriptor_mas_alto_cpu) {
+				if (FD_ISSET(n_descriptor, &copia_set)) {
+					t_datosAEnviar * datos;
+					datos = recibir_datos(n_descriptor);
+					//struct_consola * consola_conectada = obtener_consolaConectada(
+						//	n_descriptor);
+
+					switch (datos->codigo_operacion) {
+
+					case crear_segmento:
+						//todo hacerlo
+						//TODO finalizar conexion si hubo un problema al solicitar un segmento.
+						break;
+
+					case destruir_segmento:
+
+
+						break;
+
+					case solicitar_memoria:
+
+						break;
+
+					case escribir_memoria:
+
+						break;
+					}
+
+
+					free(datos);
+				}
+				n_descriptor++;
+			}
+
+		}
+
+}
+
+T_PAGINA* swapInPagina (int PID, T_SEGMENTO* seg, T_PAGINA* pag){
+	//char* filePath = hago un metodo que me obtenga el nombre a partir del pid, seg, pag->pagid
+	//armo un archivo de tipo FILE* con la funcion txt_open_for_append(filePath)
+
+	//si mi archivo es distinto de NULL
+		//primero instancio la data
+
+		//cierro el archivo
+
+		//hago un for donde a la data de la pagina le asigno lo que voy leyendo
+		//le indico a la pag que no está mas swappeada
+		//le sumo a memoriaDisponibleParaSwapping el tamanioPag
+
+	return pag; //puse esto provisorio para que no me de error
+}
+
+int swapOutPagina(int PID, int SID, T_PAGINA* pag){
+	//creo un filePath
+	//creo el archivo con ese filePath
+
+	//si el file es distinto de NULL
+		//char* contenidoDelArchivo = metodo que rellene el archivo
+		//uso la funcion txt_write_in_file(contenidoDelArchivo)
+		//cierro el archivo
+
+	//le resto a la memoriaDisponibleParaSwapping el tamanioPag
+
+	return 0;
 }
