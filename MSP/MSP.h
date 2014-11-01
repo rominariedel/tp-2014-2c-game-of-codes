@@ -9,10 +9,11 @@
 #define MSP_H_
 
 #include "stdint.h"
+#include <sockets.h>
 
 enum mensajes {
 	soy_CPU = 19,
-	soy_kernel = 18,
+	soy_kernel = 29,
 	crear_segmento = 1,
 	destruir_segmento =2,
 	solicitar_memoria = 3,
@@ -52,6 +53,11 @@ typedef struct T_DIRECCION_LOG {
 	int desplazamiento;
 }T_DIRECCION_LOG;
 
+typedef struct T_PARAMETROS_OPERACION {
+	t_datosAEnviar* datos;
+	int socketAsociado;
+}T_PARAMETROS_OPERACION;
+
 
 //Operaciones de interfaz
 uint32_t 	crearSegmento		(int PID, int tamanio);
@@ -70,14 +76,17 @@ int 	tablaPaginas(int PID);
 void 		inicializar();
 void 		cargarArchivoConfiguracion(void);
 void 		crearMarcos();
-T_SEGMENTO* crearSegmentoVacio (T_PROCESO proceso, int tamanio);
 int 		calcularProximoSID (T_PROCESO* proceso);
 t_list* 	crearPaginasPorTamanioSegmento(int tamanio);
 static void destruirPag(T_PAGINA* pagina);
 void 		asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag);
 void 		actualizarMarcos();
+void 		iniciarConexiones();
+void		interpretarOperacion(int* socket);
 
 T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
 uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
+
+
 
 #endif /* MSP_H_ */

@@ -5,7 +5,6 @@
  *      Author: utnso
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <commons/string.h>
@@ -41,44 +40,47 @@ t_list* cpu_list;
 pthread_t hiloConsola;
 t_log* logger;
 
-int main (void)
-{
+int main(void) {
 	inicializar();
 
-	int hilo = pthread_create(&hiloConsola, NULL, (void*)inicializarConsola, NULL);
-	if(hilo == 0){
-		log_info(logger,"La Consola de MSP se inicializó correctamente \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginación: %d", tamanioMemoria, tamanioPag);
-	}
-	else log_error(logger,"Ha ocurrido un error en la  inicialización de la Consola de MSP");
+	int hilo = pthread_create(&hiloConsola, NULL, (void*) inicializarConsola,
+			NULL );
+	if (hilo == 0) {
+		log_info(logger,
+				"La Consola de MSP se inicializó correctamente \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginación: %d",
+				tamanioMemoria, tamanioPag);
+	} else
+		log_error(logger,
+				"Ha ocurrido un error en la  inicialización de la Consola de MSP");
 
-	pthread_join(hiloConsola, NULL);
+	pthread_join(hiloConsola, NULL );
 
 	return 1;
 
 	/*t_config* configuracion = config_create(args[1]);
-	logi = log_create(args[2], "UMV", 0, LOG_LEVEL_TRACE);
-	int sizeMem = config_get_int_value(configuracion, "sizeMemoria");
+	 logi = log_create(args[2], "UMV", 0, LOG_LEVEL_TRACE);
+	 int sizeMem = config_get_int_value(configuracion, "sizeMemoria");
 
-	memPpal = malloc (sizeMem);	//El tamaño va por configuracion
-	char* aux = (char*) memPpal;
-	finMemPpal = memPpal + sizeMem; //El tamaño va por configuracion
-	for(i=0; i<sizeMem; i++){aux[i] = 0;}
+	 memPpal = malloc (sizeMem);	//El tamaño va por configuracion
+	 char* aux = (char*) memPpal;
+	 finMemPpal = memPpal + sizeMem; //El tamaño va por configuracion
+	 for(i=0; i<sizeMem; i++){aux[i] = 0;}
 
-	rhConsola = pthread_create(&consola, NULL, mainConsola, NULL);
-	rhEsperarConexiones = pthread_create(&esperarConexiones, NULL, mainEsperarConexiones, NULL);
+	 rhConsola = pthread_create(&consola, NULL, mainConsola, NULL);
+	 rhEsperarConexiones = pthread_create(&esperarConexiones, NULL, mainEsperarConexiones, NULL);
 
-	pthread_join(consola, NULL);
-	pthread_join(esperarConexiones, NULL);
+	 pthread_join(consola, NULL);
+	 pthread_join(esperarConexiones, NULL);
 
-	printf("%d",rhConsola);
-		printf("%d",rhEsperarConexiones);
+	 printf("%d",rhConsola);
+	 printf("%d",rhEsperarConexiones);
 
-		exit(0);*/
+	 exit(0);*/
 }
 
-void inicializar(){
+void inicializar() {
 	cargarArchivoConfiguracion();
-	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
+	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_TRACE);
 	crearMarcos();
 
 	procesos = list_create();
@@ -86,11 +88,11 @@ void inicializar(){
 	iniciarConexiones();
 }
 
-void inicializarConsola(){
-	char comando[50];
+void inicializarConsola() {
+	char* comando = malloc(50);
 	int seguimiento = 1;
 
-	while(seguimiento){
+	while (seguimiento) {
 		printf(">");
 		scanf("%s", comando);
 
@@ -100,89 +102,93 @@ void inicializarConsola(){
 
 }
 
-void interpretarComando (char* comando){
-	char** palabras = string_split(comando," ");
+void interpretarComando(char* comando) {
+	char** palabras = string_n_split(comando, 2, " ");
 	char** parametros = NULL;
-	if (palabras[1] != NULL){
-		parametros = string_split(palabras[1]," ");
+
+	if (palabras[1] != NULL ) {
+		parametros = string_split(palabras[1], " ");
 	}
 
-	if (string_equals_ignore_case(palabras[0],"Crear_Segmento")){
+	if (string_equals_ignore_case(palabras[0], "Crear_Segmento")) {
 		printf("Creando segmento...");
-		crearSegmento(atof(parametros[0]), atof (parametros[1]));
+		crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Destruir_Segmento")){
+	else if (string_equals_ignore_case(palabras[0], "Destruir_Segmento")) {
 		printf("Destruyendo segmento...");
-		destruirSegmento(atof(parametros[0]),(uint32_t) atof(parametros[1]));
+		destruirSegmento(atoi(parametros[0]), (uint32_t) atoi(parametros[1]));
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Escribir_Memoria")){
+	else if (string_equals_ignore_case(palabras[0], "Escribir_Memoria")) {
 		printf("Iniciando proceso de escritura de memoria...");
-		escribirMemoria(atof(parametros[0]),(uint32_t)atof(parametros[1]),parametros[2], atof(parametros[3]));
+		escribirMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
+				parametros[2], atoi(parametros[3]));
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Leer_Memoria")){
+	else if (string_equals_ignore_case(palabras[0], "Leer_Memoria")) {
 		printf("Solicitando memoria...");
-		solicitarMemoria(atof(parametros[0]),(uint32_t) atof(parametros[1]),atof(parametros[2]));
+		solicitarMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
+				atoi(parametros[2]));
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Tabla_De_Paginas")){
-		tablaPaginas(atof(parametros[0]));
+	else if (string_equals_ignore_case(palabras[0], "Tabla_De_Paginas")) {
+		tablaPaginas(atoi(parametros[0]));
 	}
 
-	else if (string_equals_ignore_case(palabras[0], "Tabla_De_Segmentos")){
+	else if (string_equals_ignore_case(palabras[0], "Tabla_De_Segmentos")) {
 		tablaSegmentos();
 	}
 
-	else if (string_equals_ignore_case(palabras[0],"Listar_Marcos")){
+	else if (string_equals_ignore_case(palabras[0], "Listar_Marcos")) {
 		tablaMarcos();
 	}
 }
 
-void cargarArchivoConfiguracion(void){
+void cargarArchivoConfiguracion(void) { //todo: args no harcodearlo
 	t_config* configuracion = config_create("config.txt");
 
-	if(config_has_property(configuracion, "CANTIDAD_MEMORIA")){
-		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA") * pow(2,10);
+	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
+		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
+				* pow(2, 10);
 		memoriaDisponible = tamanioMemoria;
 		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
 
-	if(config_has_property(configuracion,"PUERTO")){
-		puerto= config_get_string_value(configuracion, "PUERTO");
+	if (config_has_property(configuracion, "PUERTO")) {
+		puerto = config_get_string_value(configuracion, "PUERTO");
 		printf("Puerto =  %s \n", puerto);
 	}
 
-	if(config_has_property(configuracion,"CANTIDAD_SWAP")){
+	if (config_has_property(configuracion, "CANTIDAD_SWAP")) {
 		cantidadSwap = config_get_int_value(configuracion, "CANTIDAD_SWAP");
 		printf("Cantidad Swap =  %d \n", cantidadSwap);
 	}
 
-	if(config_has_property(configuracion,"SUST_PAGS")){
+	if (config_has_property(configuracion, "SUST_PAGS")) {
 		sust_pags = config_get_string_value(configuracion, "SUST_PAGS");
 		printf("Algoritmo de Sustitución de Páginas =  %s \n", sust_pags);
 	}
 
-	if(config_has_property(configuracion,"RUTA_LOG")){
+	if (config_has_property(configuracion, "RUTA_LOG")) {
 		rutaLog = config_get_string_value(configuracion, "RUTA_LOG");
 		printf("Ruta del archivo logger =  %s \n", rutaLog);
 	}
 
-	if(config_has_property(configuracion,"BACKLOG")){
+	if (config_has_property(configuracion, "BACKLOG")) {
 		backlog = config_get_int_value(configuracion, "BACKLOG");
 		printf("Backlog =  %d \n", backlog);
-		}
+	}
 }
 
-void crearMarcos(){
+void crearMarcos() {
 	marcosLlenos = list_create();
 	marcosVacios = list_create();
 
 	int cantidadMarcos = tamanioMemoria / tamanioPag;
 	int i;
 
-	for(i=0;i < cantidadMarcos; i++) {
+	for (i = 0; i < cantidadMarcos; i++) {
 
 		//creo un marco vacio
 		T_MARCO * marcoVacio = malloc(sizeof(T_MARCO));
@@ -196,29 +202,32 @@ void crearMarcos(){
 
 //Crea un nuevo segmento para el programa PID del tamaño tamanio. Devuelve la direccion
 //virtual base del segmento.
-uint32_t crearSegmento(int PID,int tamanio){
+uint32_t crearSegmento(int PID, int tamanio) {
 
-	if (tamanio > pow (2,20)){
+	if (tamanio > pow(2, 20)) {
 		log_error(logger, "El tamanio supera al mega de capacidad");
 		return -1;
 	}
 
-	if((memoriaDisponible < tamanio) || (cantidadSwap == 0) ){
-		log_error(logger,"La memoria disponible no es suficiente para el tamanio del segmento");
+	if (memoriaDisponible < tamanio) {
+		log_error(logger,
+				"La memoria disponible no es suficiente para el tamanio del segmento");
 		return -1;
 	}
 
-	bool procesoPorPid (T_PROCESO* proceso){
+	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
 	}
 
-	T_PROCESO*  proceso = list_find(procesos, (void*) procesoPorPid);
+	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
-	if (proceso == NULL){
+	if (proceso == NULL ) {
+
+		T_PROCESO* proceso = malloc(sizeof(T_PROCESO));
 		proceso->PID = PID;
 		proceso->segmentos = list_create();
 
-		list_add(procesos,proceso);
+		list_add(procesos, proceso);
 	}
 
 	//creo un segmento vacio para luego añadirlo a la lista de segmentos del proceso
@@ -234,18 +243,21 @@ uint32_t crearSegmento(int PID,int tamanio){
 
 	(segmentoVacio->baseSegmento) = DireccionLogicaToUint32(direccionLogica);
 
-	list_add(proceso->segmentos, (void*)segmentoVacio);
+	list_add(proceso->segmentos, (void*) segmentoVacio);
 
-	log_info(logger,"La dirección base del segmento creado es %d",segmentoVacio->baseSegmento);
+	log_info(logger, "La dirección base del segmento creado es %d",
+			segmentoVacio->baseSegmento);
+
 	return segmentoVacio->baseSegmento;
 }
 
-int calcularProximoSID (T_PROCESO* proceso){
-	if (list_size(proceso->segmentos) == 0){
+int calcularProximoSID(T_PROCESO* proceso) {
+	if (list_size(proceso->segmentos) == 0) {
 		return 0;
 	}
-	T_SEGMENTO* ultimoSegmento = list_get(proceso->segmentos, list_size(proceso->segmentos)-1);
-	return  ((ultimoSegmento->SID) + 1);
+	T_SEGMENTO* ultimoSegmento = list_get(proceso->segmentos,
+			list_size(proceso->segmentos) - 1);
+	return ((ultimoSegmento->SID) + 1);
 }
 
 t_list* crearPaginasPorTamanioSegmento(int tamanio) {
@@ -254,28 +266,25 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio) {
 
 	//calculo la cantidad de páginas que va a tener el segmento
 	//necesario que la cantidadPaginas redondee para arriba - me fijo por el resto, si es distinto de 0 le sumo uno
-	div_t division = div (tamanio,tamanioPag);
+	div_t division = div(tamanio, tamanioPag);
 	int cantidadPaginas = division.quot;
 
-	if (division.rem != 0){
+	if (division.rem != 0) {
 		cantidadPaginas =+ 1;
 	}
 
 	int i;
-	for(i=0;  i < cantidadPaginas; i++){
+	for (i = 0; i < cantidadPaginas; i++) {
 		//creo una pagina vacia
 		T_PAGINA * paginaVacia = malloc(sizeof(T_PAGINA));
-			paginaVacia->paginaID = i;
-			paginaVacia->marcoID = 0;
+		paginaVacia->paginaID = i;
+		paginaVacia->swapped = 0;
+		paginaVacia->marcoID = 0;
 
-			int j;
-
-			for(j=0;(tamanioPag -1) > j;j++){
-				paginaVacia->data[i] = ' ';
-			}
+		memset(paginaVacia->data, tamanioPag - 1, ' ');
 
 		//agrego la pagina a la lista de paginas
-		list_add(paginas,paginaVacia);
+		list_add(paginas, paginaVacia);
 	}
 
 	return paginas;
@@ -283,101 +292,105 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio) {
 
 //Destruye el segmento identificado por baseSegmento del programa PID y libera la
 //memoria que ocupaba ese segmento.
-uint32_t destruirSegmento (int PID, uint32_t baseSegmento){
+uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 
-	bool procesoPorPid (T_PROCESO* proceso){
+	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
 	}
 
-	bool segmentoPorBase (T_SEGMENTO* segmento){
+	bool segmentoPorBase(T_SEGMENTO* segmento) {
 		return segmento->baseSegmento == baseSegmento;
 	}
 
 	//busco en la lista de procesos el proceso con ese PID
-	T_PROCESO*  proceso = list_find(procesos,(void*) procesoPorPid);
+	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
-	if(proceso != NULL){
+	if (proceso != NULL ) {
 
 		//busco en la lista de segmentos del proceso el segmento con esa base
-		T_SEGMENTO * seg = list_find(proceso->segmentos, (void*) segmentoPorBase);
+		T_SEGMENTO * seg = list_find(proceso->segmentos,
+				(void*) segmentoPorBase);
 
-		if (seg != NULL){
+		if (seg != NULL ) {
 
 			//elimino las paginas del segmento
 			list_clean_and_destroy_elements(seg->paginas, (void*) destruirPag);
 
 			//elimino de la lista de segmentos del proceso, el segmento
-			list_remove_by_condition(proceso->segmentos, (void*) segmentoPorBase);
+			list_remove_by_condition(proceso->segmentos,
+					(void*) segmentoPorBase);
 
 			memoriaDisponible = memoriaDisponible + sizeof(seg->tamanio);
 			free(seg);
 		}
 
 		else {
-			log_error(logger,"El segmento no ha sido dstruido porque es inexistente");
+			log_error(logger,
+					"El segmento no ha sido destruido porque es inexistente");
 			return -1;
 		}
-	}
-	else {
-		log_error(logger,"El segmento no ha sido destruido porque el proceso con PID: %d no existe", PID);
+	} else {
+		log_error(logger,
+				"El segmento no ha sido destruido porque el proceso con PID: %d no existe",
+				PID);
 		return -1;
 	}
 
-	log_info(logger,"El segmento ha sido detruido exitosamente");
+	log_info(logger, "El segmento ha sido detruido exitosamente");
 	return 1;
 }
 
-static void destruirPag(T_PAGINA* pagina){
+static void destruirPag(T_PAGINA* pagina) {
 	free(pagina);
 }
 
 //Para el espacio de direcciones del proceso PID, devuelve hasta tamanio bytes
 //comenzando desde direccion.
-char* solicitarMemoria(int PID, uint32_t direccion, int tamanio){
+char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 	//TODO if (direccionVirtual){
-		//log_error(logger,"Segmentation Fault: La memoria especificada es inválida");
-		//return -1;
+	//log_error(logger,"Segmentation Fault: La memoria especificada es inválida");
+	//return -1;
 	//}
 
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
 	char* memoriaSolicitada = malloc(tamanio);
 
-	bool procesoPorPid (T_PROCESO* proceso){
+	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
 	}
-	bool segmentoPorSid (T_SEGMENTO* segmento){
+	bool segmentoPorSid(T_SEGMENTO* segmento) {
 		return segmento->SID == direccionLogica.SID;
 	}
-	bool paginaPorPagid (T_PAGINA* pagina){
+	bool paginaPorPagid(T_PAGINA* pagina) {
 		return pagina->paginaID == direccionLogica.paginaId;
 	}
-	bool marcoPorVacio (T_MARCO* marco){
+	bool marcoPorVacio(T_MARCO* marco) {
 		return marco->empty == true;
 	}
 
-	if ((direccionLogica.desplazamiento + tamanio) > tamanioPag ) {
-		log_error(logger,"Segmentation Fault: Se excedieron los limites del segmento");
-		return (char*)-1;
+	if ((direccionLogica.desplazamiento + tamanio) > tamanioPag) {
+		log_error(logger,
+				"Segmentation Fault: Se excedieron los limites del segmento");
+		return (char*) -1;
 	}
 
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
-	if(proceso != NULL){
+	if (proceso != NULL ) {
 		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
 
-		if (seg != NULL){
+		if (seg != NULL ) {
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
-			if (pag != NULL){
+			if (pag != NULL ) {
 
-				if (pag->marcoID == 0){
+				if (pag->marcoID == 0) {
 
-					if (list_is_empty(marcosVacios)){
+					if (list_is_empty(marcosVacios)) {
 						//todo swapping - ejecutar algoritmo de sustitucion de pags
-					}
-					else{
-						T_MARCO* marcoAsignado = list_remove(marcosVacios,0); //todo revisar
+					} else {
+						T_MARCO* marcoAsignado = list_remove(marcosVacios, 0); //todo revisar
 						asignoMarcoAPagina(PID, marcoAsignado, pag);
 					}
 				}
@@ -385,76 +398,80 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio){
 				int inicio = direccionLogica.desplazamiento;
 				int final = direccionLogica.desplazamiento + tamanio;
 				int i;
-				for(i = inicio; final > i  ; i++){
-					string_append((char**)&memoriaSolicitada, &(pag->data[i]));
+				for (i = inicio; final > i; i++) {
+					string_append((char**) &memoriaSolicitada, &(pag->data[i]));
 				}
-			}
-			else {
-				log_error(logger,"No se ha podido solicitar memoria ya que la página es inexistente");
+			} else {
+				log_error(logger,
+						"No se ha podido solicitar memoria ya que la página es inexistente");
 				return (char*) -1;
 			}
-		}
-		else {
-			log_error(logger,"No se ha podido solicitar memoria ya que el segmento es inexistente");
+		} else {
+			log_error(logger,
+					"No se ha podido solicitar memoria ya que el segmento es inexistente");
 			return (char*) -1;
 		}
-	}
-	else {
-		log_error(logger,"No se ha podido solicitar memoria ya que el proceso de PID: %d es inexistente",PID);
+	} else {
+		log_error(logger,
+				"No se ha podido solicitar memoria ya que el proceso de PID: %d es inexistente",
+				PID);
 		return (char*) -1;
 	}
 
-	log_info(logger,"EL contenido de la página solicitada es: %s",memoriaSolicitada);
+	log_info(logger, "EL contenido de la página solicitada es: %s",
+			memoriaSolicitada);
 	return (char*) 1; //Este return es provisorio, capaz memoriaSolicitada haya que usarlo como variable global
 	//return memoriaSolicitada; //Esto debería devolver un int, qué se hace con memoriaSolicitada?
 }
 
 //Para el espacio de direcciones del proceso PID, escribe hasta tamanio bytes del buffer bytesAEscribir
 //comenzando en la direccion.
-uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir, int tamanio){
+uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
+		int tamanio) {
 
 	//TODO if (direccionVirtual){
-		//log_error(logger,"Segmentation Fault: La memoria especificada es inválida");
-		//return -1;
+	//log_error(logger,"Segmentation Fault: La memoria especificada es inválida");
+	//return -1;
 	//}
 
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
 
-	bool procesoPorPid (T_PROCESO* proceso){
+	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
 	}
-	bool segmentoPorSid (T_SEGMENTO* segmento){
+	bool segmentoPorSid(T_SEGMENTO* segmento) {
 		return segmento->SID == direccionLogica.SID;
 	}
-	bool paginaPorPagid (T_PAGINA* pagina){
+	bool paginaPorPagid(T_PAGINA* pagina) {
 		return pagina->paginaID == direccionLogica.paginaId;
 	}
-	bool marcoPorVacio (T_MARCO* marco){
+	bool marcoPorVacio(T_MARCO* marco) {
 		return marco->empty == true;
 	}
 
-	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag ) || (string_length(bytesAEscribir) > tamanio)) {
-		log_error(logger,"Segmentation Fault: Se excedieron los límites del segmento");
+	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag)
+			|| (string_length(bytesAEscribir) > tamanio)) {
+		log_error(logger,
+				"Segmentation Fault: Se excedieron los límites del segmento");
 		return -1;
 	}
 
-	T_PROCESO*  proceso = list_find(procesos, (void*) procesoPorPid);
+	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
-	if(proceso != NULL){
+	if (proceso != NULL ) {
 		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
 
-		if (seg != NULL){
+		if (seg != NULL ) {
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
-			if (pag != NULL){
+			if (pag != NULL ) {
 
-				if (pag->marcoID == 0){
+				if (pag->marcoID == 0) {
 
-					if (list_is_empty(marcosVacios)){
+					if (list_is_empty(marcosVacios)) {
 						//todo swapping - ejecutar algoritmo de sustitucion de pags
-					}
-					else{
-						T_MARCO* marcoAsignado = list_remove(marcosVacios,0); //todo= list_any_satisfy(marcosVacios, (void*) marcoPorVacio); //list_any_satisfy devuelve un BOOL
+					} else {
+						T_MARCO* marcoAsignado = list_remove(marcosVacios, 0); //todo= list_any_satisfy(marcosVacios, (void*) marcoPorVacio); //list_any_satisfy devuelve un BOOL
 						asignoMarcoAPagina(PID, marcoAsignado, pag);
 					}
 				}
@@ -462,30 +479,31 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir, int 
 				int inicio = direccionLogica.desplazamiento;
 				int final = direccionLogica.desplazamiento + tamanio;
 				int i;
-				for(i = inicio; final > i  ; i++){
+				for (i = inicio; final > i; i++) {
 					pag->data[i] = *string_substring_until(bytesAEscribir, i);
 				}
-			}
-			else {
-				log_error(logger,"No se ha podido escribir en memoria porque la página es inexistente");
+			} else {
+				log_error(logger,
+						"No se ha podido escribir en memoria porque la página es inexistente");
 				return -1;
 			}
-		}
-		else {
-			log_error(logger,"No se ha podido escribir en memoria porque el segmento es inexistente");
+		} else {
+			log_error(logger,
+					"No se ha podido escribir en memoria porque el segmento es inexistente");
 			return -1;
 		}
-	}
-	else {
-		log_error(logger,"No se ha podido escribir en memoria porque el proceso de PID: %d es inexistente", PID);
+	} else {
+		log_error(logger,
+				"No se ha podido escribir en memoria porque el proceso de PID: %d es inexistente",
+				PID);
 		return -1;
 	}
 
-	log_info(logger,"Se ha escrito en memoria exitósamente");
+	log_info(logger, "Se ha escrito en memoria exitósamente");
 	return 1;
 }
 
-void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag){ //todo actualizarlo
+void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag) { //todo actualizarlo
 	//Primero me fijo si la pagina no tiene un marco asignado
 	//me fijo si tengo marcos libres y acá haría esto:
 	pag->marcoID = marcoAsignado->marcoID;
@@ -495,24 +513,24 @@ void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag){ //todo 
 	actualizarMarcos();
 
 	//si no tiene marcos libres, entonces:
-		//me fijo su tiene memoriaDisponibleParaSwapping
-			//si la swappeo entonces borro el archivo segun su FilePath
-			//Bajo a disco la pagina que contiene
-			//Indico que ya no contiene ningun marco y que está swappeada
-			//Bajo a disco el archivo y disminuyo la cantidad de memoriaDisponibleParaSwapping -- swapOut
-		//si no tengo memoriaDisponibleParaSwapping
-			//tengo que volver a sumar la capacidad del archivo que le hice swapOut
+	//me fijo su tiene memoriaDisponibleParaSwapping
+	//si la swappeo entonces borro el archivo segun su FilePath
+	//Bajo a disco la pagina que contiene
+	//Indico que ya no contiene ningun marco y que está swappeada
+	//Bajo a disco el archivo y disminuyo la cantidad de memoriaDisponibleParaSwapping -- swapOut
+	//si no tengo memoriaDisponibleParaSwapping
+	//tengo que volver a sumar la capacidad del archivo que le hice swapOut
 }
 
-void actualizarMarcos(){
+void actualizarMarcos() {
 	t_list* marcos = list_create();
-	list_add_all(marcos,marcosLlenos);
-	list_add_all(marcos,marcosVacios);
+	list_add_all(marcos, marcosLlenos);
+	list_add_all(marcos, marcosVacios);
 
-	bool marcoPorVacio (T_MARCO* marco){
+	bool marcoPorVacio(T_MARCO* marco) {
 		return marco->empty == true;
 	}
-	bool marcoPorLleno (T_MARCO* marco){
+	bool marcoPorLleno(T_MARCO* marco) {
 		return marco->empty == false;
 	}
 
@@ -523,122 +541,127 @@ void actualizarMarcos(){
 	list_add_all(marcosLlenos, list_filter(marcos, (void*) marcoPorLleno));
 }
 
-int tablaMarcos(){
-	printf("%s TABLA DE MARCOS %s",string_repeat('-',40), string_repeat('-',40));
+int tablaMarcos() {
+	printf("%s TABLA DE MARCOS %s", string_repeat('-', 40),
+			string_repeat('-', 40));
 
-	bool ordenarPorMenorId(T_MARCO* marco1, T_MARCO* marco2){
+	bool ordenarPorMenorId(T_MARCO* marco1, T_MARCO* marco2) {
 		return (marco1->marcoID < marco2->marcoID);
 	}
 
 	t_list* marcos = list_create();
 
-	list_add_all(marcos,marcosLlenos);
-	list_add_all(marcos,marcosVacios);
+	list_add_all(marcos, marcosLlenos);
+	list_add_all(marcos, marcosVacios);
 
-	list_sort(marcos,(void*) ordenarPorMenorId);
+	list_sort(marcos, (void*) ordenarPorMenorId);
 
 	int i;
 	int cantidadMarcos = list_size(marcos);
-	for(i=0;cantidadMarcos > i; i++){
-		T_MARCO* marco = list_get(marcos,i);
-		printf("Número de marco: %d",marco->marcoID);
-		if (marco->empty){
+	for (i = 0; cantidadMarcos > i; i++) {
+		T_MARCO* marco = list_get(marcos, i);
+		printf("Número de marco: %d", marco->marcoID);
+		if (marco->empty) {
 			printf("Marco disponible");
-		}
-		else printf("Marco ocupado por el proceso: %d", marco->PID);
-		printf("Información de los algoritmos de sustitución de páginas: %s", marco->alg_meta_data);
+		} else
+			printf("Marco ocupado por el proceso: %d", marco->PID);
+		printf("Información de los algoritmos de sustitución de páginas: %s",
+				marco->alg_meta_data);
 	}
-	printf("%s\n",string_repeat('-',100));
+	printf("%s\n", string_repeat('-', 100));
 	return 1;
 }
 
-int tablaSegmentos(){
-	printf("%s TABLA DE SEGMENTOS %s",string_repeat('-',40), string_repeat('-',40));
+int tablaSegmentos() {
+	printf("%s TABLA DE SEGMENTOS %s", string_repeat('-', 40),
+			string_repeat('-', 40));
 
 	int cantidadProcesos = list_size(procesos);
 	int i;
 	int j;
 
-	for(i=0; cantidadProcesos > i; i++){
-		T_PROCESO* proceso = list_get(procesos,i);
+	for (i = 0; cantidadProcesos > i; i++) {
+		T_PROCESO* proceso = list_get(procesos, i);
 		int cantidadSegmentos = list_size(proceso->segmentos);
 
 		printf("Para el proceso de ID: %d", proceso->PID);
 
-		if(cantidadSegmentos == 0){
-			printf("%c",'\n');
-			log_info(logger,"El proceso no tiene segmentos");
+		if (cantidadSegmentos == 0) {
+			printf("%c", '\n');
+			log_info(logger, "El proceso no tiene segmentos");
 			return 1;
 		}
 
-		for(j=0;cantidadSegmentos > j; j++){
-			T_SEGMENTO* segmento = list_get(proceso->segmentos,j);
-			printf("%c",'\n');
-			printf("Número de segmento: %d", (int)segmento->SID);
+		for (j = 0; cantidadSegmentos > j; j++) {
+			T_SEGMENTO* segmento = list_get(proceso->segmentos, j);
+			printf("%c", '\n');
+			printf("Número de segmento: %d", (int) segmento->SID);
 			printf("Tamaño: %d", segmento->tamanio);
 			printf("Dirección virtual base: %d", (int) segmento->baseSegmento);
 		}
 	}
-	printf("%s\n", string_repeat('-',100));
-	log_info(logger,"Tabla de segmentos mostrada satisfactoriamente");
+	printf("%s\n", string_repeat('-', 100));
+	log_info(logger, "Tabla de segmentos mostrada satisfactoriamente");
 	return 1;
 }
 
-int tablaPaginas(int PID){
-	printf("%s TABLA DE PÁGINAS %s", string_repeat('-',40), string_repeat('-',40));
+int tablaPaginas(int PID) {
+	printf("%s TABLA DE PÁGINAS %s", string_repeat('-', 40),
+			string_repeat('-', 40));
 
-	bool procesoPorPid (T_PROCESO* proceso){
-			return proceso->PID == PID;
-		}
+	bool procesoPorPid(T_PROCESO* proceso) {
+		return proceso->PID == PID;
+	}
 
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
-	if(proceso != NULL){
+	if (proceso != NULL ) {
 		int cantidadSegmentos = list_size(proceso->segmentos);
 		int i;
 		int j;
 
-		for(i=0; cantidadSegmentos > i; i++){
-			T_SEGMENTO* segmento = list_get(proceso->segmentos,i);
+		for (i = 0; cantidadSegmentos > i; i++) {
+			T_SEGMENTO* segmento = list_get(proceso->segmentos, i);
 			printf("Para el segmento de ID: %d", segmento->SID);
 
 			int cantidadPaginas = list_size(segmento->paginas);
-			for(j=0; cantidadPaginas > j; j++){
+			for (j = 0; cantidadPaginas > j; j++) {
 				T_PAGINA* pagina = list_get(segmento->paginas, j);
 				printf("%c", '\n');
-				if(pagina->swapped){
+				if (pagina->swapped) {
 					printf("La página se encuentra swappeada");
-				}
-				else if(&(pagina->marcoID) != NULL){
-					log_info(logger,"La página se encuentra en memoria principal en el marco de ID: %d", pagina->marcoID);
-				}
-				else log_info(logger,"La página no se encuentra en memoria principal");
+				} else if (&(pagina->marcoID) != NULL ) {
+					log_info(logger,
+							"La página se encuentra en memoria principal en el marco de ID: %d",
+							pagina->marcoID);
+				} else
+					log_info(logger,
+							"La página no se encuentra en memoria principal");
 			}
 		}
-	}
-	else {
-		log_error(logger,"El proceso de PID: %d es inexistente", PID);
+	} else {
+		log_error(logger, "El proceso de PID: %d es inexistente", PID);
 		return -1;
 	}
 
-	printf("%c",'\n');
-	printf("%s", string_repeat('-',100));
+	printf("%c", '\n');
+	printf("%s", string_repeat('-', 100));
 
-	log_info(logger,"Tabla de páginas mostrada satisfactoriamente");
+	log_info(logger, "Tabla de páginas mostrada satisfactoriamente");
 	return 1;
 }
 
-T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion) {
+T_DIRECCION_LOG uint32ToDireccionLogica(uint32_t intDireccion) {
 
 	T_DIRECCION_LOG direccionLogica;
 	direccionLogica.SID = intDireccion / pow(2, 20);
-	direccionLogica.paginaId = (intDireccion % (int)pow(2,20)) / pow(2, 8);
-	direccionLogica.desplazamiento = intDireccion % (int)pow(2, 8);
+	direccionLogica.paginaId = (intDireccion % (int) pow(2, 20)) / pow(2, 8);
+	direccionLogica.desplazamiento = intDireccion % (int) pow(2, 8);
 
 	return direccionLogica;
 }
 
-uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica) {
+uint32_t DireccionLogicaToUint32(T_DIRECCION_LOG direccionLogica) {
 
 	uint32_t intDireccion = direccionLogica.SID * pow(2, 20);
 	intDireccion += direccionLogica.paginaId * pow(2, 8);
@@ -647,132 +670,134 @@ uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica) {
 	return intDireccion;
 }
 
-void iniciarConexiones(){
-	//crear el servidor. el descriptor mas alto lo declaro en 0 y dps cada vez que me llega una nueva conexxion me fijo si es cpu o kernel, entonces
-	//si es cpu me fijo si el descriptor mas alto es 0 y guardo el descriptor en el descriptor mas alto
-	socket_general = crear_servidor(puerto,backlog);
+void iniciarConexiones() {
+	socket_general = crear_servidor(puerto, backlog);
 	if (socket_general < 0) {
-		log_error(logger,"No se pudo crear el servidor");
+		log_error(logger, "No se pudo crear el servidor");
 		exit(-1);
 	}
-	log_info(logger,"Se ha creado el servidor exitósamente");
+	log_info(logger, "Se ha creado el servidor exitósamente");
 
 	printf("Esperando conexiones...\n");
 
-		FD_ZERO(&CPU_set);
-		pthread_t hiloPlanificador;
-
-		while (1) {
-
-			int socket_conectado = recibir_conexion(socket_general);
-			printf("Se recibio una conexion!\n");
-			int modulo_conectado = -1;
-			t_datosAEnviar* datos = recibir_datos(socket_conectado);
-			modulo_conectado = datos->codigo_operacion;
-
-			if (modulo_conectado == soy_CPU) {
-				printf("Se conecto una consola\n");
-				FD_SET(socket_conectado,&CPU_set);
-
-				int* cpu_conectada = 0; //todo fijarse que tipo va a ser
-
-				if (list_is_empty(cpu_list)) {
-					descriptor_mas_alto_cpu = socket_conectado;
-					//int hilo = pthread_create(&hiloPlanificador, NULL, (void*)interpretarOperacion, NULL);
-			}
-				list_add(cpu_list, cpu_conectada);
-
-			} else if (modulo_conectado == soy_kernel) {
-				printf("Se conecto el Kernal\n");
-				FD_SET(socket_conectado, &CPU_set);
-			}
-
-			free(datos->datos);
-			free(datos);
-
-		}
-
-}
-
-void interpretarOperacion(){
-	fd_set copia_set;
+	pthread_t hiloPlanificador;
+	pthread_t hiloKernel;
 
 	while (1) {
-		copia_set = CPU_set;
-		int i = select(descriptor_mas_alto_cpu + 1, &CPU_set, NULL,
-					NULL, NULL );
 
-			if (i == -1) {
-				//ERROR
-				break;
-			}
+		int socket_conectado = recibir_conexion(socket_general);
+		printf("Se recibio una conexion!\n");
+		int modulo_conectado = -1;
+		t_datosAEnviar* datos = recibir_datos(socket_conectado);
+		modulo_conectado = datos->codigo_operacion;
 
-			int n_descriptor = 0;
+		if (modulo_conectado == soy_CPU) {
+			printf("Se conecto una CPU\n");
 
-			while (n_descriptor <= descriptor_mas_alto_cpu) {
-				if (FD_ISSET(n_descriptor, &copia_set)) {
-					t_datosAEnviar * datos;
-					datos = recibir_datos(n_descriptor);
-					//struct_consola * consola_conectada = obtener_consolaConectada(
-						//	n_descriptor);
-
-					switch (datos->codigo_operacion) {
-
-					case crear_segmento:
-						//todo hacerlo
-						//TODO finalizar conexion si hubo un problema al solicitar un segmento.
-						break;
-
-					case destruir_segmento:
-
-
-						break;
-
-					case solicitar_memoria:
-
-						break;
-
-					case escribir_memoria:
-
-						break;
-					}
-
-
-					free(datos);
-				}
-				n_descriptor++;
-			}
-
+			pthread_create(&hiloPlanificador, NULL,
+					(void*) interpretarOperacion, &socket_conectado);
 		}
 
+		else if (modulo_conectado == soy_kernel) {
+			printf("Se conecto el Kernel\n");
+
+			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion,
+					&socket_conectado);
+		}
+
+		free(datos->datos);
+		free(datos);
+
+	}
+
 }
 
-T_PAGINA* swapInPagina (int PID, T_SEGMENTO* seg, T_PAGINA* pag){
-	//char* filePath = hago un metodo que me obtenga el nombre a partir del pid, seg, pag->pagid
-	//armo un archivo de tipo FILE* con la funcion txt_open_for_append(filePath)
+void interpretarOperacion(int* socket) {
 
-	//si mi archivo es distinto de NULL
-		//primero instancio la data
+	while (1) {
+		t_datosAEnviar* datos;
+		datos = recibir_datos(*socket);
+		int pid;
+		int tamanioSegmento;
+		uint32_t baseSegmento;
+		uint32_t respuesta;
+		t_datosAEnviar* paquete;
 
-		//cierro el archivo
+		switch (datos->codigo_operacion) {
 
-		//hago un for donde a la data de la pagina le asigno lo que voy leyendo
-		//le indico a la pag que no está mas swappeada
-		//le sumo a memoriaDisponibleParaSwapping el tamanioPag
+		case crear_segmento:
 
-	return pag; //puse esto provisorio para que no me de error
+			memcpy(&pid, datos->datos, sizeof(int));
+			memcpy(&tamanioSegmento, datos->datos + sizeof(int), sizeof(int));
+
+			free(datos);
+
+			respuesta = crearSegmento(pid, tamanioSegmento);
+
+			paquete = crear_paquete(0, (void*) respuesta,
+						sizeof(uint32_t));
+
+			enviar_datos(*socket, paquete);
+
+			break;
+
+		case destruir_segmento:
+			memcpy(&pid, datos->datos, sizeof(int));
+			memcpy(&baseSegmento, datos->datos + sizeof(int), sizeof(uint32_t));
+
+			respuesta = destruirSegmento(pid,baseSegmento);
+
+			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
+
+			enviar_datos(*socket, paquete);
+
+			free(datos);
+
+			break;
+
+		case solicitar_memoria:
+			//todo: hacerlo
+
+			break;
+
+		case escribir_memoria:
+
+			//todo: hacerlo
+
+			break;
+		}
+
+		free(datos);
+	}
 }
 
-int swapOutPagina(int PID, int SID, T_PAGINA* pag){
-	//creo un filePath
-	//creo el archivo con ese filePath
 
-	//si el file es distinto de NULL
-		//char* contenidoDelArchivo = metodo que rellene el archivo
-		//uso la funcion txt_write_in_file(contenidoDelArchivo)
-		//cierro el archivo
+T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
+//char* filePath = hago un metodo que me obtenga el nombre a partir del pid, seg, pag->pagid
+//armo un archivo de tipo FILE* con la funcion txt_open_for_append(filePath)
 
-	//le resto a la memoriaDisponibleParaSwapping el tamanioPag
+//si mi archivo es distinto de NULL
+//primero instancio la data
 
-	return 0;
+//cierro el archivo
+
+//hago un for donde a la data de la pagina le asigno lo que voy leyendo
+//le indico a la pag que no está mas swappeada
+//le sumo a memoriaDisponibleParaSwapping el tamanioPag
+
+return pag; //puse esto provisorio para que no me de error
+}
+
+int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
+ //creo un filePath
+ //creo el archivo con ese filePath
+
+ //si el file es distinto de NULL
+ //char* contenidoDelArchivo = metodo que rellene el archivo
+ //uso la funcion txt_write_in_file(contenidoDelArchivo)
+ //cierro el archivo
+
+ //le resto a la memoriaDisponibleParaSwapping el tamanioPag
+
+return 0;
 }
