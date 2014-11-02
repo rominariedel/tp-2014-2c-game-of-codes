@@ -89,7 +89,6 @@ char* IPMSP;
 char* PUERTOKERNEL;
 char* IPKERNEL;
 int RETARDO;
-char* LOGRUTA;
 
 t_TCB* TCBactual;
 int quantum = 0;
