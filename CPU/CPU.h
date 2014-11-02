@@ -26,6 +26,8 @@
 #include <error.h>
 #include <sys/socket.h>
 #include <sockets.h>
+#include "t_parametros.h"
+
 
 /* Estructuras */
 
@@ -60,109 +62,6 @@ typedef struct {
 	int S;
 	reg_programacion registrosProgramacion;
 }TCB_struct;
-
-/*Tipos parametros instruccion*/
-
-typedef struct{
-	char reg1;
-	int num;
-}__attribute__ ((__packed__))  tparam_load;
-
-typedef struct{
-	int num;
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_setm;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_getm;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_movr;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_addr;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_subr;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_mulr;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_modr;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_divr;
-
-typedef struct{
-	char reg1;
-}__attribute__ ((__packed__))  tparam_incr;
-
-typedef struct{
-	char reg1;
-}__attribute__ ((__packed__))  tparam_decr;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_comp;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_cgeq;
-
-typedef struct{
-	char reg1;
-	char reg2;
-}__attribute__ ((__packed__))  tparam_cleq;
-
-typedef struct{
-	char reg1;
-}__attribute__ ((__packed__))  tparam_goto;
-
-typedef struct{
-	int direccion;
-}__attribute__ ((__packed__))  tparam_jmpz;
-
-typedef struct{
-	int direccion;
-}__attribute__ ((__packed__))  tparam_jpnz;
-
-typedef struct{
-	int direccion;
-}__attribute__ ((__packed__))  tparam_inte;
-
-typedef struct{
-	int numero;
-	char registro;
-}__attribute__ ((__packed__))  tparam_shif;
-
-typedef struct{
-	int num1;
-	int num2;
-}__attribute__ ((__packed__))  tparam_push;
-
-typedef struct{
-	int numero;
-	char registro;
-}__attribute__ ((__packed__))  tparam_take;
-
 
 /*Datos actuales*/
 int PIDactual;
@@ -222,10 +121,19 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
 int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
 t_datosAEnviar*  MSP_DestruirSegmento(int PID, int registro);
 char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros);
+void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio);
 
 /*Funciones Kernel*/
 void KERNEL_ejecutarRutinaKernel(int direccion);
 int KERNEL_IngreseNumeroPorConsola(int PID);
+t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena);
+void KERNEL_MostrarNumeroPorConsola(int PID, int nro);
+void KERNEL_MostrarCadenaPorConsola(int PID, char* cadena);
+t_TCB* KERNEL_CrearNuevoHilo(t_TCB* TCB);
+void KERNEL_PlanificarHilo(t_TCB* hiloNuevo);
+void KERNEL_JoinTCB(t_TCB* TCB, int TIDabloquear);
+void KERNEL_BloquearTCB(t_TCB* TCB, int recursoABloquear);
+void KERNEL_WakePrograma(int recurso);
 
 /*Instrucciones*/
 void LOAD(tparam_load*);
@@ -283,6 +191,11 @@ enum mensajesKernelCodOperacion{
 	desconexion = 13,
 	interrupcion = 14,
 	error_al_interpretar_instruccion = 15,
+	crear_hilo = 15,
+	planificar_hilo = 28,
+	join = 22,
+	bloquear = 23,
+	despertar = 24,
 
 	entrada_estandar = 20,
 	salida_estandar = 21,
@@ -327,6 +240,8 @@ enum instruccionesProtegidas{
 	_BLOK,
 	_WAKE,
 };
+
+
 
 
 

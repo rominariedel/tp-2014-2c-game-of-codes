@@ -6,48 +6,55 @@
  */
 
 #include "CPU.h"
-
+#include "t_parametros.h"
 
 int main(int cantArgs, char** args){
 	LOGCPU = log_create("/home/utnso/Escritorio/LogCPU", "CPU", 0, LOG_LEVEL_TRACE);
 
-	log_trace(LOGCPU, "\n ------Bienvenido al CPU----- \n");
-	printf("\n ------Bienvenido al CPU----- \n");
-	log_trace(LOGCPU, "\n Cargar archivos configuración\n");
+	log_info(LOGCPU, "\n \n -------------  Bienvenido al CPU  -------------\n\n");
+	printf("\n \n -------------  Bienvenido al CPU  -------------\n\n");
+	log_info(LOGCPU, "\n Cargar archivos configuración\n");
 	printf("\n Cargando archivos configuración... \n");
+
 	cargarArchivoConfiguracion(cantArgs,args);
-	log_trace(LOGCPU, "IP MSP : %d \n", (int)IPMSP);
-	printf("\n IP MSP : %d \n", (int)IPMSP);
-	log_trace(LOGCPU, "\n PUERTO MSP : %d \n", (int)PUERTOMSP);
-	printf("\n PUERTO MSP : %d \n", (int)PUERTOMSP);
-	log_trace(LOGCPU,"\n IP KERNEL : %d \n", (int)IPKERNEL);
-	printf("\n IP KERNEL : %d \n", (int)IPKERNEL);
-	log_trace(LOGCPU,"\n PUERTO KERNEL : %d \n", (int)PUERTOKERNEL);
-	printf("\n PUERTO KERNEL : %d \n", (int)PUERTOKERNEL);
-	log_trace(LOGCPU,"\n RETARDO : %d \n", RETARDO);
+
+	log_info(LOGCPU, "IP MSP : %s \n",  IPMSP);
+	printf("\n IP MSP : %s \n",  IPMSP);
+	log_info(LOGCPU, "\n PUERTO MSP : %s \n",  PUERTOMSP);
+	printf("\n PUERTO MSP : %s \n",  PUERTOMSP);
+	log_info(LOGCPU,"\n IP KERNEL : %s \n",  IPKERNEL);
+	printf("\n IP KERNEL : %s \n",  IPKERNEL);
+	log_info(LOGCPU,"\n PUERTO KERNEL : %s \n",  PUERTOKERNEL);
+	printf("\n PUERTO KERNEL : %s \n",  PUERTOKERNEL);
+	log_info(LOGCPU,"\n RETARDO : %d \n", RETARDO);
 	printf("\n RETARDO : %d \n", RETARDO);
 
 
-	log_trace(LOGCPU,"\n Conectando con la MSP ...\n");
-	printf("\n Conectando con la MSP ...\n\n\n");
+	log_info(LOGCPU,"\n Conectando con la MSP ...\n");
+	printf("\n \n Conectando con la MSP ...\n\n\n");
+
 	conectarConMSP();
 
-	log_trace(LOGCPU, "Aviso a la MSP que soy_CPU");
+	log_info(LOGCPU, "Aviso a la MSP que soy_CPU");
+
 	t_datosAEnviar * paqueteMSP = crear_paquete(soy_CPU,NULL,0);
 	enviar_datos(socketMSP,paqueteMSP);
 
-	log_trace(LOGCPU,"\n Conectando con el Kernel ...\n\n\n");
+	log_info(LOGCPU,"\n \n Conectando con el Kernel ...\n\n\n");
 	printf("\n Conectando con el Kernel ...\n");
+
 	conectarConKernel();
 
-	log_trace(LOGCPU, "Aviso al Kernel que soy_CPU");
+	log_info(LOGCPU, "\n Aviso al Kernel que soy_CPU \n");
+
 	t_datosAEnviar * paqueteKERNEL = crear_paquete(soy_CPU,NULL,0);
 	enviar_datos(socketKernel,paqueteKERNEL);
 
 	while(1)
 	{
-		log_trace(LOGCPU, "recibir TCB y quantum del Kernel");
-		printf("Estoy a la espera de que el Kernel me mande el TCB y el quantum correspondiente");
+		log_info(LOGCPU, "\n recibir TCB y quantum del Kernel \n");
+		printf("\n Estoy a la espera de que el Kernel me mande el TCB y el quantum correspondiente \n");
+
 		t_datosAEnviar *  datosKernel = recibir_datos(socketKernel);
 		if (datosKernel == NULL){
 			printf("Fallo al recibir TCB y quantum");
@@ -63,7 +70,7 @@ int main(int cantArgs, char** args){
 		printf("\n quantum a ejecutar para %d es: %d \n",PIDactual, quantumActual);
 
 
-		log_trace(LOGCPU, "Quantum a ejecutar para %d es: %d",PIDactual, quantum);
+		log_info(LOGCPU, "Quantum a ejecutar para %d es: %d",PIDactual, quantum);
 
 		printf("Recibí datos del TCB actual y sus registros de programacion");
 		printf("PID: %d \n", PIDactual);
@@ -84,26 +91,26 @@ int main(int cantArgs, char** args){
 		while(quantumActual>quantum || KMactual==1)
 		{
 
-			log_trace(LOGCPU, "\n quantum = %d \n",quantumActual);
+			log_info(LOGCPU, "\n quantum = %d \n",quantumActual);
 			printf("\n %d \n", quantumActual);
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 
-			log_trace(LOGCPU, "\n Solicito a MSP proximaInstruccionAEJecutar \n");
+			log_info(LOGCPU, "\n Solicito a MSP proximaInstruccionAEJecutar \n");
 			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
-			log_trace(LOGCPU, "\n Proxima Instruccion A Ejecutar: %p \n", *proximaInstruccionAEjecutar);
+			log_info(LOGCPU, "\n Proxima Instruccion A Ejecutar: %p \n", *proximaInstruccionAEjecutar);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
-			log_trace(LOGCPU, "\n Espero %d segundos de retardo \n", RETARDO);
+			log_info(LOGCPU, "\n Espero %d segundos de retardo \n", RETARDO);
 			usleep(RETARDO);
 
-			log_trace(LOGCPU, "\n Interpretar y Ejecutar Instruccion \n");
+			log_info(LOGCPU, "\n Interpretar y Ejecutar Instruccion \n");
 			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
 
-			log_trace(LOGCPU, "\n Registro A \n", A);
-			log_trace(LOGCPU, "\n Registro B \n", B);
-			log_trace(LOGCPU, "\n Registro C \n", C);
-			log_trace(LOGCPU, "\n Registro D \n", D);
-			log_trace(LOGCPU, "\n Registro E \n", E);
+			log_info(LOGCPU, "\n Registro A \n", A);
+			log_info(LOGCPU, "\n Registro B \n", B);
+			log_info(LOGCPU, "\n Registro C \n", C);
+			log_info(LOGCPU, "\n Registro D \n", D);
+			log_info(LOGCPU, "\n Registro E \n", E);
 
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
@@ -116,25 +123,25 @@ int main(int cantArgs, char** args){
 				log_error(LOGCPU, "No se encontro la instruccion o no tiene los permisos necesarios");
 				printf("No se encontro la instruccion o no tiene los permisos necesarios");
 
-				log_trace(LOGCPU, "Devolver TCB %d al Kernel", PIDactual);
+				log_info(LOGCPU, "Devolver TCB %d al Kernel", PIDactual);
 				log_error(LOGCPU, "Error al interpretar instruccion");
 				devolverTCBactual(error_al_interpretar_instruccion);
 				break;
 			}else{
-				log_trace(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
+				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
 				punteroInstruccionActual =+ respuesta;}
-				log_trace(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
+				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
 
 			// 5.b Incrementar quantum
 			quantumActual++;
-			log_trace(LOGCPU, "Ejecutando %d de %d quantum", quantumActual, quantum);
+			log_info(LOGCPU, "Ejecutando %d de %d quantum", quantumActual, quantum);
 
 		if(quantumActual == quantum && KMactual == 0){
 			// 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			//proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			//tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
-			log_trace(LOGCPU, "Se completo el quantum! %d == %d", quantumActual, quantum);
-			log_trace(LOGCPU, "Devuelvo TCB %d al Kernel", PIDactual);
+			log_info(LOGCPU, "Se completo el quantum! %d == %d", quantumActual, quantum);
+			log_info(LOGCPU, "Devuelvo TCB %d al Kernel", PIDactual);
 			devolverTCBactual(finaliza_quantum);
 			limpiarRegistros();
 			actualizarTCB();
@@ -190,11 +197,11 @@ void cargarRegistrosCPU(){
 	C = TCBactual -> registrosProgramacion[2];
 	D = TCBactual -> registrosProgramacion[3];
 	E = TCBactual -> registrosProgramacion[4];
-	log_trace(LOGCPU, "\n Registro A \n", A);
-	log_trace(LOGCPU, "\n Registro B \n", B);
-	log_trace(LOGCPU, "\n Registro C \n", C);
-	log_trace(LOGCPU, "\n Registro D \n", D);
-	log_trace(LOGCPU, "\n Registro E \n", E);
+	log_info(LOGCPU, "\n Registro A \n", A);
+	log_info(LOGCPU, "\n Registro B \n", B);
+	log_info(LOGCPU, "\n Registro C \n", C);
+	log_info(LOGCPU, "\n Registro D \n", D);
+	log_info(LOGCPU, "\n Registro E \n", E);
 
 }
 
@@ -210,25 +217,25 @@ void actualizarRegistrosTCB(){
 
 int cargarDatosTCB(){
 
-	log_trace(LOGCPU, "\n datos TCB actual \n");
+	log_info(LOGCPU, "\n datos TCB actual \n");
 	PIDactual = TCBactual->PID;
-	log_trace(LOGCPU, "\n PID actual: %d \n", PIDactual);
+	log_info(LOGCPU, "\n PID actual: %d \n", PIDactual);
 	TIDactual = TCBactual -> TID;
-	log_trace(LOGCPU, "\n TID actual: %d \n", TIDactual);
+	log_info(LOGCPU, "\n TID actual: %d \n", TIDactual);
 	KMactual = TCBactual -> KM;
-	log_trace(LOGCPU, "\n KM actual: %d \n", KMactual);
+	log_info(LOGCPU, "\n KM actual: %d \n", KMactual);
 	baseSegmentoCodigoActual = TCBactual -> baseSegmentoCodigo;
-	log_trace(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
+	log_info(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
 	tamanioSegmentoCodigoActual = TCBactual -> tamanioSegmentoCodigo;
-	log_trace(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
+	log_info(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
 	punteroInstruccionActual = TCBactual -> punteroInstruccion;
-	log_trace(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
+	log_info(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
 	baseStackActual = TCBactual -> baseStack;
-	log_trace(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
+	log_info(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
 	cursorStackActual = TCBactual -> cursorStack;
-	log_trace(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
+	log_info(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
 
-	log_trace(LOGCPU, "\n Cargar Registros de Programacion \n");
+	log_info(LOGCPU, "\n Cargar Registros de Programacion \n");
 	cargarRegistrosCPU();
 
 
@@ -252,38 +259,37 @@ int actualizarTCB(){
 
 
 void devolverTCBactual(int codOperacion){
-	log_trace(LOGCPU, "Devolviendo TCB actual");
-	log_trace(LOGCPU, "Estado TCB actual");
-	log_trace(LOGCPU, "\n datos TCB actual \n");
-	log_trace(LOGCPU, "\n PID actual: %d \n", PIDactual);
-	log_trace(LOGCPU, "\n TID actual: %d \n", TIDactual);
-	log_trace(LOGCPU, "\n KM actual: %d \n", KMactual);
-	log_trace(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
-	log_trace(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
-	log_trace(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
-	log_trace(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
-	log_trace(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
-	log_trace(LOGCPU, "Estado registros");
-	log_trace(LOGCPU, "\n Registro A \n", A);
-	log_trace(LOGCPU, "\n Registro B \n", B);
-	log_trace(LOGCPU, "\n Registro C \n", C);
-	log_trace(LOGCPU, "\n Registro D \n", D);
-	log_trace(LOGCPU, "\n Registro E \n", E);
+	log_info(LOGCPU, "Devolviendo TCB actual");
+	log_info(LOGCPU, "Estado TCB actual");
+	log_info(LOGCPU, "\n datos TCB actual \n");
+	log_info(LOGCPU, "\n PID actual: %d \n", PIDactual);
+	log_info(LOGCPU, "\n TID actual: %d \n", TIDactual);
+	log_info(LOGCPU, "\n KM actual: %d \n", KMactual);
+	log_info(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
+	log_info(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
+	log_info(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
+	log_info(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
+	log_info(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
+	log_info(LOGCPU, "Estado registros");
+	log_info(LOGCPU, "\n Registro A \n", A);
+	log_info(LOGCPU, "\n Registro B \n", B);
+	log_info(LOGCPU, "\n Registro C \n", C);
+	log_info(LOGCPU, "\n Registro D \n", D);
+	log_info(LOGCPU, "\n Registro E \n", E);
 
 	actualizarTCB();
 
-	log_trace(LOGCPU, "Armando paquete con TCB actual PID %d, TID %d", PIDactual, TIDactual);
+	log_info(LOGCPU, "Armando paquete con TCB actual PID %d, TID %d", PIDactual, TIDactual);
 	int op = codOperacion; //ver porque lo estoy mandando... termino quantum, por interrupcion, por lo que sea
 	void * mensaje = malloc(sizeof(t_TCB) + sizeof(int));
 	memcpy(mensaje, &op, sizeof(int));
 	memcpy(mensaje + sizeof(int), TCBactual, sizeof(t_TCB));
 	int status = enviar_datos(socketKernel, mensaje);
 	if(status == -1){
-		log_trace(LOGCPU, "No se pudo devolver el TCB actual");
+		log_info(LOGCPU, "No se pudo devolver el TCB actual");
 		perror("No se pudo devolver el TCBactual");}
 	free(mensaje);
-	log_trace(LOGCPU, "Se devolvio TCB al Kernel");
-	//TODO: volver al WHILE(1)
+	log_info(LOGCPU, "Se devolvio TCB al Kernel");
 }
 
 
@@ -301,201 +307,200 @@ void limpiarRegistros(){
 	C = 0;
 	D = 0;
 	E = 0;
-	log_trace(LOGCPU, "\n PID actual: %d \n", PIDactual);
-	log_trace(LOGCPU, "\n TID actual: %d \n", TIDactual);
-	log_trace(LOGCPU, "\n KM actual: %d \n", KMactual);
-	log_trace(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
-	log_trace(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
-	log_trace(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
-	log_trace(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
-	log_trace(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
-	log_trace(LOGCPU, "\n Registro A \n", A);
-	log_trace(LOGCPU, "\n Registro B \n", B);
-	log_trace(LOGCPU, "\n Registro C \n", C);
-	log_trace(LOGCPU, "\n Registro D \n", D);
-	log_trace(LOGCPU, "\n Registro E \n", E);
+	log_info(LOGCPU, "\n PID actual: %d \n", PIDactual);
+	log_info(LOGCPU, "\n TID actual: %d \n", TIDactual);
+	log_info(LOGCPU, "\n KM actual: %d \n", KMactual);
+	log_info(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
+	log_info(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
+	log_info(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
+	log_info(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
+	log_info(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
+	log_info(LOGCPU, "\n Registro A \n", A);
+	log_info(LOGCPU, "\n Registro B \n", B);
+	log_info(LOGCPU, "\n Registro C \n", C);
+	log_info(LOGCPU, "\n Registro D \n", D);
+	log_info(LOGCPU, "\n Registro E \n", E);
 
 
-	log_trace(LOGCPU, "Se limpiaron los registros");
+	log_info(LOGCPU, "Se limpiaron los registros");
 
 }
-
 
 
 int interpretarYEjecutarInstruccion(char* instruccion){
 	if(strcmp(instruccion,"LOAD")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
-		tparam_load* parametros = (tparam_load*) respuesta;
-		log_trace(LOGCPU, "LOAD(%d,%c)",parametros->num, parametros->reg1);
-		LOAD(parametros);
+		tparam_load* parametrosLoad = (tparam_load*) respuesta;
+		log_info(LOGCPU, "LOAD(%d,%c)",parametrosLoad->num, parametrosLoad->reg1);
+		LOAD(parametrosLoad);
 	return sizeof(tparam_load);
 	}
 	if(strcmp(instruccion,"GETM")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
 		tparam_getm * parametros = (tparam_getm*)respuesta;
-		log_trace(LOGCPU, "GETM(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "GETM(%c,%c)",parametros->reg1, parametros->reg2);
 		GETM(parametros);
 	return sizeof(tparam_getm); }
 	if(strcmp(instruccion,"MOVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
 		tparam_movr * parametros = (tparam_movr *) respuesta;
-		log_trace(LOGCPU, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
 		MOVR(parametros);
 	return sizeof(tparam_movr); }
 	if(strcmp(instruccion,"ADDR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
 		tparam_addr* parametros = (tparam_addr*)respuesta;
-		log_trace(LOGCPU, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
 		ADDR(parametros);
 	return sizeof(tparam_addr); }
 	if(strcmp(instruccion,"SUBR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
 		tparam_subr* parametros = (tparam_subr *) respuesta;
-		log_trace(LOGCPU, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
 		SUBR(parametros);
 	return sizeof(tparam_subr); }
 	if(strcmp(instruccion,"MULR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
 		tparam_mulr * parametros = (tparam_mulr *) respuesta;
-		log_trace(LOGCPU, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
 		MULR(parametros);
 	return sizeof(tparam_mulr); }
 	if(strcmp(instruccion,"MODR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
 		tparam_modr * parametros = (tparam_modr *) respuesta;
-		log_trace(LOGCPU, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
 		MODR(parametros);
 	return  sizeof(tparam_modr); }
 	if(strcmp(instruccion,"DIVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
 		tparam_divr* parametros = (tparam_divr *) respuesta;
-		log_trace(LOGCPU, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
 		DIVR(parametros);
 	return sizeof(tparam_divr); }
 	if(strcmp(instruccion,"INCR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
 		tparam_incr* parametros = (tparam_incr *) respuesta;
-		log_trace(LOGCPU, "INCR(%c)",parametros->reg1);
+		log_info(LOGCPU, "INCR(%c)",parametros->reg1);
  		INCR(parametros);
 	return sizeof(tparam_incr); }
 	if(strcmp(instruccion,"DECR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
 		tparam_decr* parametros = (tparam_decr *) respuesta;
-		log_trace(LOGCPU, "DECR(%c)",parametros->reg1);
+		log_info(LOGCPU, "DECR(%c)",parametros->reg1);
  		DECR(parametros);
 	return sizeof(tparam_decr); }
 	if(strcmp(instruccion,"COMP")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
 		tparam_comp* parametros = (tparam_comp *) respuesta;
-		log_trace(LOGCPU, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
  		COMP(parametros);
 	return sizeof(tparam_comp); }
 	if(strcmp(instruccion,"CGEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
 		tparam_cgeq* parametros = (tparam_cgeq *) respuesta;
-		log_trace(LOGCPU, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
  		CGEQ(parametros);
 	return  sizeof(tparam_cgeq); }
 	if(strcmp(instruccion,"CLEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
 		tparam_cleq* parametros = (tparam_cleq *) respuesta;
-		log_trace(LOGCPU, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
+		log_info(LOGCPU, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
 		CLEQ(parametros);
 	return sizeof(tparam_cleq); }
 	if(strcmp(instruccion,"GOTO")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_goto));
 		tparam_goto* parametros = (tparam_goto *) respuesta;
-		log_trace(LOGCPU, "GOTO(%c)",parametros->reg1);
+		log_info(LOGCPU, "GOTO(%c)",parametros->reg1);
 		GOTO(parametros);
 	return sizeof(tparam_goto); }
 	if(strcmp(instruccion,"JMPZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
 		tparam_jmpz* parametros = (tparam_jmpz *) respuesta;
-		log_trace(LOGCPU, "JMPZ(%d)",parametros->direccion);
+		log_info(LOGCPU, "JMPZ(%d)",parametros->direccion);
  		JMPZ(parametros);
 	return sizeof(tparam_jmpz); }
 	if(strcmp(instruccion,"JPNZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
 		tparam_jpnz* parametros = (tparam_jpnz *) respuesta;
-		log_trace(LOGCPU, "JPNZ(%d)",parametros->direccion);
+		log_info(LOGCPU, "JPNZ(%d)",parametros->direccion);
  		JPNZ(parametros);
 	return sizeof(tparam_jpnz); }
 	if(strcmp(instruccion,"INTE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
 		tparam_inte* parametros = (tparam_inte *) respuesta;
-		log_trace(LOGCPU, "INTE(%d)",parametros->direccion);
+		log_info(LOGCPU, "INTE(%d)",parametros->direccion);
  		INTE(parametros);
 	return  sizeof(tparam_inte); }
 	if(strcmp(instruccion,"NOPP")){
-		log_trace(LOGCPU, "NOPP()");
+		log_info(LOGCPU, "NOPP()");
 		NOPP();
 		return 0; }
 	if(strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
 		tparam_push* parametros = (tparam_push *) respuesta;
-		log_trace(LOGCPU, "PUSH(%d,%d)",parametros->num1, parametros->num2);
+		log_info(LOGCPU, "PUSH(%d,%d)",parametros->num1, parametros->num2);
 		PUSH(parametros);
 	return sizeof(tparam_push); }
 	if(strcmp(instruccion,"TAKE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
 		tparam_take* parametros = (tparam_take *) respuesta;
-		log_trace(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
+		log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 		TAKE(parametros);
 	return sizeof(tparam_take); }
 	if(strcmp(instruccion,"XXXX")){
-		log_trace(LOGCPU,"XXXX()");
+		log_info(LOGCPU,"XXXX()");
 		XXXX();
 		return 0;}
 	if(strcmp(instruccion,"MALC") && KMactual == 1){
-		log_trace(LOGCPU,"MALC()");
+		log_info(LOGCPU,"MALC()");
 		MALC();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar MALC()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1; }
 	if(strcmp(instruccion,"FREE") && KMactual == 1){
-		log_trace(LOGCPU,"FREE()");
+		log_info(LOGCPU,"FREE()");
 		FREE();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar FREE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
 	if(strcmp(instruccion,"INNN") && KMactual == 1){
-		log_trace(LOGCPU,"INNN()");
+		log_info(LOGCPU,"INNN()");
 		INNN();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar INNN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
 	if(strcmp(instruccion,"OUTN") && KMactual == 1){
-		log_trace(LOGCPU,"OUTN()");
+		log_info(LOGCPU,"OUTN()");
 		OUTN();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar OUTN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");return -1;}
 	if(strcmp(instruccion,"CREA") && KMactual == 1){
-		log_trace(LOGCPU,"CREA()");
+		log_info(LOGCPU,"CREA()");
 		CREA();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar CREA()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
 	if(strcmp(instruccion,"JOIN") && KMactual == 1){
-		log_trace(LOGCPU,"JOIN()");
+		log_info(LOGCPU,"JOIN()");
 		JOIN();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar JOIN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
 	if(strcmp(instruccion,"BLOK") && KMactual == 1){
-		log_trace(LOGCPU,"BLOK()");
+		log_info(LOGCPU,"BLOK()");
 		BLOK();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar BLOK()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
 	if(strcmp(instruccion,"WAKE") && KMactual == 1){
-		log_trace(LOGCPU,"WAKE()");
+		log_info(LOGCPU,"WAKE()");
 		WAKE();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar WAKE()", PIDactual, KMactual);
@@ -506,9 +511,10 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 
 }
 
+
 int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
 
-	log_trace(LOGCPU, "\n Desempaquetando Paquete \n");
+	log_info(LOGCPU, "\n Desempaquetando Paquete \n");
 	char* buffer  = malloc(datosKernel -> tamanio);
 	memcpy(buffer,datosKernel->datos,datosKernel -> tamanio - sizeof(int));
 	TCBactual = (t_TCB *) buffer;
@@ -520,7 +526,7 @@ int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
 }
 
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP){
-	log_trace(LOGCPU, "\n Deserializar paquete MSP \n");
+	log_info(LOGCPU, "\n Deserializar paquete MSP \n");
 	char* buffer  = malloc(paqueteMSP->tamanio);
 	memcpy(buffer,paqueteMSP->datos,paqueteMSP->tamanio);
 	return buffer;
@@ -538,7 +544,7 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &direccionALeer, cantidad);
-	t_datosAEnviar * paquete = crear_paquete(codOperacion, (void*) datos, sizeof(int) + cantidad);         //TODO: ver si esta bien esta abstraccion
+	t_datosAEnviar * paquete = crear_paquete(codOperacion, (void*) datos, sizeof(int) + cantidad);
 
 	enviar_datos(socketMSP,paquete);
 	free(datos);
@@ -550,7 +556,7 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	int tamanio = 4;
-	log_trace(LOGCPU, "\n Envio paquete a MSP \n");
+	log_info(LOGCPU, "\n Envio paquete a MSP \n");
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int));
@@ -559,7 +565,7 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 	enviar_datos(socketMSP,paquete);
 	free(datos);
-	log_trace(LOGCPU, "\n Recibo Respuesta MSP \n");
+	log_info(LOGCPU, "\n Recibo Respuesta MSP \n");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
 	if(respuesta == NULL){
 		log_error(LOGCPU, "\n No se pudieron recibir datos MSP \n");
@@ -651,7 +657,6 @@ void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 
 void KERNEL_ejecutarRutinaKernel(int direccion){
 	devolverTCBactual(interrupcion);
-	//TODO: volverAl  WHILE(1)
 }
 
 int KERNEL_IngreseNumeroPorConsola(int PID){
@@ -705,6 +710,65 @@ void KERNEL_MostrarCadenaPorConsola(int PID, char* cadena){
 	free(datos);
 	free(paquete);
 }
+
+
+t_TCB* KERNEL_CrearNuevoHilo(t_TCB* TCB){
+	char * datos = malloc(sizeof(t_TCB));
+	actualizarTCB();
+	memcpy(datos, TCB, sizeof(t_TCB));
+	t_datosAEnviar* paquete = crear_paquete(crear_hilo, (void*)datos, sizeof(t_TCB));
+	enviar_datos(socketKernel, paquete);
+
+	t_datosAEnviar * respuesta = recibir_datos(socketKernel);
+
+	char* buffer  = malloc(respuesta -> tamanio);
+	memcpy(buffer,respuesta->datos, respuesta -> tamanio);
+	t_TCB* hiloNuevo = (t_TCB *) buffer;
+
+
+	free(paquete);
+	free(respuesta);
+	return hiloNuevo;
+}
+
+void KERNEL_PlanificarHilo(t_TCB* hiloNuevo){
+	char * datos = malloc(sizeof(t_TCB));
+	memcpy(datos, hiloNuevo, sizeof(t_TCB));
+	t_datosAEnviar* paquete = crear_paquete(planificar_hilo, (void*) datos, sizeof(t_TCB));
+	enviar_datos(socketKernel, paquete);
+	free(datos);
+	free(paquete);
+}
+
+void KERNEL_JoinTCB(t_TCB* TCB, int TIDabloquear){
+	char * datos = malloc(sizeof(t_TCB) + sizeof(int));
+	memcpy(datos, TCB, sizeof(t_TCB));
+	memcpy(datos + sizeof(t_TCB) , &TIDabloquear, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(join, (void*) datos, sizeof(t_TCB) + sizeof(int));
+	enviar_datos(socketKernel, paquete);
+	free(datos);
+	free(paquete);
+}
+
+void KERNEL_BloquearTCB(t_TCB* TCB, int recursoABloquear){
+	char * datos = malloc(sizeof(t_TCB) + sizeof(int));
+	memcpy(datos, TCB, sizeof(t_TCB));
+	memcpy(datos + sizeof(t_TCB) , &recursoABloquear, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(bloquear, (void*) datos, sizeof(t_TCB) + sizeof(int));
+	enviar_datos(socketKernel, paquete);
+	free(datos);
+	free(paquete);
+}
+
+void KERNEL_WakePrograma(int recurso){
+	char * datos = malloc(sizeof(t_TCB));
+	memcpy(datos, &recurso, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(bloquear, (void*) datos, sizeof(int));
+	enviar_datos(socketKernel, paquete);
+	free(datos);
+	free(paquete);
+}
+
 
 int* devolverRegistro(char registro){
 
@@ -783,10 +847,11 @@ void MODR(tparam_modr* parametrosModr){ //Obtiene el resto de la división del p
 void DIVR(tparam_divr* parametrosDivr){
 	//Divide el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A; a menos que el segundo operando sea 0,
 	//en cuyo caso tira error de division por cero
-	//TODO: en el caso que haya error de division por cero.. devuelvo el TCB? y espero a que me mande otro? o sigo con este?
+
 
 	if( *devolverRegistro(parametrosDivr->reg2) == 0){
 		perror("division por cero");
+		//TODO: en el caso que haya error de division por cero.. devuelvo el TCB? y espero a que me mande otro? o sigo con este?
 	}
 	else {
 		 A = ( *devolverRegistro(parametrosDivr->reg1)) % ( *devolverRegistro(parametrosDivr->reg2));
@@ -853,7 +918,7 @@ void INTE(tparam_inte* parametrosInte){
 	/*
 	cuando el proceso CPU notifique al Kernel que un hilo desea ejecutar una llamada al
 	sistema que requiere su atención (INTE), el Kernel recibirá el TCB de este hilo cargado y la dirección en
-	memoria de la llamada a ejecutar y lo encolará en el estado BLOCK5. Luego agregará una entrada en la
+	memoria de la llamada a ejecutar y lo encolará en el estado BLOCK. Luego agregará una entrada en la
 	cola de llamadas al sistema con el TCB en cuestión.*/
 
 	/*Interrumpe la ejecución del programa para ejecutar la rutina del kernel que se encuentra en la
@@ -969,41 +1034,34 @@ void CREA(){
 	que la diferencia entre cursor y base se mantenga igual) y luego invocar al servicio
 	correspondiente en el proceso Kernel con el TCB recién generado.*/
 
-	//TODO: mandar mail a Gaston
-
-	t_TCB * nuevoTCB = malloc(sizeof(t_TCB));
-
-	nuevoTCB->PID = PIDactual;
-	nuevoTCB->TID = TIDactual + 1;
-	nuevoTCB->KM = 0;
-	nuevoTCB->baseSegmentoCodigo = 0;
-	nuevoTCB->tamanioSegmentoCodigo = 0;
-	nuevoTCB->punteroInstruccion = B;
-	nuevoTCB->baseStack = 0;
-	nuevoTCB->cursorStack = 0;
-	nuevoTCB->registrosProgramacion[0]=0;
-	nuevoTCB->registrosProgramacion[1]=0;
-	nuevoTCB->registrosProgramacion[2]=0;
-	nuevoTCB->registrosProgramacion[3]=0;
-	nuevoTCB->registrosProgramacion[4]=0;
-
-	A = TIDactual;
+	t_TCB* hiloNuevo = KERNEL_CrearNuevoHilo(TCBactual);
+	A = hiloNuevo->TID;
+	hiloNuevo->punteroInstruccion = B;
+	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, baseStackActual, cursorStackActual - baseStackActual, solicitarMemoria);
+	void* stackACopiar = malloc(cursorStackActual - baseStackActual);
+	memcpy(&stackACopiar, respuesta->datos , cursorStackActual - baseStackActual);
+	MSP_EscribirEnMemoria(hiloNuevo->PID,hiloNuevo->baseStack, stackACopiar, cursorStackActual - baseStackActual);
+	KERNEL_PlanificarHilo(hiloNuevo);
+	free(stackACopiar);
 }
 
 void JOIN(){
 	//Bloquea el programa que ejecutó la llamada al sistema hasta que el hilo con el identificador
 	//almacenado en el registro A haya finalizado. Invoca al servicio correspondiente en el proceso Kernel.
+	KERNEL_JoinTCB(TCBactual, A);
 }
 
 void BLOK(){
 	//Bloquea el programa que ejecutó la llamada al sistema hasta que el recurso apuntado por B se libere.
 	//La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema WAIT pre-compilada.
-
+	KERNEL_BloquearTCB(TCBactual, B);
 }
 
 void WAKE(){
 	//Desbloquea al primer programa bloqueado por el recurso apuntado por B.
 	//La evaluación y decisión de si el recurso está libre o no es hecha por la llamada al sistema SIGNAL pre-compilada.
+	KERNEL_WakePrograma(B);
 }
+
 
 
