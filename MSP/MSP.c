@@ -17,6 +17,7 @@
 #include <commons/log.h>
 #include <sockets.h>
 #include <sys/select.h>
+#include <commons/txt.h>
 
 int tamanioMemoria;
 int memoriaDisponible;
@@ -40,8 +41,8 @@ t_list* cpu_list;
 pthread_t hiloConsola;
 t_log* logger;
 
-int main(void) {
-	inicializar();
+int main(int cantArgs, char** args) {
+	inicializar(args);
 
 	int hilo = pthread_create(&hiloConsola, NULL, (void*) inicializarConsola,
 			NULL );
@@ -78,8 +79,8 @@ int main(void) {
 	 exit(0);*/
 }
 
-void inicializar() {
-	cargarArchivoConfiguracion();
+void inicializar(char** args) {
+	cargarArchivoConfiguracion(args);
 	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_TRACE);
 	crearMarcos();
 
@@ -145,8 +146,8 @@ void interpretarComando(char* comando) {
 	}
 }
 
-void cargarArchivoConfiguracion(void) { //todo: args no harcodearlo
-	t_config* configuracion = config_create("config.txt");
+void cargarArchivoConfiguracion(char** args) {
+	t_config* configuracion = config_create(args[1]);
 
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
@@ -161,7 +162,8 @@ void cargarArchivoConfiguracion(void) { //todo: args no harcodearlo
 	}
 
 	if (config_has_property(configuracion, "CANTIDAD_SWAP")) {
-		cantidadSwap = config_get_int_value(configuracion, "CANTIDAD_SWAP");
+		cantidadSwap = config_get_int_value(configuracion, "CANTIDAD_SWAP")
+				* pow(2, 20);
 		printf("Cantidad Swap =  %d \n", cantidadSwap);
 	}
 
@@ -234,7 +236,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	T_SEGMENTO* segmentoVacio = malloc(sizeof(T_SEGMENTO));
 
 	segmentoVacio->SID = calcularProximoSID(proceso);
-	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio);
+	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio, segmentoVacio->SID);
 
 	T_DIRECCION_LOG direccionLogica;
 	direccionLogica.SID = segmentoVacio->SID;
@@ -260,7 +262,7 @@ int calcularProximoSID(T_PROCESO* proceso) {
 	return ((ultimoSegmento->SID) + 1);
 }
 
-t_list* crearPaginasPorTamanioSegmento(int tamanio) {
+t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
 	//instancio la lista de paginas
 	t_list* paginas = list_create();
 
@@ -280,6 +282,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio) {
 		paginaVacia->paginaID = i;
 		paginaVacia->swapped = 0;
 		paginaVacia->marcoID = 0;
+		paginaVacia->SID = SID;
 
 		memset(paginaVacia->data, tamanioPag - 1, ' ');
 
@@ -385,14 +388,8 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 			if (pag != NULL ) {
 
-				if (pag->marcoID == 0) {
-
-					if (list_is_empty(marcosVacios)) {
-						//todo swapping - ejecutar algoritmo de sustitucion de pags
-					} else {
-						T_MARCO* marcoAsignado = list_remove(marcosVacios, 0); //todo revisar
-						asignoMarcoAPagina(PID, marcoAsignado, pag);
-					}
+				if (pag->marcoID == -1){
+					asignoMarcoAPagina(PID, seg, pag);
 				}
 
 				int inicio = direccionLogica.desplazamiento;
@@ -466,14 +463,8 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 			if (pag != NULL ) {
 
-				if (pag->marcoID == 0) {
-
-					if (list_is_empty(marcosVacios)) {
-						//todo swapping - ejecutar algoritmo de sustitucion de pags
-					} else {
-						T_MARCO* marcoAsignado = list_remove(marcosVacios, 0); //todo= list_any_satisfy(marcosVacios, (void*) marcoPorVacio); //list_any_satisfy devuelve un BOOL
-						asignoMarcoAPagina(PID, marcoAsignado, pag);
-					}
+				if (pag->marcoID == -1) {
+					asignoMarcoAPagina(PID, seg, pag);
 				}
 
 				int inicio = direccionLogica.desplazamiento;
@@ -503,24 +494,34 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	return 1;
 }
 
-void asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag) { //todo actualizarlo
-	//Primero me fijo si la pagina no tiene un marco asignado
-	//me fijo si tengo marcos libres y acá haría esto:
-	pag->marcoID = marcoAsignado->marcoID;
-	marcoAsignado->pagina = pag;
-	marcoAsignado->PID = PID;
-	marcoAsignado->empty = false;
-	actualizarMarcos();
+void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
-	//si no tiene marcos libres, entonces:
-	//me fijo su tiene memoriaDisponibleParaSwapping
-	//si la swappeo entonces borro el archivo segun su FilePath
-	//Bajo a disco la pagina que contiene
-	//Indico que ya no contiene ningun marco y que está swappeada
-	//Bajo a disco el archivo y disminuyo la cantidad de memoriaDisponibleParaSwapping -- swapOut
-	//si no tengo memoriaDisponibleParaSwapping
-	//tengo que volver a sumar la capacidad del archivo que le hice swapOut
+	T_MARCO* marcoAsignado;
+
+	if (pag->swapped){
+		pag = swapInPagina(PID, seg, pag);
+	}
+
+	if (list_is_empty(marcosVacios)){
+		if (cantidadSwap != 0){
+			marcoAsignado = seleccionarMarcoVictima(); //todo segun Algoritmo
+			swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID, marcoAsignado->pagina);
+		}
+		else {
+			log_error(logger, "No hay sufiente espacio de swapping");
+		}
+	} else {
+		marcoAsignado = list_remove(marcosVacios, 0);
+	}
+
+		pag->marcoID = marcoAsignado->marcoID;
+		marcoAsignado->pagina = pag;
+		marcoAsignado->PID = PID;
+		marcoAsignado->empty = false;
+
+		list_add(marcosLlenos, marcoAsignado);
 }
+
 
 void actualizarMarcos() {
 	t_list* marcos = list_create();
@@ -773,31 +774,61 @@ void interpretarOperacion(int* socket) {
 
 
 T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
-//char* filePath = hago un metodo que me obtenga el nombre a partir del pid, seg, pag->pagid
-//armo un archivo de tipo FILE* con la funcion txt_open_for_append(filePath)
 
-//si mi archivo es distinto de NULL
-//primero instancio la data
+	char* filePath = obtenerFilePath(PID, seg->SID, pag->paginaID);
+	FILE* archivo = txt_open_for_append(filePath);
 
-//cierro el archivo
+	if (archivo != NULL){
+		fgets(pag->data, tamanioPag, archivo); //todo chequear
+		pag->swapped = false;
+		txt_close_file(archivo);
 
-//hago un for donde a la data de la pagina le asigno lo que voy leyendo
-//le indico a la pag que no está mas swappeada
-//le sumo a memoriaDisponibleParaSwapping el tamanioPag
+		//todo borrar el archivo
 
-return pag; //puse esto provisorio para que no me de error
+		cantidadSwap =+ tamanioPag;
+	}
+	else {
+		log_error(logger, "No existe el archivo de la pagina swappeada");
+		//todo return error
+	}
+
+	return pag;
 }
 
 int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
- //creo un filePath
- //creo el archivo con ese filePath
 
- //si el file es distinto de NULL
- //char* contenidoDelArchivo = metodo que rellene el archivo
- //uso la funcion txt_write_in_file(contenidoDelArchivo)
- //cierro el archivo
+	char* filePath = obtenerFilePath(PID, SID, pag->paginaID);
+	//todo crear el archivo
+	FILE* archivo = txt_open_for_append(filePath);
 
- //le resto a la memoriaDisponibleParaSwapping el tamanioPag
+	if (archivo != NULL){
+		txt_write_in_file(archivo, pag->data);
+		txt_close_file(archivo);
+		pag->swapped = true;
+		pag->marcoID = -1; //que pasa con la data?? queda llena?
+		cantidadSwap =- tamanioPag;
+	}
+	else {
+		log_error(logger, "No se pudo crear el archivo de la pagina a swappear");
+		return -1; //todo chequear
+	}
 
 return 0;
+}
+
+char* obtenerFilePath(int PID, int SID, int pagId){
+	char* filePath;
+
+	//todo como pasar de un int a un char*
+	string_append(&filePath, PID);
+	string_append(&filePath, SID);
+	string_append(&filePath, pagId);
+
+	return filePath;
+}
+
+T_MARCO* seleccionarMarcoVictima(){
+	T_MARCO* marco;
+	//todo hacerlo
+	return marco;
 }
