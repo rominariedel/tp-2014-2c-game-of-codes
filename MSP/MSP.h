@@ -34,6 +34,7 @@ typedef struct T_SEGMENTO {
 
 typedef struct T_PAGINA {
 	int paginaID;
+	int SID;
 	int swapped;
 	int marcoID;
 	char data [256];
@@ -73,16 +74,20 @@ int 	tablaSegmentos();
 int 	tablaPaginas(int PID);
 
 //Funciones internas
-void 		inicializar();
-void 		cargarArchivoConfiguracion(void);
+void 		inicializar(char** args);
+void 		cargarArchivoConfiguracion(char** args);
 void 		crearMarcos();
 int 		calcularProximoSID (T_PROCESO* proceso);
-t_list* 	crearPaginasPorTamanioSegmento(int tamanio);
+t_list* 	crearPaginasPorTamanioSegmento(int tamanio, int SID);
 static void destruirPag(T_PAGINA* pagina);
-void 		asignoMarcoAPagina(int PID, T_MARCO* marcoAsignado, T_PAGINA* pag);
+void 		asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
 void 		actualizarMarcos();
 void 		iniciarConexiones();
 void		interpretarOperacion(int* socket);
+T_MARCO*	seleccionarMarcoVictima();
+char*		obtenerFilePath(int PID, int SID, int paginaID);
+T_PAGINA*	swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
+int			swapOutPagina(int PID, int SID, T_PAGINA* pag);
 
 T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
 uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
