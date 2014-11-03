@@ -11,34 +11,36 @@
 int main(int cantArgs, char** args){
 	LOGCPU = log_create("/home/utnso/Escritorio/LogCPU", "CPU", 0, LOG_LEVEL_TRACE);
 
-	log_info(LOGCPU, "\n \n -------------  Bienvenido al CPU  -------------\n\n");
+	log_info(LOGCPU, "-------------  Bienvenido al CPU  -------------");
 	printf("\n \n -------------  Bienvenido al CPU  -------------\n\n");
-	log_info(LOGCPU, "\n Cargar archivos configuración\n");
-	printf("\n Cargando archivos configuración... \n");
+	log_info(LOGCPU, "Cargar archivos configuracion");
+	printf("\n Cargando archivos configuracion... \n");
 
 	cargarArchivoConfiguracion(cantArgs,args);
 
-	log_info(LOGCPU, "IP MSP : %s \n",  IPMSP);
+	log_info(LOGCPU, "IP MSP : %s",  IPMSP);
 	printf("\n IP MSP : %s \n",  IPMSP);
-	log_info(LOGCPU, "\n PUERTO MSP : %s \n",  PUERTOMSP);
+	log_info(LOGCPU, "PUERTO MSP : %s",  PUERTOMSP);
 	printf("\n PUERTO MSP : %s \n",  PUERTOMSP);
-	log_info(LOGCPU,"\n IP KERNEL : %s \n",  IPKERNEL);
+	log_info(LOGCPU,"IP KERNEL : %s ",  IPKERNEL);
 	printf("\n IP KERNEL : %s \n",  IPKERNEL);
-	log_info(LOGCPU,"\n PUERTO KERNEL : %s \n",  PUERTOKERNEL);
+	log_info(LOGCPU,"PUERTO KERNEL : %s",  PUERTOKERNEL);
 	printf("\n PUERTO KERNEL : %s \n",  PUERTOKERNEL);
-	log_info(LOGCPU,"\n RETARDO : %d \n", RETARDO);
+	log_info(LOGCPU,"RETARDO : %d ", RETARDO);
 	printf("\n RETARDO : %d \n", RETARDO);
 
 
-	log_info(LOGCPU,"\n Conectando con la MSP ...\n");
+	log_info(LOGCPU," Conectando con la MSP ...");
 	printf("\n \n Conectando con la MSP ...\n\n\n");
 
 	conectarConMSP();
 
 	log_info(LOGCPU, "Aviso a la MSP que soy_CPU");
 
-	t_datosAEnviar * paqueteMSP = crear_paquete(soy_CPU,NULL,0);
+	t_datosAEnviar * paqueteMSP = malloc(sizeof(t_datosAEnviar));
+	paqueteMSP = crear_paquete(soy_CPU,NULL,0);
 	enviar_datos(socketMSP,paqueteMSP);
+	free(paqueteMSP);
 
 	log_info(LOGCPU,"\n \n Conectando con el Kernel ...\n\n\n");
 	printf("\n Conectando con el Kernel ...\n");
@@ -47,8 +49,10 @@ int main(int cantArgs, char** args){
 
 	log_info(LOGCPU, "\n Aviso al Kernel que soy_CPU \n");
 
-	t_datosAEnviar * paqueteKERNEL = crear_paquete(soy_CPU,NULL,0);
+	t_datosAEnviar * paqueteKERNEL = malloc(sizeof(t_datosAEnviar));
+	paqueteKERNEL = crear_paquete(soy_CPU,NULL,0);
 	enviar_datos(socketKernel,paqueteKERNEL);
+	free(paqueteKERNEL);
 
 	while(1)
 	{
@@ -59,17 +63,17 @@ int main(int cantArgs, char** args){
 		if (datosKernel == NULL){
 			printf("Fallo al recibir TCB y quantum");
 			log_error(LOGCPU, "Fallo al recibir TCB y quantum");
+			free(datosKernel);
 			exit(0);
 		}
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
 
 		quantum = recibirTCByQuantum(datosKernel);
+		free(datosKernel);
 
 		int quantumActual = 0;
 		printf("\n quantum a ejecutar para %d es: %d \n",PIDactual, quantumActual);
-
-
 		log_info(LOGCPU, "Quantum a ejecutar para %d es: %d",PIDactual, quantum);
 
 		printf("Recibí datos del TCB actual y sus registros de programacion");
@@ -159,6 +163,8 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 	PUERTOKERNEL = config_get_string_value(configuracion, "PUERTO_KERNEL");
 	IPKERNEL = config_get_string_value(configuracion, "IP_KERNEL");
 	RETARDO = config_get_int_value(configuracion, "RETARDO");
+
+	//config_destroy(configuracion);             ME TIRA BASURA CUANDO LO CORRO
 }
 
 void conectarConMSP(){
@@ -238,10 +244,6 @@ int cargarDatosTCB(){
 	log_info(LOGCPU, "\n Cargar Registros de Programacion \n");
 	cargarRegistrosCPU();
 
-
-
-
-
 	return 0;
 }
 
@@ -290,6 +292,9 @@ void devolverTCBactual(int codOperacion){
 		perror("No se pudo devolver el TCBactual");}
 	free(mensaje);
 	log_info(LOGCPU, "Se devolvio TCB al Kernel");
+
+	//TODO: cada vez que devuelvo tcb es porq termino ejecucion? entonces poner limpiarRegistros
+	limpiarRegistros();
 }
 
 
@@ -438,7 +443,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 	if(strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
 		tparam_push* parametros = (tparam_push *) respuesta;
-		log_info(LOGCPU, "PUSH(%d,%d)",parametros->num1, parametros->num2);
+		log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 		PUSH(parametros);
 	return sizeof(tparam_push); }
 	if(strcmp(instruccion,"TAKE")){
@@ -655,8 +660,15 @@ void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 
 /* Funciones Kernel*/
 
-void KERNEL_ejecutarRutinaKernel(int direccion){
-	devolverTCBactual(interrupcion);
+void KERNEL_ejecutarRutinaKernel(int codOperacion, int direccion){
+	char* datos = malloc(sizeof(t_TCB) + sizeof(int));
+	actualizarTCB();
+	memcpy(datos, TCBactual,sizeof(t_TCB));
+	memcpy(datos + sizeof(t_TCB), &direccion, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(codOperacion, (void*) datos, sizeof(t_TCB) + sizeof(int));
+	enviar_datos(socketKernel, paquete);
+	free(paquete);
+	free(datos);
 }
 
 int KERNEL_IngreseNumeroPorConsola(int PID){
@@ -812,8 +824,6 @@ void SETM(tparam_setm* parametrosSetm){
 
 	//explicacion Gaston: pone en los n bytes del registro bx en la dirección de memoria apuntanda por el registro ax
 	//(ax = numero que es una posición de memoria)
-
-
 }
 
 
@@ -821,7 +831,7 @@ void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado p
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)), sizeof(int), solicitarMemoria);
 	char* buffer = malloc(sizeof(respuesta));
 	buffer = deserializarPaqueteMSP(respuesta);
-	memcpy(devolverRegistro(parametrosGetm->reg1),devolverRegistro(parametrosGetm->reg2), sizeof(buffer));
+	memcpy(devolverRegistro(parametrosGetm->reg1),buffer, sizeof(buffer));
 }
 
 void MOVR(tparam_movr* parametrosMovr){ //Copia el valor del segundo registro hacia el primero
@@ -852,9 +862,11 @@ void DIVR(tparam_divr* parametrosDivr){
 	if( *devolverRegistro(parametrosDivr->reg2) == 0){
 		perror("division por cero");
 		//TODO: en el caso que haya error de division por cero.. devuelvo el TCB? y espero a que me mande otro? o sigo con este?
+		//devuelvo tcb
+		devolverTCBactual(desconexion);
 	}
 	else {
-		 A = ( *devolverRegistro(parametrosDivr->reg1)) % ( *devolverRegistro(parametrosDivr->reg2));
+		 A = (*devolverRegistro(parametrosDivr->reg1)) % (*devolverRegistro(parametrosDivr->reg2));
 	}
 }
 
@@ -885,7 +897,6 @@ void CLEQ(tparam_cleq* parametrosCleq){
 
 void GOTO(tparam_goto* parametrosGoto){
 	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
-
 	punteroInstruccionActual = *devolverRegistro(parametrosGoto->reg1);
 }
 
@@ -911,9 +922,7 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 void INTE(tparam_inte* parametrosInte){
 
 	XXXX();
-	KERNEL_ejecutarRutinaKernel(parametrosInte->direccion);
-	//TODO:ver que mas hay que hacer. si simplemente es devolverle el TCB al Kernel, no hace falta usar esta funcion. alcanza con devolverTCB()
-
+	KERNEL_ejecutarRutinaKernel(interrupcion ,parametrosInte->direccion);
 
 	/*
 	cuando el proceso CPU notifique al Kernel que un hilo desea ejecutar una llamada al
@@ -946,21 +955,33 @@ void NOPP(){
 
 void PUSH(tparam_push* parametrosPush){
 	//Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del registro cursor de stack de forma acorde.
-	//TODO: Gaston me iba a averiguar
+	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, parametrosPush->registro, parametrosPush->numero, solicitarMemoria);
+	void* buffer = malloc(paquete->tamanio);
+	memcpy(buffer, paquete->datos, paquete->tamanio);
+	MSP_EscribirEnMemoria(PIDactual,cursorStackActual,buffer,parametrosPush->numero);
+	baseStackActual =+ parametrosPush->numero;
+	free(buffer);
+	free(paquete);
 }
 
 void TAKE(tparam_take* parametrosTake){
 	//Desapila los primeros bytes, indicado por el número, del stack hacia el registro. Modifica el valor del registro de stack de forma acorde.
-	//TODO:  Preguntar Gaston
+	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, parametrosTake->registro, parametrosTake->numero, solicitarMemoria);
+	void* buffer = malloc(paquete->tamanio);
+	memcpy(buffer, paquete->datos, paquete->tamanio);
+	baseStackActual =- parametrosTake->numero;
+	MSP_EscribirEnMemoria(PIDactual,cursorStackActual,buffer,parametrosTake->numero);
+	baseStackActual =+ parametrosTake->numero;
+	free(buffer);
+	free(paquete);
 }
 
 void XXXX(){
 	//Finaliza la ejecucion
 	devolverTCBactual(finaliza_ejecucion);
+	limpiarRegistros();
+
 }
-
-
-
 
 /*Instrucciones Protegidas*/
 /*    Solo si KM == 1     */
@@ -978,12 +999,10 @@ void FREE(){
 	//instrucción de MALC. Destruye en la MSP el segmento indicado en el registro A.
 	//segmento que no sea ninguno de los que crea el LOADER
 
-	if((A =! baseSegmentoCodigoActual) || (A =! baseStackActual)){
+	if((A =! baseSegmentoCodigoActual) && (A =! baseStackActual)){
 		MSP_DestruirSegmento(PIDactual,  A);
 	}
 }
-
-//TODO:que es "invoca al servicio correspondiente en el proceso Kernel??? mis KERNEL_Ingreseblabla??
 
 void INNN(){
 	// Pide por consola del programa que se ingrese un número, con signo entre –2.147.483.648 y

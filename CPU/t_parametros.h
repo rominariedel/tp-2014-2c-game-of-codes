@@ -101,8 +101,8 @@ typedef struct{
 }__attribute__ ((__packed__))  tparam_shif;
 
 typedef struct{
-	int num1;
-	int num2;
+	int numero;
+	char registro;
 }__attribute__ ((__packed__))  tparam_push;
 
 typedef struct{

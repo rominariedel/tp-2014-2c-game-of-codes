@@ -43,13 +43,6 @@ typedef struct {
 	int registrosProgramacion[5];
 }t_TCB;
 
-typedef struct {
-	int A;
-	int B;
-	int C;
-	int D;
-	int E;
-}reg_programacion;
 
 typedef struct {
 	int PID;
@@ -60,7 +53,7 @@ typedef struct {
 	int P;
 	int X;
 	int S;
-	reg_programacion registrosProgramacion;
+	int registrosProgramacion[5];
 }TCB_struct;
 
 /*Datos actuales*/
@@ -96,6 +89,7 @@ int quantum = 0;
 t_log* LOGCPU;
 
 
+
 /*Definicion de funciones*/
 void cargarArchivoConfiguracion(int cantArgs, char** args);
 void conectarConMSP();
@@ -108,8 +102,6 @@ int actualizarTCB();
 void devolverTCBactual(int codigoOperacion);
 void limpiarRegistros();
 int recibirTCByQuantum(t_datosAEnviar *  datosKernel);
-t_TCB* desempaquetarTCB(char* buffer);
-void saltarAInstruccion(int direccion);
 int* devolverRegistro(char registro);
 int interpretarYEjecutarInstruccion(char* instruccion);
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
@@ -123,7 +115,7 @@ char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros);
 void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio);
 
 /*Funciones Kernel*/
-void KERNEL_ejecutarRutinaKernel(int direccion);
+void KERNEL_ejecutarRutinaKernel(int codOperacion, int direccion);
 int KERNEL_IngreseNumeroPorConsola(int PID);
 t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena);
 void KERNEL_MostrarNumeroPorConsola(int PID, int nro);
