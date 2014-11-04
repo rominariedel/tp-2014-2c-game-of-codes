@@ -36,7 +36,7 @@ fd_set CPU_set;
 t_list* procesos;
 t_list* marcosVacios;
 t_list* marcosLlenos;
-t_list* cpu_list;
+t_list* paginasEnMemoria;
 
 pthread_t hiloConsola;
 t_log* logger;
@@ -85,6 +85,7 @@ void inicializar(char** args) {
 	crearMarcos();
 
 	procesos = list_create();
+	paginasEnMemoria = list_create();
 
 	iniciarConexiones();
 }
@@ -237,6 +238,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 
 	segmentoVacio->SID = calcularProximoSID(proceso);
 	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio, segmentoVacio->SID);
+	segmentoVacio->tamanio = tamanio;
 
 	T_DIRECCION_LOG direccionLogica;
 	direccionLogica.SID = segmentoVacio->SID;
@@ -283,8 +285,10 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
 		paginaVacia->swapped = 0;
 		paginaVacia->marcoID = 0;
 		paginaVacia->SID = SID;
+		paginaVacia->contadorLRU = 0;
+		paginaVacia->bitReferencia = 0;
 
-		memset(paginaVacia->data, tamanioPag - 1, ' ');
+		memset(paginaVacia->data, tamanioPag - 1, '/0');
 
 		//agrego la pagina a la lista de paginas
 		list_add(paginas, paginaVacia);
@@ -372,18 +376,19 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return marco->empty == true;
 	}
 
-	if ((direccionLogica.desplazamiento + tamanio) > tamanioPag) {
-		log_error(logger,
-				"Segmentation Fault: Se excedieron los limites del segmento");
-		return (char*) -1;
-	}
-
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
 		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
 
 		if (seg != NULL ) {
+
+			if ((direccionLogica.desplazamiento + tamanio) > seg->tamanio) {
+				log_error(logger,
+						"Segmentation Fault: Se excedieron los limites del segmento");
+				return (char*) -1;
+			}
+
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
 			if (pag != NULL ) {
@@ -398,6 +403,10 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 				for (i = inicio; final > i; i++) {
 					string_append((char**) &memoriaSolicitada, &(pag->data[i]));
 				}
+
+				pag->contadorLRU++;
+				pag->bitReferencia = 1;
+
 			} else {
 				log_error(logger,
 						"No se ha podido solicitar memoria ya que la página es inexistente");
@@ -446,19 +455,20 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		return marco->empty == true;
 	}
 
-	if (((direccionLogica.desplazamiento + tamanio) > tamanioPag)
-			|| (string_length(bytesAEscribir) > tamanio)) {
-		log_error(logger,
-				"Segmentation Fault: Se excedieron los límites del segmento");
-		return -1;
-	}
-
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
 		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
 
 		if (seg != NULL ) {
+
+			if (((direccionLogica.desplazamiento + tamanio) > seg->tamanio)
+					|| (string_length(bytesAEscribir) > tamanio)) {
+				log_error(logger,
+						"Segmentation Fault: Se excedieron los límites del segmento");
+				return -1;
+			}
+
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
 			if (pag != NULL ) {
@@ -473,6 +483,10 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 				for (i = inicio; final > i; i++) {
 					pag->data[i] = *string_substring_until(bytesAEscribir, i);
 				}
+
+				pag->contadorLRU++;
+				pag->bitReferencia = 1;
+
 			} else {
 				log_error(logger,
 						"No se ha podido escribir en memoria porque la página es inexistente");
@@ -504,7 +518,7 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	if (list_is_empty(marcosVacios)){
 		if (cantidadSwap != 0){
-			marcoAsignado = seleccionarMarcoVictima(); //todo segun Algoritmo
+			marcoAsignado = seleccionarMarcoVictima();
 			swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID, marcoAsignado->pagina);
 		}
 		else {
@@ -519,6 +533,7 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 		marcoAsignado->PID = PID;
 		marcoAsignado->empty = false;
 
+		list_add(paginasEnMemoria, pag);
 		list_add(marcosLlenos, marcoAsignado);
 }
 
@@ -828,7 +843,86 @@ char* obtenerFilePath(int PID, int SID, int pagId){
 }
 
 T_MARCO* seleccionarMarcoVictima(){
-	T_MARCO* marco;
-	//todo hacerlo
-	return marco;
+	T_MARCO* marcoVictima;
+
+	if(*sust_pags == "CLOCK"){
+		marcoVictima = algoritmoClock();
+	}
+	else if(*sust_pags == "LRU"){
+		marcoVictima = algoritmoLRU();
+	}
+
+	return marcoVictima;
+}
+
+
+
+T_MARCO* algoritmoLRU(){
+	int marcoId;
+
+	bool marcoPorId(T_MARCO* marco) {
+		return marco->marcoID == marcoId;
+	}
+
+	long contadorLRU = 10000;
+	T_MARCO* marcoVictima;
+	int i;
+	int cantidadProcesos = list_size(procesos);
+
+	for (i=0; i < cantidadProcesos; i++){
+
+		T_PROCESO* proceso = list_get(procesos,i);
+		int j;
+		int cantidadSegmentos = list_size(proceso->segmentos);
+
+		for (j=0; j< cantidadSegmentos; j++){
+			T_SEGMENTO* segmento = list_get(proceso->segmentos, j);
+			int t;
+			int cantidadPaginas = list_size(segmento->paginas);
+
+			for (t=0; t < cantidadPaginas; t++){
+				T_PAGINA* pagina = list_get(segmento->paginas, t);
+
+				if(pagina->marcoID != -1){
+					if(pagina->contadorLRU < contadorLRU){
+						contadorLRU = pagina->contadorLRU;
+						marcoId = pagina->marcoID;
+						marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
+					}
+				}
+			}
+		}
+	}
+
+	return marcoVictima;
+}
+
+T_MARCO* algoritmoClock(){
+	T_MARCO* marcoVictima;
+
+	int marcoId;
+
+	bool marcoPorId(T_MARCO* marco) {
+		return marco->marcoID == marcoId;
+	}
+
+	int i;
+	int cantidadPaginasEnMemoria = list_size(paginasEnMemoria);
+
+	for(i=0; i < cantidadPaginasEnMemoria; i++){
+
+		T_PAGINA* pagina = list_get(paginasEnMemoria,i);
+
+		if(pagina->bitReferencia == 0 ){
+			marcoId = pagina->marcoID;
+			marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
+			i = cantidadPaginasEnMemoria+1;
+		}
+		else if (pagina->bitReferencia == 1){
+			pagina->bitReferencia = 0;
+		}
+
+	}
+
+	return marcoVictima;
 }

@@ -37,6 +37,8 @@ typedef struct T_PAGINA {
 	int SID;
 	int swapped;
 	int marcoID;
+	long contadorLRU;
+	int bitReferencia;
 	char data [256];
 }T_PAGINA;
 
@@ -88,6 +90,8 @@ T_MARCO*	seleccionarMarcoVictima();
 char*		obtenerFilePath(int PID, int SID, int paginaID);
 T_PAGINA*	swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
 int			swapOutPagina(int PID, int SID, T_PAGINA* pag);
+T_MARCO*	algoritmoLRU();
+T_MARCO*	algoritmoClock();
 
 T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
 uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
