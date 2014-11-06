@@ -61,7 +61,7 @@ typedef struct {
 } struct_bloqueado;
 
 typedef struct {
-	int tid_llamador;
+	TCB_struct * tcb_llamador;
 	int tid_a_esperar;
 } struct_join;
 
@@ -82,7 +82,7 @@ void free_colas();
 void free_listas();
 long tamanio_syscalls(FILE*);
 void abortar(TCB_struct*); //VER
-void crear_hilo(TCB_struct);
+void crear_hilo(TCB_struct, int);
 void finalizo_ejecucion(TCB_struct*);
 void finalizo_quantum(TCB_struct*);
 void interrumpir(TCB_struct*, int);
@@ -93,8 +93,9 @@ struct_bloqueado * obtener_bloqueado(int TID);
 void producir_salida_estandar(int pid, char* cadena);
 void producir_entrada_estandar(int pid, char* id_tipo, int socket_CPU, int tamanio);
 void devolver_entrada_aCPU(int tamanio_datos);
-void realizar_join(int tid_llamador, int tid_a_esperar);
+void realizar_join(TCB_struct *, int tid_a_esperar);
 char * extraer_syscalls(char * PATH);
+void planificar_hilo_creado(TCB_struct *);
 
 enum mensajes {
 
@@ -108,6 +109,7 @@ enum mensajes {
 	ejecutar = 6,
 	devolucion_cadena = 7,
 	terminar_conexion = 27,
+	soy_kernel = 29,
 	//Mensajes recibidos
 
 	//-->CPU
@@ -123,6 +125,7 @@ enum mensajes {
 	join = 22,
 	bloquear = 23,
 	despertar = 24,
+	planificar_nuevo_hilo = 28,
 
 	//-->MSP
 	error_memoriaLlena = 16,

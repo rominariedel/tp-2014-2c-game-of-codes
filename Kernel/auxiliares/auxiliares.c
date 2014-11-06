@@ -145,7 +145,11 @@ void planificador() {
 					break;
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					crear_hilo(*tcb);
+					crear_hilo(*tcb, n_descriptor);
+					break;
+				case planificar_nuevo_hilo: //Aca llega el TCB listo para planificar con su stack inicializado
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					planificar_hilo_creado(tcb);
 					break;
 				case entrada_estandar:
 					pid = malloc(sizeof(int));
@@ -172,7 +176,7 @@ void planificador() {
 					memcpy(tid_llamador, datos->datos, sizeof(int));
 					memcpy(tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
-					realizar_join(*tid_llamador, *tid_a_esperar);
+					//realizar_join(*tid_llamador, *tid_a_esperar);
 					break;
 				case bloquear:
 					id_recurso = malloc(sizeof(int));
@@ -269,11 +273,11 @@ void devolver_entrada_aCPU(int tamanio_datos) {
 	sem_post(&mutex_entradaSalida);
 }
 
-void realizar_join(int tid_llamador, int tid_a_esperar) {
+void realizar_join(TCB_struct * tcb, int tid_a_esperar) {
 	struct_join * estructura = malloc(sizeof(struct_join));
 	estructura->tid_a_esperar = tid_a_esperar;
-	estructura->tid_llamador = tid_llamador;
+	estructura->tcb_llamador = tcb;
 	list_add(hilos_join, estructura);
 
-	//TODO: aca hay que mandar un tcb a bloquear..
+
 }

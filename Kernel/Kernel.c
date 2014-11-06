@@ -29,6 +29,7 @@ void iniciar_semaforos();
 void enviar_a_ejecucion(TCB_struct *);
 void dispatcher();
 void copiarRegistros(int registro1[5], int registro2[5]);
+void handshake_MSP(int socketMSP);
 
 int main(int argc, char ** argv) {
 
@@ -150,9 +151,14 @@ void loader() {
 			}
 			n_descriptor = n_descriptor + 1;
 		}
-		//printf("Otra ronda\n");
 
 	}
+}
+
+void handshake_MSP(int socketMSP){
+	t_datosAEnviar * datos = crear_paquete(soy_kernel, NULL, 0);
+	enviar_datos(socketMSP, datos);
+	free(datos);
 }
 
 void boot() {
@@ -174,6 +180,8 @@ void boot() {
 		printf("FALLO al conectar con la MSP\n");
 		exit(-1);
 	}
+
+	handshake_MSP(socket_MSP);
 	printf("\n Solicitando segmento para las syscalls de tamanio %d\n",
 			(int) tamanio_codigo_syscalls);
 	int base_segmento_codigo = solicitar_segmento(pid_KM_boot,
@@ -288,7 +296,10 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	sem_post(&sem_procesoListo);
 }
 
-void crear_hilo(TCB_struct tcb) {
+void crear_hilo(TCB_struct tcb, int socketCPU) {
+
+	//TODO: llega la solicitud del nuevo hilo, creo el tcb con el segmento de stack asignado y se
+	//lo envio a la CPU. Despues me llega otro mensaje de la cpu con el tcb completado a planificar
 
 	TCB_struct nuevoTCB;
 
@@ -305,11 +316,19 @@ void crear_hilo(TCB_struct tcb) {
 	nuevoTCB.tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
 	nuevoTCB.P = tcb.P;
 	copiarRegistros(nuevoTCB.registrosProgramacion, tcb.registrosProgramacion);
+
+	t_datosAEnviar * datos = crear_paquete(0, &nuevoTCB, sizeof(TCB_struct));
+	enviar_datos(socketCPU, datos);
+
+}
+
+void planificar_hilo_creado(TCB_struct * nuevoTCB){
+
 	queue_push(READY.prioridad_1, &nuevoTCB);
 	sem_post(&sem_procesoListo);
 
-	//Indico que la cantidad de hilos de un proceso aumentó
-	struct_consola * consola_asociada = obtener_consolaAsociada(tcb.PID);
+		//Indico que la cantidad de hilos de un proceso aumentó
+	struct_consola * consola_asociada = obtener_consolaAsociada(nuevoTCB->PID);
 	consola_asociada->cantidad_hilos++;
 
 }
