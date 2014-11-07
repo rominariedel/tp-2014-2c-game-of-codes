@@ -55,6 +55,7 @@ int main(int argc, char ** argv) {
 void iniciar_semaforos() {
 	sem_init(&sem_procesoListo, 0, 0);
 	sem_init(&sem_CPU, 0, 0);
+	sem_init(&sem_READY, 0, 1);
 }
 
 void obtenerDatosConfig(char ** argv) {
@@ -134,9 +135,9 @@ void loader() {
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
 					printf("\nSe inicializo el TCB PADRE\n");
-					queue_push(READY.prioridad_1, nuevoTCB); //TODO: ESTO LO PONGO ACA PARA PROBAR LA CPU
+					meter_en_ready(1, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
-					sem_post(&sem_procesoListo); //TODO: LO MISMO ACA
+					sem_post(&sem_procesoListo);
 					break;
 
 				case se_produjo_entrada:
@@ -298,9 +299,6 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 
 void crear_hilo(TCB_struct tcb, int socketCPU) {
 
-	//TODO: llega la solicitud del nuevo hilo, creo el tcb con el segmento de stack asignado y se
-	//lo envio a la CPU. Despues me llega otro mensaje de la cpu con el tcb completado a planificar
-
 	TCB_struct nuevoTCB;
 
 	int base_stack = solicitar_segmento(tcb.PID, TAMANIO_STACK);
@@ -324,7 +322,7 @@ void crear_hilo(TCB_struct tcb, int socketCPU) {
 
 void planificar_hilo_creado(TCB_struct * nuevoTCB){
 
-	queue_push(READY.prioridad_1, &nuevoTCB);
+	meter_en_ready(1, nuevoTCB);
 	sem_post(&sem_procesoListo);
 
 		//Indico que la cantidad de hilos de un proceso aumentó
@@ -388,7 +386,7 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
 
 void finalizo_quantum(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
-	queue_push(READY.prioridad_1, tcb);
+	meter_en_ready(1, tcb);
 	sem_post(&sem_procesoListo);
 
 }
@@ -470,9 +468,9 @@ void dispatcher() {
 		} else {
 			TCB_struct * tcb;
 			if (!queue_is_empty(READY.prioridad_0)) {
-				tcb = queue_pop(READY.prioridad_0);
+				tcb = sacar_de_ready(0);
 			} else {
-				tcb = queue_pop(READY.prioridad_1);
+				tcb = sacar_de_ready(1);
 			}
 			enviar_a_ejecucion(tcb);
 		}

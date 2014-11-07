@@ -7,7 +7,6 @@
 
 #include "variables_globales.h"
 
-
 long tamanio_del_archivo(FILE* archivo) {
 	fseek(archivo, 0, SEEK_END);
 	int tamanio = ftell(archivo);
@@ -26,10 +25,9 @@ char * extraer_syscalls(char * PATH) {
 	return buffer;
 }
 
-
 int obtener_TID() {
 	int aux = TID;
-	aux ++;
+	aux++;
 	return aux;
 }
 
@@ -39,7 +37,6 @@ int obtener_PID() {
 }
 
 void crear_colas() {
-	NEW = queue_create();
 	EXIT = queue_create();
 
 	READY.prioridad_0 = queue_create();
@@ -53,10 +50,11 @@ void crear_colas() {
 	CPU_list = list_create();
 	consola_list = list_create();
 	hilos_join = list_create();
+
+	dic_bloqueados = dictionary_create();
 }
 
 void free_listas() {
-	queue_destroy(NEW);
 	queue_destroy(EXIT);
 
 	queue_destroy(READY.prioridad_0);
@@ -78,10 +76,32 @@ int CPU_esta_libre(struct_CPU cpu) {
 	return cpu.bit_estado;
 }
 
-void planificar(TCB_struct tcb) {
-	queue_push(NEW, &tcb);
-	queue_pop(NEW);
-	queue_push(EXIT, &tcb);
+void meter_en_ready(int prioridad, TCB_struct * tcb){
+	sem_wait(&sem_READY);
+	switch(prioridad){
+	case 0:
+		queue_push(READY.prioridad_0, tcb);
+		break;
+	case 1:
+		queue_push(READY.prioridad_1, tcb);
+		break;
+	}
+	sem_post(&sem_READY);
+}
+
+TCB_struct * sacar_de_ready(int prioridad){
+	sem_wait(&sem_READY);
+	TCB_struct * tcb = NULL;
+	switch(prioridad){
+	case 0:
+		tcb = queue_pop(READY.prioridad_0);
+		break;
+	case 1:
+		tcb = queue_pop(READY.prioridad_1);
+		break;
+	}
+	sem_post(&sem_READY);
+	return tcb;
 }
 
 void planificador() {
@@ -112,7 +132,8 @@ void planificador() {
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
-				int * dirSysCall, *tamanio, *pid, *tid_llamador, *tid_a_esperar, *id_recurso;
+				int dirSysCall, tamanio, pid, tid_a_esperar,
+						id_recurso;
 				char * cadena;
 				char * id_tipo;
 
@@ -137,11 +158,10 @@ void planificador() {
 					abortar(tcb);
 					break;
 				case interrupcion:
-					dirSysCall = malloc(sizeof(int));
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					memcpy(dirSysCall, datos->datos + sizeof(TCB_struct),
+					memcpy(&dirSysCall, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					interrumpir(tcb, *dirSysCall);
+					interrumpir(tcb, dirSysCall);
 					break;
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
@@ -152,39 +172,36 @@ void planificador() {
 					planificar_hilo_creado(tcb);
 					break;
 				case entrada_estandar:
-					pid = malloc(sizeof(int));
 					id_tipo = malloc(datos->tamanio);
-					tamanio = malloc(sizeof(int));
-					memcpy(tamanio, &datos->tamanio, sizeof(int));
-					memcpy(pid, datos->datos, sizeof(int));
+					memcpy(&tamanio, &datos->tamanio, sizeof(int));
+					memcpy(&pid, datos->datos, sizeof(int));
 					memcpy(id_tipo, datos->datos + sizeof(int), datos->tamanio);
-					producir_entrada_estandar(*pid, id_tipo, n_descriptor,
-							*tamanio);
+					producir_entrada_estandar(pid, id_tipo, n_descriptor,
+							tamanio);
 
 					break;
 				case salida_estandar:
-					pid = malloc(sizeof(int));
 					cadena = malloc(datos->tamanio - sizeof(int));
-					memcpy(pid, datos->datos, sizeof(int));
+					memcpy(&pid, datos->datos, sizeof(int));
 					memcpy(cadena, datos->datos + sizeof(int),
 							datos->tamanio - sizeof(int));
-					producir_salida_estandar(*pid, cadena);
+					producir_salida_estandar(pid, cadena);
 					break;
-				case join: //TODO: preguntar si ese hilo llamador esta en ejecucion o que
-					tid_llamador = malloc(sizeof(int));
-					tid_a_esperar = malloc(sizeof(int));
-					memcpy(tid_llamador, datos->datos, sizeof(int));
-					memcpy(tid_a_esperar, datos->datos + sizeof(int),
+				case join:
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
-					//realizar_join(*tid_llamador, *tid_a_esperar);
+					realizar_join(tcb, tid_a_esperar);
 					break;
 				case bloquear:
-					id_recurso = malloc(sizeof(int));
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					memcpy(id_recurso, datos->datos + sizeof(TCB_struct), sizeof(int));
+					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
+							sizeof(int));
+					realizar_bloqueo(tcb, id_recurso);
 					break;
 				case despertar:
-
+					memcpy(&id_recurso, datos->datos, sizeof(int));
+					realizar_desbloqueo(id_recurso);
 					break;
 
 				}
@@ -239,13 +256,13 @@ void producir_salida_estandar(int pid, char* cadena) {
 	free(datos);
 }
 
+	/*Se hace un wait del mutex de entrada_salida al hacerse la solicitud de entrada y un post
+	cuando se le devuelve la entrada a la CPU, asi si otra CPU solicita entrada salida, espera a
+	que se libere el recurso compartido (la estructura de entrada salida). De esta forma las demas
+	CPUS que hagan otras solicitudes pueden ser planificadas*/
 void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 		int tamanio) {
 
-	//Se hace un wait del mutex de entrada_salida al hacerse la solicitud de entrada y un post
-	//cuando se le devuelve la entrada a la CPU, asi si otra CPU solicita entrada salida, espera a
-	//que se libere el recurso compartido (la estructura de entrada salida). De esta forma las demas
-	//CPUS que hagan otras solicitudes pueden ser planificadas
 
 	sem_wait(&mutex_entradaSalida);
 	entrada = malloc(sizeof(entrada_salida));
@@ -261,8 +278,8 @@ void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 
 }
 
+	/*Esta funcion es invocada cuando la consola manda el mensaje de que ya se ingresaron los datos*/
 void devolver_entrada_aCPU(int tamanio_datos) {
-	//Esta funcion es invocada cuando la consola manda el mensaje de que ya se ingresaron los datos
 	struct_CPU * CPU_asociada = obtener_CPUAsociada(entrada->socket_CPU);
 	t_datosAEnviar * datos = crear_paquete(devolucion_cadena, entrada->cadena,
 			tamanio_datos);
@@ -278,6 +295,35 @@ void realizar_join(TCB_struct * tcb, int tid_a_esperar) {
 	estructura->tid_a_esperar = tid_a_esperar;
 	estructura->tcb_llamador = tcb;
 	list_add(hilos_join, estructura);
+}
 
+/*Los bloqueados por recurso se manejan con un diccionario con colas. Cada recurso es una entrada en el diccionario.
+ * Si existe la entrada de ese recurso, se obtiene la cola y se le agrega el tcb. De otra forma, se crea una nueva
+ * cola y se la inserta en una nueva entrada en el diccionario.*/
+void realizar_bloqueo(TCB_struct * tcb, int id_recurso){
 
+	char * recurso = string_itoa(id_recurso);
+
+	if(dictionary_has_key(dic_bloqueados, recurso)){
+		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados, recurso);
+		queue_push(bloqueados_por_recurso, tcb);
+	}else{
+		t_queue * nuevo_bloqueado = queue_create();
+		queue_push(nuevo_bloqueado, tcb);
+		dictionary_put(dic_bloqueados, recurso, nuevo_bloqueado);
+	}
+}
+
+void realizar_desbloqueo(int id_recurso){
+
+	char * recurso = string_itoa(id_recurso);
+
+	if(dictionary_has_key(dic_bloqueados, recurso)){
+		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados, recurso);
+		TCB_struct * tcb = queue_pop(bloqueados_por_recurso);
+		meter_en_ready(1, tcb);
+	}else{
+		//NO EXISTEN BLOQUEADOS DE ESE RECURSO
+		exit(-1);
+	}
 }

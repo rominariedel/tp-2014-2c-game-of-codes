@@ -11,11 +11,11 @@
 #include "auxiliares.h"
 
 t_colas_prioridades READY;
-t_queue * NEW;
 t_lista_prioridades BLOCK;
 t_list * EXEC;
 t_queue * SYS_CALL;
 t_queue * EXIT;
+t_dictionary * dic_bloqueados;
 
 TCB_struct * tcb_km;
 TCB_struct * tcb_ejecutandoSysCall;
