@@ -86,7 +86,7 @@ TCB_struct * deserializar_TCB(char *);
 void crear_colas();
 void meter_en_ready(int, TCB_struct *);
 TCB_struct * sacar_de_ready(int);
-int CPU_esta_libre(struct_CPU);
+bool CPU_esta_libre(struct_CPU*);
 void planificar(TCB_struct);
 void free_colas();
 void free_listas();

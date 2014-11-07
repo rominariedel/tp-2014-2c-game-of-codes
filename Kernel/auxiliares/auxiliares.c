@@ -72,8 +72,8 @@ void mover_a_exit(TCB_struct * tcb) {
 	queue_push(EXIT, tcb);
 }
 
-int CPU_esta_libre(struct_CPU cpu) {
-	return cpu.bit_estado;
+bool CPU_esta_libre(struct_CPU * cpu) {
+	return (cpu->bit_estado == 0);
 }
 
 void meter_en_ready(int prioridad, TCB_struct * tcb){
@@ -105,6 +105,10 @@ TCB_struct * sacar_de_ready(int prioridad){
 }
 
 void planificador() {
+
+	while(1){
+
+	}
 
 	fd_set copia_set;
 	while (1) {

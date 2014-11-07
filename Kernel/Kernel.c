@@ -13,7 +13,8 @@
 /*VARIABLES GLOBALES*/
 
 enum bit_de_estado {
-	libre, ocupado,
+	libre = 0,
+	ocupado = 1,
 };
 
 /*FUNCIONES*/
@@ -265,7 +266,7 @@ void boot() {
 			printf("Se conecto una CPU\n");
 			FD_SET(socket_conectado, &CPU_set);
 			struct_CPU* cpu_conectada = malloc(sizeof(struct_CPU));
-			cpu_conectada->PID = -1;
+			cpu_conectada->PID = obtener_PID();
 			cpu_conectada->bit_estado = libre;
 			cpu_conectada->socket_CPU = socket_conectado;
 			list_add(CPU_list, cpu_conectada);
@@ -431,12 +432,12 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	printf(
 			"\nEsperando la activacion de una CPU para enviar a ejecutar un hilo. \n");
 	sem_wait(&sem_CPU);
-	list_add(EXEC, tcb);
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	if (cpu == NULL ) {
 		printf("FALLO. NO SE ENCONTRO CPU\n");
 		exit(-1);
 	}
+	list_add(EXEC, tcb);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
