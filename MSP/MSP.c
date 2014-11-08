@@ -18,7 +18,9 @@
 #include <sockets.h>
 #include <sys/select.h>
 #include <commons/txt.h>
+#include <semaphore.h>
 
+//	Variables
 int tamanioMemoria;
 int memoriaDisponible;
 char* puerto;
@@ -30,64 +32,59 @@ int tamanioPag = 256;
 int socket_general;
 int backlog;
 
-int descriptor_mas_alto_cpu;
-fd_set CPU_set;
-
 t_list* procesos;
 t_list* marcosVacios;
 t_list* marcosLlenos;
 t_list* paginasEnMemoria;
 
+//	Hilos
 pthread_t hiloConsola;
+pthread_t hiloEsperarConexiones;
+
+//	Logger
 t_log* logger;
+
+//	Semáforos
+sem_t* mutex;
 
 int main(int cantArgs, char** args) {
 	inicializar(args);
 
-	int hilo = pthread_create(&hiloConsola, NULL, (void*) inicializarConsola,
+	int* memPpal; //todo chequear repercusiones
+	memPpal = malloc(tamanioMemoria);
+	char* aux = (char*) memPpal;
+
+	//int finMemPpal = memPpal + tamanioMemoria;
+	int i;
+	for (i = 0; i < tamanioMemoria; i++) {
+		aux[i] = 0;
+	}
+
+	int hilo_Consola = pthread_create(&hiloConsola, NULL, (void*) inicializarConsola,
 			NULL );
-	if (hilo == 0) {
+	if (hilo_Consola == 0) {
 		log_info(logger,
 				"La Consola de MSP se inicializó correctamente \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginación: %d",
 				tamanioMemoria, tamanioPag);
+		pthread_join(hiloConsola, NULL );
 	} else
 		log_error(logger,
 				"Ha ocurrido un error en la  inicialización de la Consola de MSP");
 
-	pthread_join(hiloConsola, NULL );
+	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL,
+			(void*) iniciarConexiones, NULL );
 
-	return 1;
+	pthread_join(hiloEsperarConexiones, NULL );
 
-	/*t_config* configuracion = config_create(args[1]);
-	 logi = log_create(args[2], "UMV", 0, LOG_LEVEL_TRACE);
-	 int sizeMem = config_get_int_value(configuracion, "sizeMemoria");
-
-	 memPpal = malloc (sizeMem);	//El tamaño va por configuracion
-	 char* aux = (char*) memPpal;
-	 finMemPpal = memPpal + sizeMem; //El tamaño va por configuracion
-	 for(i=0; i<sizeMem; i++){aux[i] = 0;}
-
-	 rhConsola = pthread_create(&consola, NULL, mainConsola, NULL);
-	 rhEsperarConexiones = pthread_create(&esperarConexiones, NULL, mainEsperarConexiones, NULL);
-
-	 pthread_join(consola, NULL);
-	 pthread_join(esperarConexiones, NULL);
-
-	 printf("%d",rhConsola);
-	 printf("%d",rhEsperarConexiones);
-
-	 exit(0);*/
+	exit(0);
 }
 
 void inicializar(char** args) {
 	cargarArchivoConfiguracion(args);
 	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_TRACE);
 	crearMarcos();
-
 	procesos = list_create();
 	paginasEnMemoria = list_create();
-
-	iniciarConexiones();
 }
 
 void inicializarConsola() {
@@ -237,7 +234,8 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	T_SEGMENTO* segmentoVacio = malloc(sizeof(T_SEGMENTO));
 
 	segmentoVacio->SID = calcularProximoSID(proceso);
-	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio, segmentoVacio->SID);
+	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio,
+			segmentoVacio->SID);
 	segmentoVacio->tamanio = tamanio;
 
 	T_DIRECCION_LOG direccionLogica;
@@ -274,7 +272,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
 	int cantidadPaginas = division.quot;
 
 	if (division.rem != 0) {
-		cantidadPaginas =+ 1;
+		cantidadPaginas = +1;
 	}
 
 	int i;
@@ -393,7 +391,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 			if (pag != NULL ) {
 
-				if (pag->marcoID == -1){
+				if (pag->marcoID == -1) {
 					asignoMarcoAPagina(PID, seg, pag);
 				}
 
@@ -512,31 +510,30 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	T_MARCO* marcoAsignado;
 
-	if (pag->swapped){
+	if (pag->swapped) {
 		pag = swapInPagina(PID, seg, pag);
 	}
 
-	if (list_is_empty(marcosVacios)){
-		if (cantidadSwap != 0){
+	if (list_is_empty(marcosVacios)) {
+		if (cantidadSwap != 0) {
 			marcoAsignado = seleccionarMarcoVictima();
-			swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID, marcoAsignado->pagina);
-		}
-		else {
+			swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID,
+					marcoAsignado->pagina);
+		} else {
 			log_error(logger, "No hay sufiente espacio de swapping");
 		}
 	} else {
 		marcoAsignado = list_remove(marcosVacios, 0);
 	}
 
-		pag->marcoID = marcoAsignado->marcoID;
-		marcoAsignado->pagina = pag;
-		marcoAsignado->PID = PID;
-		marcoAsignado->empty = false;
+	pag->marcoID = marcoAsignado->marcoID;
+	marcoAsignado->pagina = pag;
+	marcoAsignado->PID = PID;
+	marcoAsignado->empty = false;
 
-		list_add(paginasEnMemoria, pag);
-		list_add(marcosLlenos, marcoAsignado);
+	list_add(paginasEnMemoria, pag);
+	list_add(marcosLlenos, marcoAsignado);
 }
-
 
 void actualizarMarcos() {
 	t_list* marcos = list_create();
@@ -703,6 +700,7 @@ void iniciarConexiones() {
 
 		int socket_conectado = recibir_conexion(socket_general);
 		printf("Se recibio una conexion!\n");
+
 		int modulo_conectado = -1;
 		t_datosAEnviar* datos = recibir_datos(socket_conectado);
 		modulo_conectado = datos->codigo_operacion;
@@ -750,8 +748,7 @@ void interpretarOperacion(int* socket) {
 
 			respuesta = crearSegmento(pid, tamanioSegmento);
 
-			paquete = crear_paquete(0, (void*) respuesta,
-						sizeof(uint32_t));
+			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
 
 			enviar_datos(*socket, paquete);
 
@@ -761,7 +758,7 @@ void interpretarOperacion(int* socket) {
 			memcpy(&pid, datos->datos, sizeof(int));
 			memcpy(&baseSegmento, datos->datos + sizeof(int), sizeof(uint32_t));
 
-			respuesta = destruirSegmento(pid,baseSegmento);
+			respuesta = destruirSegmento(pid, baseSegmento);
 
 			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
 
@@ -787,22 +784,20 @@ void interpretarOperacion(int* socket) {
 	}
 }
 
-
 T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	char* filePath = obtenerFilePath(PID, seg->SID, pag->paginaID);
 	FILE* archivo = txt_open_for_append(filePath);
 
-	if (archivo != NULL){
+	if (archivo != NULL ) {
 		fgets(pag->data, tamanioPag, archivo); //todo chequear
 		pag->swapped = false;
 		txt_close_file(archivo);
 
 		//todo borrar el archivo
 
-		cantidadSwap =+ tamanioPag;
-	}
-	else {
+		cantidadSwap = +tamanioPag;
+	} else {
 		log_error(logger, "No existe el archivo de la pagina swappeada");
 		//todo return error
 	}
@@ -816,22 +811,22 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 	//todo crear el archivo
 	FILE* archivo = txt_open_for_append(filePath);
 
-	if (archivo != NULL){
+	if (archivo != NULL ) {
 		txt_write_in_file(archivo, pag->data);
 		txt_close_file(archivo);
 		pag->swapped = true;
 		pag->marcoID = -1; //que pasa con la data?? queda llena?
-		cantidadSwap =- tamanioPag;
-	}
-	else {
-		log_error(logger, "No se pudo crear el archivo de la pagina a swappear");
+		cantidadSwap = -tamanioPag;
+	} else {
+		log_error(logger,
+				"No se pudo crear el archivo de la pagina a swappear");
 		return -1; //todo chequear
 	}
 
-return 0;
+	return 0;
 }
 
-char* obtenerFilePath(int PID, int SID, int pagId){
+char* obtenerFilePath(int PID, int SID, int pagId) {
 	char* filePath;
 
 	//todo como pasar de un int a un char*
@@ -842,22 +837,19 @@ char* obtenerFilePath(int PID, int SID, int pagId){
 	return filePath;
 }
 
-T_MARCO* seleccionarMarcoVictima(){
+T_MARCO* seleccionarMarcoVictima() {
 	T_MARCO* marcoVictima;
 
-	if(*sust_pags == "CLOCK"){
+	if (*sust_pags == "CLOCK") {
 		marcoVictima = algoritmoClock();
-	}
-	else if(*sust_pags == "LRU"){
+	} else if (*sust_pags == "LRU") {
 		marcoVictima = algoritmoLRU();
 	}
 
 	return marcoVictima;
 }
 
-
-
-T_MARCO* algoritmoLRU(){
+T_MARCO* algoritmoLRU() {
 	int marcoId;
 
 	bool marcoPorId(T_MARCO* marco) {
@@ -869,25 +861,26 @@ T_MARCO* algoritmoLRU(){
 	int i;
 	int cantidadProcesos = list_size(procesos);
 
-	for (i=0; i < cantidadProcesos; i++){
+	for (i = 0; i < cantidadProcesos; i++) {
 
-		T_PROCESO* proceso = list_get(procesos,i);
+		T_PROCESO* proceso = list_get(procesos, i);
 		int j;
 		int cantidadSegmentos = list_size(proceso->segmentos);
 
-		for (j=0; j< cantidadSegmentos; j++){
+		for (j = 0; j < cantidadSegmentos; j++) {
 			T_SEGMENTO* segmento = list_get(proceso->segmentos, j);
 			int t;
 			int cantidadPaginas = list_size(segmento->paginas);
 
-			for (t=0; t < cantidadPaginas; t++){
+			for (t = 0; t < cantidadPaginas; t++) {
 				T_PAGINA* pagina = list_get(segmento->paginas, t);
 
-				if(pagina->marcoID != -1){
-					if(pagina->contadorLRU < contadorLRU){
+				if (pagina->marcoID != -1) {
+					if (pagina->contadorLRU < contadorLRU) {
 						contadorLRU = pagina->contadorLRU;
 						marcoId = pagina->marcoID;
-						marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
+						marcoVictima = list_find(marcosLlenos,
+								(void*) marcoPorId);
 					}
 				}
 			}
@@ -897,7 +890,7 @@ T_MARCO* algoritmoLRU(){
 	return marcoVictima;
 }
 
-T_MARCO* algoritmoClock(){
+T_MARCO* algoritmoClock() {
 	T_MARCO* marcoVictima;
 
 	int marcoId;
@@ -909,16 +902,15 @@ T_MARCO* algoritmoClock(){
 	int i;
 	int cantidadPaginasEnMemoria = list_size(paginasEnMemoria);
 
-	for(i=0; i < cantidadPaginasEnMemoria; i++){
+	for (i = 0; i < cantidadPaginasEnMemoria; i++) {
 
-		T_PAGINA* pagina = list_get(paginasEnMemoria,i);
+		T_PAGINA* pagina = list_get(paginasEnMemoria, i);
 
-		if(pagina->bitReferencia == 0 ){
+		if (pagina->bitReferencia == 0) {
 			marcoId = pagina->marcoID;
 			marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
-			i = cantidadPaginasEnMemoria+1;
-		}
-		else if (pagina->bitReferencia == 1){
+			i = cantidadPaginasEnMemoria + 1;
+		} else if (pagina->bitReferencia == 1) {
 			pagina->bitReferencia = 0;
 		}
 

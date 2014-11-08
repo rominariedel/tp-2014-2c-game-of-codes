@@ -118,8 +118,9 @@ int enviar_datos(int socket, t_datosAEnviar * paquete) {
 		if (cantidad_enviada < cantidad_total) {
 			cantidad_total = cantidad_total - offset;
 			offset = cantidad_enviada;
-		} else
+		} else{
 			enviando = 0;
+		}
 	}
 	return 0;
 }

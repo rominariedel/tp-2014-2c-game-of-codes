@@ -13,7 +13,8 @@
 /*VARIABLES GLOBALES*/
 
 enum bit_de_estado {
-	libre, ocupado,
+	libre = 0,
+	ocupado = 1,
 };
 
 /*FUNCIONES*/
@@ -29,6 +30,7 @@ void iniciar_semaforos();
 void enviar_a_ejecucion(TCB_struct *);
 void dispatcher();
 void copiarRegistros(int registro1[5], int registro2[5]);
+void handshake_MSP(int socketMSP);
 
 int main(int argc, char ** argv) {
 
@@ -54,6 +56,7 @@ int main(int argc, char ** argv) {
 void iniciar_semaforos() {
 	sem_init(&sem_procesoListo, 0, 0);
 	sem_init(&sem_CPU, 0, 0);
+	sem_init(&sem_READY, 0, 1);
 }
 
 void obtenerDatosConfig(char ** argv) {
@@ -133,9 +136,9 @@ void loader() {
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
 					printf("\nSe inicializo el TCB PADRE\n");
-					queue_push(READY.prioridad_1, nuevoTCB); //TODO: ESTO LO PONGO ACA PARA PROBAR LA CPU
+					meter_en_ready(1, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
-					sem_post(&sem_procesoListo); //TODO: LO MISMO ACA
+					sem_post(&sem_procesoListo);
 					break;
 
 				case se_produjo_entrada:
@@ -150,9 +153,14 @@ void loader() {
 			}
 			n_descriptor = n_descriptor + 1;
 		}
-		//printf("Otra ronda\n");
 
 	}
+}
+
+void handshake_MSP(int socketMSP){
+	t_datosAEnviar * datos = crear_paquete(soy_kernel, NULL, 0);
+	enviar_datos(socketMSP, datos);
+	free(datos);
 }
 
 void boot() {
@@ -174,6 +182,8 @@ void boot() {
 		printf("FALLO al conectar con la MSP\n");
 		exit(-1);
 	}
+
+	handshake_MSP(socket_MSP);
 	printf("\n Solicitando segmento para las syscalls de tamanio %d\n",
 			(int) tamanio_codigo_syscalls);
 	int base_segmento_codigo = solicitar_segmento(pid_KM_boot,
@@ -256,7 +266,7 @@ void boot() {
 			printf("Se conecto una CPU\n");
 			FD_SET(socket_conectado, &CPU_set);
 			struct_CPU* cpu_conectada = malloc(sizeof(struct_CPU));
-			cpu_conectada->PID = -1;
+			cpu_conectada->PID = obtener_PID();
 			cpu_conectada->bit_estado = libre;
 			cpu_conectada->socket_CPU = socket_conectado;
 			list_add(CPU_list, cpu_conectada);
@@ -288,7 +298,7 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	sem_post(&sem_procesoListo);
 }
 
-void crear_hilo(TCB_struct tcb) {
+void crear_hilo(TCB_struct tcb, int socketCPU) {
 
 	TCB_struct nuevoTCB;
 
@@ -305,11 +315,19 @@ void crear_hilo(TCB_struct tcb) {
 	nuevoTCB.tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
 	nuevoTCB.P = tcb.P;
 	copiarRegistros(nuevoTCB.registrosProgramacion, tcb.registrosProgramacion);
-	queue_push(READY.prioridad_1, &nuevoTCB);
+
+	t_datosAEnviar * datos = crear_paquete(0, &nuevoTCB, sizeof(TCB_struct));
+	enviar_datos(socketCPU, datos);
+
+}
+
+void planificar_hilo_creado(TCB_struct * nuevoTCB){
+
+	meter_en_ready(1, nuevoTCB);
 	sem_post(&sem_procesoListo);
 
-	//Indico que la cantidad de hilos de un proceso aumentó
-	struct_consola * consola_asociada = obtener_consolaAsociada(tcb.PID);
+		//Indico que la cantidad de hilos de un proceso aumentó
+	struct_consola * consola_asociada = obtener_consolaAsociada(nuevoTCB->PID);
 	consola_asociada->cantidad_hilos++;
 
 }
@@ -369,7 +387,7 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
 
 void finalizo_quantum(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
-	queue_push(READY.prioridad_1, tcb);
+	meter_en_ready(1, tcb);
 	sem_post(&sem_procesoListo);
 
 }
@@ -414,12 +432,12 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	printf(
 			"\nEsperando la activacion de una CPU para enviar a ejecutar un hilo. \n");
 	sem_wait(&sem_CPU);
-	list_add(EXEC, tcb);
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	if (cpu == NULL ) {
 		printf("FALLO. NO SE ENCONTRO CPU\n");
 		exit(-1);
 	}
+	list_add(EXEC, tcb);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
@@ -451,9 +469,9 @@ void dispatcher() {
 		} else {
 			TCB_struct * tcb;
 			if (!queue_is_empty(READY.prioridad_0)) {
-				tcb = queue_pop(READY.prioridad_0);
+				tcb = sacar_de_ready(0);
 			} else {
-				tcb = queue_pop(READY.prioridad_1);
+				tcb = sacar_de_ready(1);
 			}
 			enviar_a_ejecucion(tcb);
 		}
