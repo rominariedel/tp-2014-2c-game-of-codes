@@ -4,10 +4,11 @@
 
 -include ../makefile.init
 
-RM := rm -rf
+RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include funciones/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -32,7 +33,7 @@ dependents:
 CPU: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/commons/Debug" -L/home/utnso/workspace/so-commons-library -L"/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug" -L/home/utnso/workspace/so-Sockets-library  -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug" -L"/home/utnso/tp-2014-2c-game-of-codes/commons/Debug" -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
