@@ -88,7 +88,6 @@ t_TCB* KERNEL_CrearNuevoHilo(t_TCB* TCB){
 	memcpy(buffer,respuesta->datos, respuesta -> tamanio);
 	t_TCB* hiloNuevo = (t_TCB *) buffer;
 
-
 	free(paquete);
 	free(respuesta);
 	return hiloNuevo;

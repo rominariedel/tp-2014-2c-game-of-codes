@@ -21,13 +21,6 @@ typedef struct {
 	int registrosProgramacion[5];
 }t_TCB;
 
-int A = 0;
-int B = 0;
-int C = 0;
-int D = 0;
-int E = 0;
-int quantum = 0;
-
 t_TCB* TCBactual;
 
 
@@ -42,5 +35,6 @@ void KERNEL_PlanificarHilo(t_TCB* hiloNuevo);
 void KERNEL_JoinTCB(t_TCB* TCB, int TIDabloquear);
 void KERNEL_BloquearTCB(t_TCB* TCB, int recursoABloquear);
 void KERNEL_WakePrograma(int recurso);
+void KERNEL_CrearHilo(t_TCB * TCB, int registro);
 
 #endif /* FUNCIONESKERNEL_H_ */

@@ -8,47 +8,14 @@
 #ifndef CPU_H_
 #define CPU_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <commons/string.h>
-#include <commons/log.h>
-#include <pthread.h>
-#include <time.h>
-#include <stdint.h>
-#include <commons/config.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <signal.h>
-#include <semaphore.h>
-#include <math.h>
-#include <error.h>
-#include <sys/socket.h>
-#include <sockets.h>
+#include "funciones/bibliotecas.h"
 #include "t_parametros.h"
 #include "funciones/funcionesMSP.h"
 #include "funciones/funcionesKernel.h"
 #include "funciones/instruccionesESO.h"
 
-
-
-
 /* Estructuras */
 
-
-
-typedef struct {
-	int PID;
-	int TID;
-	int KM;
-	int M;
-	int tamanioSegmentoCodigo;
-	int P;
-	int X;
-	int S;
-	int registrosProgramacion[5];
-}TCB_struct;
 
 /*Datos actuales*/
 int PIDactual;
@@ -61,12 +28,12 @@ int baseStackActual;
 int cursorStackActual;
 
 /*Registros CPU*/
-//int A = 0;
-//int B = 0;
-//int C = 0;
-//int D = 0;
-//int E = 0;
-//int quantum = 0;
+int A;
+int B;
+int C;
+int D;
+int E;
+int quantum;
 
 
 /* Variables Globales */
@@ -78,9 +45,6 @@ char* IPMSP;
 char* PUERTOKERNEL;
 char* IPKERNEL;
 int RETARDO;
-
-
-
 
 t_log* LOGCPU;
 
@@ -102,9 +66,6 @@ int* devolverRegistro(char registro);
 int interpretarYEjecutarInstruccion(char* instruccion);
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
 char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
-
-
-
 
 
 enum mensajesMSP{

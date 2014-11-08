@@ -93,7 +93,7 @@ int main(int cantArgs, char** args){
 		printf("E: %d \n",E);
 
 
-		while(quantumActual>quantum || KMactual==1)
+		while(quantumActual<quantum || KMactual==1)
 		{
 
 			log_info(LOGCPU, "\n quantum = %d \n",quantumActual);
@@ -157,6 +157,8 @@ int main(int cantArgs, char** args){
 	return 0;
 }
 
+
+
 void cargarArchivoConfiguracion(int cantArgs, char** args){
 	t_config* configuracion = config_create(args[1]);
 	PUERTOMSP = config_get_string_value(configuracion, "PUERTO_MSP");
@@ -167,6 +169,7 @@ void cargarArchivoConfiguracion(int cantArgs, char** args){
 
 	//config_destroy(configuracion);             ME TIRA BASURA CUANDO LO CORRO
 }
+
 
 void conectarConMSP(){
 

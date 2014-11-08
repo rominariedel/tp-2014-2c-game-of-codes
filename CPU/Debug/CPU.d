@@ -1,4 +1,4 @@
-CPU.d: ../CPU.c ../CPU.h \
+CPU.d: ../CPU.c ../CPU.h ../funciones/bibliotecas.h \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/string.h \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/log.h \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/config.h \
@@ -9,6 +9,8 @@ CPU.d: ../CPU.c ../CPU.h \
  ../funciones/instruccionesESO.h
 
 ../CPU.h:
+
+../funciones/bibliotecas.h:
 
 /home/utnso/tp-2014-2c-game-of-codes/commons/commons/string.h:
 
