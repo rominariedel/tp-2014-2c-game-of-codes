@@ -8,14 +8,13 @@
 
 #include "CPU.h"
 
-
 int main(int cantArgs, char** args){
 	LOGCPU = log_create("/home/utnso/Escritorio/LogCPU", "CPU", 0, LOG_LEVEL_TRACE);
 
 	log_info(LOGCPU, "-------------  Bienvenido al CPU  -------------");
-	printf("\n \n -------------  Bienvenido al CPU  -------------\n\n");
+	printf(" \n\n  -------------  Bienvenido al CPU  -------------\n\n");
 	log_info(LOGCPU, "Cargar archivos configuracion");
-	printf("\n Cargando archivos configuracion... \n");
+	printf("\n CARGAR ARCHIVOS CONFIGURACION \n");
 
 	cargarArchivoConfiguracion(cantArgs,args);
 
@@ -30,11 +29,14 @@ int main(int cantArgs, char** args){
 	log_info(LOGCPU,"RETARDO : %d ", RETARDO);
 	printf("\n RETARDO : %d \n", RETARDO);
 
+	printf("\n -------------------------------------- \n ");
 
 	log_info(LOGCPU," Conectando con la MSP ...");
-	printf("\n \n Conectando con la MSP ...\n\n\n");
+	printf("\n \n CONECTANDO CON LA MSP \n\n\n");
 
 	conectarConMSP();
+
+	printf("\n -------------------------------------- \n ");
 
 	log_info(LOGCPU, "Aviso a la MSP que soy_CPU");
 
@@ -43,12 +45,15 @@ int main(int cantArgs, char** args){
 	enviar_datos(socketMSP,paqueteMSP);
 	free(paqueteMSP);
 
-	log_info(LOGCPU,"\n \n Conectando con el Kernel ...\n\n\n");
-	printf("\n Conectando con el Kernel ...\n");
+	log_info(LOGCPU,"Conectando con el Kernel ...");
+	printf("\n \n CONECTANDO CON EL KERNEL \n\n\n");
 
 	conectarConKernel();
 
-	log_info(LOGCPU, "\n Aviso al Kernel que soy_CPU \n");
+
+	printf("\n -------------------------------------- \n ");
+
+	log_info(LOGCPU, "Aviso al Kernel que soy_CPU");
 
 	t_datosAEnviar * paqueteKERNEL = malloc(sizeof(t_datosAEnviar));
 	paqueteKERNEL = crear_paquete(soy_CPU,NULL,0);
@@ -57,7 +62,7 @@ int main(int cantArgs, char** args){
 
 	while(1)
 	{
-		log_info(LOGCPU, "\n recibir TCB y quantum del Kernel \n");
+		log_info(LOGCPU, "recibir TCB y quantum del Kernel");
 		printf("\n Estoy a la espera de que el Kernel me mande el TCB y el quantum correspondiente \n");
 
 		t_datosAEnviar *  datosKernel = recibir_datos(socketKernel);
@@ -74,48 +79,47 @@ int main(int cantArgs, char** args){
 		free(datosKernel);
 
 		int quantumActual = 0;
-		printf("\n quantum a ejecutar para %d es: %d \n",PIDactual, quantumActual);
-		log_info(LOGCPU, "Quantum a ejecutar para %d es: %d",PIDactual, quantum);
+		printf("\n quantum a ejecutar para PID: %d es: %d \n",PIDactual, quantum);
+		log_info(LOGCPU, "Quantum a ejecutar para PID : %d es: %d",PIDactual, quantum);
 
-		printf("Recibí datos del TCB actual y sus registros de programacion");
-		printf("PID: %d \n", PIDactual);
-		printf("TID: %d \n", TIDactual);
-		printf("KM: %d \n",KMactual);
-		printf("BASE SEGMENTO CODIGO: %d \n",baseSegmentoCodigoActual);
-		printf("TAMANIO SEGMENTO CODIGO %d \n", tamanioSegmentoCodigoActual);
-		printf("PUNTERO INSTRUCCION %d \n", punteroInstruccionActual);
-		printf("BASE STACK %d \n",baseStackActual);
-		printf("CURSOR STACK %d \n",cursorStackActual);
-		printf("A: %d \n",A);
-		printf("B: %d \n",B);
-		printf("C: %d \n",C);
-		printf("D: %d \n",D);
-		printf("E: %d \n",E);
+		printf("\n Recibí datos del TCB actual y sus registros de programacion \n");
+		printf("\n PID: %d \n", PIDactual);
+		printf("\n TID: %d \n", TIDactual);
+		printf("\n KM: %d \n",KMactual);
+		printf("\n BASE SEGMENTO CODIGO: %d \n",baseSegmentoCodigoActual);
+		printf("\n TAMANIO SEGMENTO CODIGO %d \n", tamanioSegmentoCodigoActual);
+		printf("\n PUNTERO INSTRUCCION %d \n", punteroInstruccionActual);
+		printf("\n BASE STACK %d \n",baseStackActual);
+		printf("\n CURSOR STACK %d \n",cursorStackActual);
+		printf("\n A: %d \n",A);
+		printf("\n B: %d \n",B);
+		printf("\n C: %d \n",C);
+		printf("\n D: %d \n",D);
+		printf("\n E: %d \n",E);
 
 
 		while(quantumActual<quantum || KMactual==1)
 		{
-
-			log_info(LOGCPU, "\n quantum = %d \n",quantumActual);
+			log_info(LOGCPU, "quantum = %d ",quantumActual);
 			printf("\n %d \n", quantumActual);
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 
-			log_info(LOGCPU, "\n Solicito a MSP proximaInstruccionAEJecutar \n");
+			log_info(LOGCPU, " Solicito a MSP proximaInstruccionAEJecutar ");
 			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
-			log_info(LOGCPU, "\n Proxima Instruccion A Ejecutar: %p \n", *proximaInstruccionAEjecutar);
+			log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", *proximaInstruccionAEjecutar);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
-			log_info(LOGCPU, "\n Espero %d segundos de retardo \n", RETARDO);
+			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
 			usleep(RETARDO);
 
-			log_info(LOGCPU, "\n Interpretar y Ejecutar Instruccion \n");
+			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion ");
 			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
 
-			log_info(LOGCPU, "\n Registro A \n", A);
-			log_info(LOGCPU, "\n Registro B \n", B);
-			log_info(LOGCPU, "\n Registro C \n", C);
-			log_info(LOGCPU, "\n Registro D \n", D);
-			log_info(LOGCPU, "\n Registro E \n", E);
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
 
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
@@ -131,7 +135,7 @@ int main(int cantArgs, char** args){
 				log_info(LOGCPU, "Devolver TCB %d al Kernel", PIDactual);
 				log_error(LOGCPU, "Error al interpretar instruccion");
 				devolverTCBactual(error_al_interpretar_instruccion);
-				break;
+				exit(0);
 			}else{
 				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
 				punteroInstruccionActual =+ respuesta;}
@@ -150,7 +154,6 @@ int main(int cantArgs, char** args){
 			devolverTCBactual(finaliza_quantum);
 			limpiarRegistros();
 			actualizarTCB();
-			break;
 		}
 	  }
 	}
@@ -207,11 +210,11 @@ void cargarRegistrosCPU(){
 	C = TCBactual -> registrosProgramacion[2];
 	D = TCBactual -> registrosProgramacion[3];
 	E = TCBactual -> registrosProgramacion[4];
-	log_info(LOGCPU, "\n Registro A \n", A);
-	log_info(LOGCPU, "\n Registro B \n", B);
-	log_info(LOGCPU, "\n Registro C \n", C);
-	log_info(LOGCPU, "\n Registro D \n", D);
-	log_info(LOGCPU, "\n Registro E \n", E);
+	log_info(LOGCPU, "  Registro A %d  ", A);
+	log_info(LOGCPU, "  Registro B %d  ", B);
+	log_info(LOGCPU, "  Registro C %d  ", C);
+	log_info(LOGCPU, "  Registro D %d  ", D);
+	log_info(LOGCPU, "  Registro E %d  ", E);
 
 }
 
@@ -227,25 +230,25 @@ void actualizarRegistrosTCB(){
 
 int cargarDatosTCB(){
 
-	log_info(LOGCPU, "\n datos TCB actual \n");
+	log_info(LOGCPU, "  datos TCB actual  ");
 	PIDactual = TCBactual->PID;
-	log_info(LOGCPU, "\n PID actual: %d \n", PIDactual);
+	log_info(LOGCPU, "  PID actual: %d  ", PIDactual);
 	TIDactual = TCBactual -> TID;
-	log_info(LOGCPU, "\n TID actual: %d \n", TIDactual);
+	log_info(LOGCPU, "  TID actual: %d  ", TIDactual);
 	KMactual = TCBactual -> KM;
-	log_info(LOGCPU, "\n KM actual: %d \n", KMactual);
+	log_info(LOGCPU, "  KM actual: %d  ", KMactual);
 	baseSegmentoCodigoActual = TCBactual -> baseSegmentoCodigo;
-	log_info(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
+	log_info(LOGCPU, "  Base Segmento Codigo actual: %d  ", baseSegmentoCodigoActual);
 	tamanioSegmentoCodigoActual = TCBactual -> tamanioSegmentoCodigo;
-	log_info(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
+	log_info(LOGCPU, "  Tamanio Segmento Codigo actual: %d  ", tamanioSegmentoCodigoActual);
 	punteroInstruccionActual = TCBactual -> punteroInstruccion;
-	log_info(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
+	log_info(LOGCPU, "  Puntero actual: %d  ", punteroInstruccionActual);
 	baseStackActual = TCBactual -> baseStack;
-	log_info(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
+	log_info(LOGCPU, "  Base Stack actual: %d  ", baseStackActual);
 	cursorStackActual = TCBactual -> cursorStack;
-	log_info(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
+	log_info(LOGCPU, "  Cursor Stack actual: %d  ", cursorStackActual);
 
-	log_info(LOGCPU, "\n Cargar Registros de Programacion \n");
+	log_info(LOGCPU, "  Cargar Registros de Programacion  ");
 	cargarRegistrosCPU();
 
 	return 0;
@@ -267,21 +270,20 @@ int actualizarTCB(){
 void devolverTCBactual(int codOperacion){
 	log_info(LOGCPU, "Devolviendo TCB actual");
 	log_info(LOGCPU, "Estado TCB actual");
-	log_info(LOGCPU, "\n datos TCB actual \n");
-	log_info(LOGCPU, "\n PID actual: %d \n", PIDactual);
-	log_info(LOGCPU, "\n TID actual: %d \n", TIDactual);
-	log_info(LOGCPU, "\n KM actual: %d \n", KMactual);
-	log_info(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
-	log_info(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
-	log_info(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
-	log_info(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
-	log_info(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
+	log_info(LOGCPU, "  PID actual: %d  ", PIDactual);
+	log_info(LOGCPU, "  TID actual: %d  ", TIDactual);
+	log_info(LOGCPU, "  KM actual: %d  ", KMactual);
+	log_info(LOGCPU, "  Base Segmento Codigo actual: %d  ", baseSegmentoCodigoActual);
+	log_info(LOGCPU, "  Tamanio Segmento Codigo actual: %d  ", tamanioSegmentoCodigoActual);
+	log_info(LOGCPU, "  Puntero actual: %d  ", punteroInstruccionActual);
+	log_info(LOGCPU, "  Base Stack actual: %d  ", baseStackActual);
+	log_info(LOGCPU, "  Cursor Stack actual: %d  ", cursorStackActual);
 	log_info(LOGCPU, "Estado registros");
-	log_info(LOGCPU, "\n Registro A \n", A);
-	log_info(LOGCPU, "\n Registro B \n", B);
-	log_info(LOGCPU, "\n Registro C \n", C);
-	log_info(LOGCPU, "\n Registro D \n", D);
-	log_info(LOGCPU, "\n Registro E \n", E);
+	log_info(LOGCPU, "  Registro A %d  ", A);
+	log_info(LOGCPU, "  Registro B %d  ", B);
+	log_info(LOGCPU, "  Registro C %d  ", C);
+	log_info(LOGCPU, "  Registro D %d  ", D);
+	log_info(LOGCPU, "  Registro E %d  ", E);
 
 	actualizarTCB();
 
@@ -290,7 +292,10 @@ void devolverTCBactual(int codOperacion){
 	void * mensaje = malloc(sizeof(t_TCB) + sizeof(int));
 	memcpy(mensaje, &op, sizeof(int));
 	memcpy(mensaje + sizeof(int), TCBactual, sizeof(t_TCB));
-	int status = enviar_datos(socketKernel, mensaje);
+	log_info(LOGCPU,"ESTO SALIO BIEEEEEEEEEEEEEEEEEEEEEEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	t_datosAEnviar* paquete = crear_paquete(1, mensaje, sizeof(mensaje));
+	int status = enviar_datos(socketKernel, paquete);
+	log_info(LOGCPU,"ESTO TAMBBBBBIEEEEEEEEEEEEEEEEEEEEEEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	if(status == -1){
 		log_info(LOGCPU, "No se pudo devolver el TCB actual");
 		perror("No se pudo devolver el TCBactual");}
@@ -316,19 +321,19 @@ void limpiarRegistros(){
 	C = 0;
 	D = 0;
 	E = 0;
-	log_info(LOGCPU, "\n PID actual: %d \n", PIDactual);
-	log_info(LOGCPU, "\n TID actual: %d \n", TIDactual);
-	log_info(LOGCPU, "\n KM actual: %d \n", KMactual);
-	log_info(LOGCPU, "\n Base Segmento Codigo actual: %d \n", baseSegmentoCodigoActual);
-	log_info(LOGCPU, "\n Tamanio Segmento Codigo actual: %d \n", tamanioSegmentoCodigoActual);
-	log_info(LOGCPU, "\n Puntero actual: %d \n", punteroInstruccionActual);
-	log_info(LOGCPU, "\n Base Stack actual: %d \n", baseStackActual);
-	log_info(LOGCPU, "\n Cursor Stack actual: %d \n", cursorStackActual);
-	log_info(LOGCPU, "\n Registro A \n", A);
-	log_info(LOGCPU, "\n Registro B \n", B);
-	log_info(LOGCPU, "\n Registro C \n", C);
-	log_info(LOGCPU, "\n Registro D \n", D);
-	log_info(LOGCPU, "\n Registro E \n", E);
+	log_info(LOGCPU, "  PID actual: %d  ", PIDactual);
+	log_info(LOGCPU, "  TID actual: %d  ", TIDactual);
+	log_info(LOGCPU, "  KM actual: %d  ", KMactual);
+	log_info(LOGCPU, "  Base Segmento Codigo actual: %d  ", baseSegmentoCodigoActual);
+	log_info(LOGCPU, "  Tamanio Segmento Codigo actual: %d  ", tamanioSegmentoCodigoActual);
+	log_info(LOGCPU, "  Puntero actual: %d  ", punteroInstruccionActual);
+	log_info(LOGCPU, "  Base Stack actual: %d  ", baseStackActual);
+	log_info(LOGCPU, "  Cursor Stack actual: %d  ", cursorStackActual);
+	log_info(LOGCPU, "  Registro A &d  ", A);
+	log_info(LOGCPU, "  Registro B &d   ", B);
+	log_info(LOGCPU, "  Registro C &d   ", C);
+	log_info(LOGCPU, "  Registro D &d   ", D);
+	log_info(LOGCPU, "  Registro E &d   ", E);
 
 
 	log_info(LOGCPU, "Se limpiaron los registros");
@@ -337,8 +342,13 @@ void limpiarRegistros(){
 
 
 int interpretarYEjecutarInstruccion(char* instruccion){
+	//log_info(LOGCPU, "instruccion a ejecutar: &s", instruccionabuscar);
+	//char instruccion[4];
+	//memcpy(&instruccion, instruccionabuscar, 4 );
+	//log_info(LOGCPU, "instruccion a ejecutar buffer: &s", instruccion);
 	if(strcmp(instruccion,"LOAD")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
+		log_info(LOGCPU, "parametros %s", respuesta);
 		tparam_load* parametrosLoad = (tparam_load*) respuesta;
 		log_info(LOGCPU, "LOAD(%d,%c)",parametrosLoad->num, parametrosLoad->reg1);
 		LOAD(parametrosLoad);
@@ -523,19 +533,18 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 
 int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
 
-	log_info(LOGCPU, "\n Desempaquetando Paquete \n");
+	log_info(LOGCPU, "  Desempaquetando Paquete  ");
 	char* buffer  = malloc(datosKernel -> tamanio);
 	memcpy(buffer,datosKernel->datos,datosKernel -> tamanio - sizeof(int));
 	TCBactual = (t_TCB *) buffer;
 	cargarDatosTCB(TCBactual);
-	int quantum;
 	memcpy(&quantum,datosKernel->datos + sizeof(t_TCB),sizeof(int));
 	return quantum;
 
 }
 
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP){
-	log_info(LOGCPU, "\n Deserializar paquete MSP \n");
+	log_info(LOGCPU, "  Deserializar paquete MSP  ");
 	char* buffer  = malloc(paqueteMSP->tamanio);
 	memcpy(buffer,paqueteMSP->datos,paqueteMSP->tamanio);
 	return buffer;

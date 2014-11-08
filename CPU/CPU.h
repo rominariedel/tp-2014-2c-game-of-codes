@@ -8,6 +8,26 @@
 #ifndef CPU_H_
 #define CPU_H_
 
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <commons/string.h>
+#include <commons/log.h>
+#include <pthread.h>
+#include <time.h>
+#include <stdint.h>
+#include <commons/config.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <signal.h>
+#include <semaphore.h>
+#include <math.h>
+#include <error.h>
+#include <sys/socket.h>
+#include <sockets.h>
 #include "funciones/bibliotecas.h"
 #include "t_parametros.h"
 #include "funciones/funcionesMSP.h"
@@ -71,6 +91,7 @@ char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
 enum mensajesMSP{
 	/*enviar mensajes*/
 	solicitarMemoria = 1,
+	solicitarMemoriaP = 80,
 	crearNuevoSegmento = 2,
 	destruirSegmento = 3,
 	escribirMemoria = 4,

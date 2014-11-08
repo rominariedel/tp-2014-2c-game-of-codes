@@ -16,6 +16,7 @@ enum mensajes {
 	crearNuevoSegmento = 2,
 	destruirSegmento = 3,
 	escribirMemoria = 4,
+	solicitarMemoriaP = 80,
 
 };
 
@@ -148,7 +149,26 @@ void conectado_a_cpu() {
 				enviar_datos(cpu_sock, paquete);
 				break;
 			case solicitarMemoria:
+				printf("SOLICITAR MEMORIA\n");
+				char* instruccion1 = "CAMI";
+				char instruction[4];
+				memcpy(instruction, instruccion1, 4);
+				printf("instruccionAEjecutar: %s", instruction);
+				void* datosMSP = malloc(4);
+				memcpy(datosMSP,instruccion1,4);
+				paquete = crear_paquete(0,datosMSP,4);
+				enviar_datos(cpu_sock, paquete);
 				break;
+
+			case solicitarMemoriaP:
+				printf("SOLICITAR PARAMETROS\n");
+				char* par = "A5";
+				void* dat = malloc(2);
+				memcpy(dat, par,2);
+				paquete = crear_paquete(0,dat,2);
+				enviar_datos(cpu_sock, paquete);
+				break;
+
 			case destruirSegmento:
 				break;
 

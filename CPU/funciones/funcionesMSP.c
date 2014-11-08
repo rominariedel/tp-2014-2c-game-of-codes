@@ -19,7 +19,7 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	int tamanio = 4;
-	log_info(LOGCPU, "\n Envio paquete a MSP \n");
+	log_info(LOGCPU, "  Envio paquete a MSP  ");
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int));
@@ -28,16 +28,17 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 	enviar_datos(socketMSP,paquete);
 	free(datos);
-	log_info(LOGCPU, "\n Recibo Respuesta MSP \n");
+	log_info(LOGCPU, "  Recibo Respuesta MSP  ");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
 	if(respuesta == NULL){
-		log_error(LOGCPU, "\n No se pudieron recibir datos MSP \n");
+		log_error(LOGCPU, "  No se pudieron recibir datos MSP  ");
 	}
 
-	int * dir_base = malloc(sizeof(int));
-	memcpy(dir_base, respuesta -> datos, sizeof(int));
+	char* proximaInstruccion = malloc(4);
+	memcpy(proximaInstruccion, respuesta -> datos, 4);
 
-	char* proximaInstruccion = deserializarPaqueteMSP(respuesta);
+
+	//char* proximaInstruccion = deserializarPaqueteMSP(respuesta);
 
 	return proximaInstruccion;
 }
@@ -47,15 +48,15 @@ char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
 	memcpy(datos, &PIDactual, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
 	memcpy(datos + sizeof(int) + sizeof(int), &cantidadParametros, sizeof(int));
-	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
+	t_datosAEnviar * paquete = crear_paquete(solicitarMemoriaP, (void*) datos, 3 * sizeof(int)); //TODO: cambiar a solicitarMemoria, el solicitarMemoriaP es para usar la MSPdummy
 	enviar_datos(socketMSP,paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
 
-	int * dir_base = malloc(sizeof(int));
-	memcpy(dir_base, respuesta -> datos, sizeof(int));
+	char* parametros = malloc(sizeof(cantidadParametros));
+	memcpy(parametros, respuesta -> datos, sizeof(cantidadParametros));
 
-	char* parametros = deserializarPaqueteMSP(respuesta);
+	//char* parametros = deserializarPaqueteMSP(respuesta);
 
 	return parametros;
 

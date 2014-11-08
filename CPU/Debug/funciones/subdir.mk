@@ -23,7 +23,7 @@ C_DEPS += \
 funciones/%.o: ../funciones/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -I"/home/utnso/tp-2014-2c-game-of-codes/Sockets" -I"/home/utnso/tp-2014-2c-game-of-codes/commons" -O2 -g -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -I"/home/utnso/workspace/Sockets" -I"/home/utnso/tp-2014-2c-game-of-codes/commons" -O2 -g -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
