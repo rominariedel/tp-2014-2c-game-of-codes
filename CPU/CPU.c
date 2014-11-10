@@ -98,7 +98,7 @@ int main(int cantArgs, char** args){
 		printf("\n E: %d \n",E);
 
 
-		while(quantumActual<quantum || KMactual==1)
+		while(quantumActual<quantum /*|| KMactual==1*/) //TODO: sacar los comentarios
 		{
 			log_info(LOGCPU, "quantum = %d ",quantumActual);
 			printf("\n %d \n", quantumActual);
@@ -106,7 +106,7 @@ int main(int cantArgs, char** args){
 
 			log_info(LOGCPU, " Solicito a MSP proximaInstruccionAEJecutar ");
 			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
-			log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", *proximaInstruccionAEjecutar);
+			log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
@@ -329,11 +329,11 @@ void limpiarRegistros(){
 	log_info(LOGCPU, "  Puntero actual: %d  ", punteroInstruccionActual);
 	log_info(LOGCPU, "  Base Stack actual: %d  ", baseStackActual);
 	log_info(LOGCPU, "  Cursor Stack actual: %d  ", cursorStackActual);
-	log_info(LOGCPU, "  Registro A &d  ", A);
-	log_info(LOGCPU, "  Registro B &d   ", B);
-	log_info(LOGCPU, "  Registro C &d   ", C);
-	log_info(LOGCPU, "  Registro D &d   ", D);
-	log_info(LOGCPU, "  Registro E &d   ", E);
+	log_info(LOGCPU, "  Registro A %d  ", A);
+	log_info(LOGCPU, "  Registro B %d  ", B);
+	log_info(LOGCPU, "  Registro C %d   ", C);
+	log_info(LOGCPU, "  Registro D %d   ", D);
+	log_info(LOGCPU, "  Registro E %d   ", E);
 
 
 	log_info(LOGCPU, "Se limpiaron los registros");
@@ -342,183 +342,178 @@ void limpiarRegistros(){
 
 
 int interpretarYEjecutarInstruccion(char* instruccion){
-	//log_info(LOGCPU, "instruccion a ejecutar: &s", instruccionabuscar);
-	//char instruccion[4];
-	//memcpy(&instruccion, instruccionabuscar, 4 );
-	//log_info(LOGCPU, "instruccion a ejecutar buffer: &s", instruccion);
-	if(strcmp(instruccion,"LOAD")){
+	if(0 == strcmp(instruccion,"LOAD")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
-		log_info(LOGCPU, "parametros %s", respuesta);
 		tparam_load* parametrosLoad = (tparam_load*) respuesta;
 		log_info(LOGCPU, "LOAD(%d,%c)",parametrosLoad->num, parametrosLoad->reg1);
 		LOAD(parametrosLoad);
 	return sizeof(tparam_load);
 	}
-	if(strcmp(instruccion,"GETM")){
+	if(0 == strcmp(instruccion,"GETM")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
 		tparam_getm * parametros = (tparam_getm*)respuesta;
 		log_info(LOGCPU, "GETM(%c,%c)",parametros->reg1, parametros->reg2);
 		GETM(parametros);
 	return sizeof(tparam_getm); }
-	if(strcmp(instruccion,"MOVR")){
+	if(0 == strcmp(instruccion,"MOVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
 		tparam_movr * parametros = (tparam_movr *) respuesta;
 		log_info(LOGCPU, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
 		MOVR(parametros);
 	return sizeof(tparam_movr); }
-	if(strcmp(instruccion,"ADDR")){
+	if(0 == strcmp(instruccion,"ADDR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
 		tparam_addr* parametros = (tparam_addr*)respuesta;
 		log_info(LOGCPU, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
 		ADDR(parametros);
 	return sizeof(tparam_addr); }
-	if(strcmp(instruccion,"SUBR")){
+	if(0 == strcmp(instruccion,"SUBR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
 		tparam_subr* parametros = (tparam_subr *) respuesta;
 		log_info(LOGCPU, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
 		SUBR(parametros);
 	return sizeof(tparam_subr); }
-	if(strcmp(instruccion,"MULR")){
+	if(0 == strcmp(instruccion,"MULR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
 		tparam_mulr * parametros = (tparam_mulr *) respuesta;
 		log_info(LOGCPU, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
 		MULR(parametros);
 	return sizeof(tparam_mulr); }
-	if(strcmp(instruccion,"MODR")){
+	if(0 == strcmp(instruccion,"MODR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
 		tparam_modr * parametros = (tparam_modr *) respuesta;
 		log_info(LOGCPU, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
 		MODR(parametros);
 	return  sizeof(tparam_modr); }
-	if(strcmp(instruccion,"DIVR")){
+	if(0 == strcmp(instruccion,"DIVR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
 		tparam_divr* parametros = (tparam_divr *) respuesta;
 		log_info(LOGCPU, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
 		DIVR(parametros);
 	return sizeof(tparam_divr); }
-	if(strcmp(instruccion,"INCR")){
+	if(0 == strcmp(instruccion,"INCR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
 		tparam_incr* parametros = (tparam_incr *) respuesta;
 		log_info(LOGCPU, "INCR(%c)",parametros->reg1);
  		INCR(parametros);
 	return sizeof(tparam_incr); }
-	if(strcmp(instruccion,"DECR")){
+	if(0 == strcmp(instruccion,"DECR")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
 		tparam_decr* parametros = (tparam_decr *) respuesta;
 		log_info(LOGCPU, "DECR(%c)",parametros->reg1);
  		DECR(parametros);
 	return sizeof(tparam_decr); }
-	if(strcmp(instruccion,"COMP")){
+	if(0 == strcmp(instruccion,"COMP")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
 		tparam_comp* parametros = (tparam_comp *) respuesta;
 		log_info(LOGCPU, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
  		COMP(parametros);
 	return sizeof(tparam_comp); }
-	if(strcmp(instruccion,"CGEQ")){
+	if(0 == strcmp(instruccion,"CGEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
 		tparam_cgeq* parametros = (tparam_cgeq *) respuesta;
 		log_info(LOGCPU, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
  		CGEQ(parametros);
 	return  sizeof(tparam_cgeq); }
-	if(strcmp(instruccion,"CLEQ")){
+	if(0 == strcmp(instruccion,"CLEQ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
 		tparam_cleq* parametros = (tparam_cleq *) respuesta;
 		log_info(LOGCPU, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
 		CLEQ(parametros);
 	return sizeof(tparam_cleq); }
-	if(strcmp(instruccion,"GOTO")){
+	if(0 == strcmp(instruccion,"GOTO")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_goto));
 		tparam_goto* parametros = (tparam_goto *) respuesta;
 		log_info(LOGCPU, "GOTO(%c)",parametros->reg1);
 		GOTO(parametros);
 	return sizeof(tparam_goto); }
-	if(strcmp(instruccion,"JMPZ")){
+	if(0 == strcmp(instruccion,"JMPZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
 		tparam_jmpz* parametros = (tparam_jmpz *) respuesta;
 		log_info(LOGCPU, "JMPZ(%d)",parametros->direccion);
  		JMPZ(parametros);
 	return sizeof(tparam_jmpz); }
-	if(strcmp(instruccion,"JPNZ")){
+	if(0 == strcmp(instruccion,"JPNZ")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
 		tparam_jpnz* parametros = (tparam_jpnz *) respuesta;
 		log_info(LOGCPU, "JPNZ(%d)",parametros->direccion);
  		JPNZ(parametros);
 	return sizeof(tparam_jpnz); }
-	if(strcmp(instruccion,"INTE")){
+	if(0 == strcmp(instruccion,"INTE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
 		tparam_inte* parametros = (tparam_inte *) respuesta;
 		log_info(LOGCPU, "INTE(%d)",parametros->direccion);
  		INTE(parametros);
 	return  sizeof(tparam_inte); }
-	if(strcmp(instruccion,"NOPP")){
+	if(0 == strcmp(instruccion,"NOPP")){
 		log_info(LOGCPU, "NOPP()");
 		NOPP();
 		return 0; }
-	if(strcmp(instruccion,"PUSH")){
+	if(0 == strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
 		tparam_push* parametros = (tparam_push *) respuesta;
 		log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 		PUSH(parametros);
 	return sizeof(tparam_push); }
-	if(strcmp(instruccion,"TAKE")){
+	if(0 == strcmp(instruccion,"TAKE")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
 		tparam_take* parametros = (tparam_take *) respuesta;
 		log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 		TAKE(parametros);
 	return sizeof(tparam_take); }
-	if(strcmp(instruccion,"XXXX")){
+	if(0 == strcmp(instruccion,"XXXX")){
 		log_info(LOGCPU,"XXXX()");
 		XXXX();
 		return 0;}
-	if(strcmp(instruccion,"MALC") && KMactual == 1){
+	if(0 == strcmp(instruccion,"MALC") && KMactual == 1){
 		log_info(LOGCPU,"MALC()");
 		MALC();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar MALC()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1; }
-	if(strcmp(instruccion,"FREE") && KMactual == 1){
+	if(0 == strcmp(instruccion,"FREE") && KMactual == 1){
 		log_info(LOGCPU,"FREE()");
 		FREE();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar FREE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
-	if(strcmp(instruccion,"INNN") && KMactual == 1){
+	if(0 == strcmp(instruccion,"INNN") && KMactual == 1){
 		log_info(LOGCPU,"INNN()");
 		INNN();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar INNN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
-	if(strcmp(instruccion,"OUTN") && KMactual == 1){
+	if(0 == strcmp(instruccion,"OUTN") && KMactual == 1){
 		log_info(LOGCPU,"OUTN()");
 		OUTN();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar OUTN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(strcmp(instruccion,"CREA") && KMactual == 1){
+	if(0 == strcmp(instruccion,"CREA") && KMactual == 1){
 		log_info(LOGCPU,"CREA()");
 		CREA();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar CREA()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
-	if(strcmp(instruccion,"JOIN") && KMactual == 1){
+	if(0 == strcmp(instruccion,"JOIN") && KMactual == 1){
 		log_info(LOGCPU,"JOIN()");
 		JOIN();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar JOIN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
-	if(strcmp(instruccion,"BLOK") && KMactual == 1){
+	if(0 == strcmp(instruccion,"BLOK") && KMactual == 1){
 		log_info(LOGCPU,"BLOK()");
 		BLOK();
 		return 0; }else{
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar BLOK()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -1;}
-	if(strcmp(instruccion,"WAKE") && KMactual == 1){
+	if(0 == strcmp(instruccion,"WAKE") && KMactual == 1){
 		log_info(LOGCPU,"WAKE()");
 		WAKE();
 		return 0; }else{

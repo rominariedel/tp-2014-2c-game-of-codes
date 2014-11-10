@@ -204,7 +204,7 @@ void INNN(){
 	// Pide por consola del programa que se ingrese un número, con signo entre –2.147.483.648 y
 	// 2.147.483.647. El mismo será almacenado en el registro A. Invoca al servicio correspondiente en
 	// el proceso Kernel.
-
+	log_info(LOGCPU, "\n PEDIRLE AL KERNEL QUE INGRESE UN NUMERO\n");
 	A = KERNEL_IngreseNumeroPorConsola(PIDactual);
 }
 
@@ -213,7 +213,7 @@ void INNC(){
 	//Pide por consola del programa que se ingrese una cadena no más larga de lo indicado por el
 	//registro B. La misma será almacenada en la posición de memoria apuntada por el registro A.
 	//Invoca al servicio correspondiente en el proceso Kernel.
-
+	log_info(LOGCPU, "\n PEDIRLE AL KERNEL QUE INGRESE CADENA\n");
 	t_datosAEnviar* respuesta = KERNEL_IngreseCadenaPorConsola(PIDactual, B);
 	char cadena[respuesta->tamanio];
 	memcpy(cadena,&respuesta,respuesta->tamanio);

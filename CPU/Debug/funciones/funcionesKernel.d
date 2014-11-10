@@ -5,6 +5,7 @@ funciones/funcionesKernel.d: ../funciones/funcionesKernel.c \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/config.h \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/collections/node.h \
+ /home/utnso/workspace/Sockets/sockets.h \
  ../funciones/../funciones/bibliotecas.h ../funciones/../t_parametros.h \
  ../funciones/../funciones/funcionesMSP.h \
  ../funciones/../funciones/funcionesKernel.h \
@@ -21,6 +22,8 @@ funciones/funcionesKernel.d: ../funciones/funcionesKernel.c \
 /home/utnso/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h:
 
 /home/utnso/tp-2014-2c-game-of-codes/commons/commons/collections/node.h:
+
+/home/utnso/workspace/Sockets/sockets.h:
 
 ../funciones/../funciones/bibliotecas.h:
 
