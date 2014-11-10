@@ -67,11 +67,11 @@ void DIVR(tparam_divr* parametrosDivr){
 }
 
 void INCR(tparam_incr* parametrosIncr){ //incrementar una unidad al registro
-	 *devolverRegistro(parametrosIncr->reg1) =+ 1;
+	 *devolverRegistro(parametrosIncr->reg1) += 1;
 }
 
 void DECR(tparam_decr* parametrosDecr){ //decrementar una unidad al registro
-	*devolverRegistro(parametrosDecr->reg1) =- 1;
+	*devolverRegistro(parametrosDecr->reg1) -= 1;
 }
 
 void COMP(tparam_comp* parametrosComp){
@@ -175,7 +175,6 @@ void TAKE(tparam_take* parametrosTake){
 void XXXX(){
 	//Finaliza la ejecucion
 	devolverTCBactual(finaliza_ejecucion);
-	limpiarRegistros();
 
 }
 

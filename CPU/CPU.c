@@ -112,8 +112,336 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
 			usleep(RETARDO);
 
+
+			printf("PROBANDO INSTRUCCIONES ESO!!!!!!!!!!!!!!!!!!!!!!!!!");
+			log_info(LOGCPU, "PROBANDO INSTRUCCIONES ESO!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+			A = 1;
+			B = 2;
+			C = 3;
+			D = 4;
+			E = 5;
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			tparam_load* load = malloc(sizeof(tparam_load));
+			load->num = 8;
+			load->reg1 = 'B';
+			log_info(LOGCPU, "LOAD(%d,%c)", load->num, load->reg1);
+			LOAD(load);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			tparam_setm* setm = malloc(sizeof(tparam_setm));
+			setm->num = 10;
+			setm->reg1 = 'A';
+			setm->reg2 = 'D';
+			log_info(LOGCPU, "SETM(%d, %c,%c)",setm->num, setm->reg1, setm->reg2);
+			SETM(setm);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_getm* getm = malloc(sizeof(tparam_getm));
+			getm->reg1 = 'A';
+			getm->reg2 = 'B';
+			log_info(LOGCPU, "GETM(%c,%c)", getm->reg1, getm->reg2);
+			GETM(getm);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_movr* movr = malloc(sizeof(tparam_movr));
+			movr->reg1 = 'C';
+			movr->reg2 = 'E';
+			log_info(LOGCPU, "MOVR(%c,%c)", movr->reg1, movr->reg2);
+			MOVR(movr);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_addr* addr = malloc(sizeof(tparam_addr));
+			addr->reg1 = 'D';
+			addr->reg2 = 'E';
+			log_info(LOGCPU, "ADDR(%c,%c)", addr->reg1, addr->reg2);
+			ADDR(addr);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_subr* subr = malloc(sizeof(tparam_subr));
+			subr->reg1 = 'A';
+			subr->reg2 = 'B';
+			log_info(LOGCPU, "SUBR(%c,%c)", subr->reg1, subr->reg2);
+			SUBR(subr);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_mulr* mulr = malloc(sizeof(tparam_mulr));
+			mulr->reg1 = 'A';
+			mulr->reg2 = 'B';
+			log_info(LOGCPU, "MULR(%c,%c)", mulr->reg1, mulr->reg2);
+			MULR(mulr);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_modr* modr = malloc(sizeof(tparam_modr));
+			modr->reg1 = 'C';
+			modr->reg2 = 'D';
+			log_info(LOGCPU, "MODR(%c,%c)", modr->reg1, modr->reg2);
+			MODR(modr);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			tparam_divr* divr = malloc(sizeof(tparam_divr));
+			divr->reg1 = 'D';
+			divr->reg2 = 'E';
+			log_info(LOGCPU, "DIVR(%c,%c)", divr->reg1, divr->reg2);
+			DIVR(divr);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_incr* incr = malloc(sizeof(tparam_incr));
+			incr->reg1 = 'C';
+			log_info(LOGCPU, "INCR(%c)", incr->reg1);
+			INCR(incr);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_decr* decr = malloc(sizeof(tparam_decr));
+			decr->reg1 = 'D';
+			log_info(LOGCPU, "DECR(%c)", decr->reg1);
+			DECR(decr);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			tparam_comp* comp = malloc(sizeof(tparam_comp));
+			comp->reg1 = 'A';
+			comp->reg2 = 'B';
+			log_info(LOGCPU, "COMP(%c,%c)", comp->reg1, comp->reg2);
+			COMP(comp);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_cgeq* cgeq = malloc(sizeof(tparam_cgeq));
+			cgeq->reg1 = 'C';
+			cgeq->reg2 = 'D';
+			log_info(LOGCPU, "CGEQ(%c,%c)", cgeq->reg1, cgeq->reg2);
+			CGEQ(cgeq);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			tparam_cleq* cleq = malloc(sizeof(tparam_cleq));
+			cleq->reg1 = 'D';
+			cleq->reg2 = 'E';
+			log_info(LOGCPU, "CLEQ(%c,%c)", cleq->reg1, cleq->reg2);
+			CLEQ(cleq);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_goto* gotop = malloc(sizeof(tparam_goto));
+			gotop->reg1 = 'A';
+			log_info(LOGCPU, "GOTO(%c)", gotop->reg1);
+			log_info(LOGCPU, "punteroInstruccionActual = %d",punteroInstruccionActual);
+			GOTO(gotop);
+			log_info(LOGCPU, "punteroInstruccionActual = %d",punteroInstruccionActual);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_jmpz* jmpz = malloc(sizeof(tparam_jmpz));
+			jmpz->direccion = 123;
+			log_info(LOGCPU, "JMPZ(%d)", jmpz->direccion);
+			A = 0;
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "punteroInstruccionActual = %d",punteroInstruccionActual);
+			JMPZ(jmpz);
+			log_info(LOGCPU, "punteroInstruccionActual = %d",punteroInstruccionActual);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_jpnz* jpnz = malloc(sizeof(tparam_jpnz));
+			jpnz->direccion = 234;
+			log_info(LOGCPU, "JPNZ(%d)", jpnz->direccion);
+			A = 0;
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "punteroInstruccionActual = %d",punteroInstruccionActual);
+			JPNZ(jpnz);
+			log_info(LOGCPU, "punteroInstruccionActual = %d",punteroInstruccionActual);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_inte* inte = malloc(sizeof(tparam_inte));
+			inte->direccion = 345;
+			log_info(LOGCPU, "INTE(%d)", inte->direccion);
+			INTE(inte);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			A = 1;
+			B = 2;
+			C = 3;
+			D = 4;
+			E = 5;
+
+			tparam_shif* shif = malloc(sizeof(tparam_shif));
+			shif->numero = 8;
+			shif->registro = 'E';
+			log_info(LOGCPU, "SHIF(%d,%c)", shif->numero, shif->registro);
+			SHIF(shif);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			log_info(LOGCPU, "NOPP()");
+			NOPP();
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_push* push = malloc(sizeof(tparam_push));
+			push->numero = 4;
+			push->registro = 'B';
+			log_info(LOGCPU, "PUSH(%d,%c)", push->numero, push->registro);
+			PUSH(push);
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+
+			tparam_take* take = malloc(sizeof(tparam_take));
+			take->numero = 2;
+			take->registro = 'C';
+			log_info(LOGCPU, "TAKE(%d,%c)", take->numero, take->registro);
+			TAKE(take);
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			log_info(LOGCPU, "XXXX()");
+			XXXX();
+
+
+			log_info(LOGCPU, "  Registro A : %d  ", A);
+			log_info(LOGCPU, "  Registro B : %d  ", B);
+			log_info(LOGCPU, "  Registro C : %d  ", C);
+			log_info(LOGCPU, "  Registro D : %d  ", D);
+			log_info(LOGCPU, "  Registro E : %d  ", E);
+
+			printf("TERMINAMOS INSTRUCCIONES ESO!!!!!!!!!!!!!!!!!!!!!!!!!");
+			log_info(LOGCPU, "TERMINAMOS INSTRUCCIONES ESO!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+
+
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion ");
-			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
+			//int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
 
 			log_info(LOGCPU, "  Registro A : %d  ", A);
 			log_info(LOGCPU, "  Registro B : %d  ", B);
@@ -127,7 +455,7 @@ int main(int cantArgs, char** args){
 			actualizarRegistrosTCB();
 
 			// 5. Incrementa el Puntero de Instrucción.
-
+/*
 			if(respuesta ==-1){
 				log_error(LOGCPU, "No se encontro la instruccion o no tiene los permisos necesarios");
 				printf("No se encontro la instruccion o no tiene los permisos necesarios");
@@ -140,7 +468,7 @@ int main(int cantArgs, char** args){
 				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
 				punteroInstruccionActual =+ respuesta;}
 				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
-
+*/
 			// 5.b Incrementar quantum
 			quantumActual++;
 			log_info(LOGCPU, "Ejecutando %d de %d quantum", quantumActual, quantum);
@@ -292,10 +620,8 @@ void devolverTCBactual(int codOperacion){
 	void * mensaje = malloc(sizeof(t_TCB) + sizeof(int));
 	memcpy(mensaje, &op, sizeof(int));
 	memcpy(mensaje + sizeof(int), TCBactual, sizeof(t_TCB));
-	log_info(LOGCPU,"ESTO SALIO BIEEEEEEEEEEEEEEEEEEEEEEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	t_datosAEnviar* paquete = crear_paquete(1, mensaje, sizeof(mensaje));
 	int status = enviar_datos(socketKernel, paquete);
-	log_info(LOGCPU,"ESTO TAMBBBBBIEEEEEEEEEEEEEEEEEEEEEEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	if(status == -1){
 		log_info(LOGCPU, "No se pudo devolver el TCB actual");
 		perror("No se pudo devolver el TCBactual");}
