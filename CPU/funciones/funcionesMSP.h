@@ -12,10 +12,10 @@
 /*Funciones MSP*/
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion);
 int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento);
-t_datosAEnviar*  MSP_DestruirSegmento(int PID, int registro);
+void MSP_DestruirSegmento(int PID, int registro);
 char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros);
 void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio);
 t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, int codOperacion);
-
+int procesarRespuesta(t_datosAEnviar* respuesta);
 
 #endif /* FUNCIONESMSP_H_ */

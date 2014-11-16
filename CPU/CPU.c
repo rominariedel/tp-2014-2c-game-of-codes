@@ -113,57 +113,6 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
 			usleep(RETARDO);
 
-
-			tparam_comp* comp = malloc(sizeof(tparam_comp));
-			comp->reg1 = 'A';
-			comp->reg2 = 'B';
-			log_info(LOGCPU, "COMP(%c,%c)", comp->reg1, comp->reg2);
-			COMP(comp);
-
-			log_info(LOGCPU, "  Registro A : %d  ", A);
-			log_info(LOGCPU, "  Registro B : %d  ", B);
-			log_info(LOGCPU, "  Registro C : %d  ", C);
-			log_info(LOGCPU, "  Registro D : %d  ", D);
-			log_info(LOGCPU, "  Registro E : %d  ", E);
-
-
-			tparam_cgeq* cgeq = malloc(sizeof(tparam_cgeq));
-			cgeq->reg1 = 'C';
-			cgeq->reg2 = 'D';
-			log_info(LOGCPU, "CGEQ(%c,%c)", cgeq->reg1, cgeq->reg2);
-			CGEQ(cgeq);
-
-
-			log_info(LOGCPU, "  Registro A : %d  ", A);
-			log_info(LOGCPU, "  Registro B : %d  ", B);
-			log_info(LOGCPU, "  Registro C : %d  ", C);
-			log_info(LOGCPU, "  Registro D : %d  ", D);
-			log_info(LOGCPU, "  Registro E : %d  ", E);
-
-			log_info(LOGCPU, "XXXX()");
-			XXXX();
-			if(finalizarEjecucion){
-				log_info(LOGCPU, "finalizo EJECUCION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				break;
-			}
-
-			tparam_cleq* cleq = malloc(sizeof(tparam_cleq));
-			cleq->reg1 = 'D';
-			cleq->reg2 = 'E';
-			log_info(LOGCPU, "CLEQ(%c,%c)", cleq->reg1, cleq->reg2);
-			CLEQ(cleq);
-
-
-			log_info(LOGCPU, "  Registro A : %d  ", A);
-			log_info(LOGCPU, "  Registro B : %d  ", B);
-			log_info(LOGCPU, "  Registro C : %d  ", C);
-			log_info(LOGCPU, "  Registro D : %d  ", D);
-			log_info(LOGCPU, "  Registro E : %d  ", E);
-
-
-
-
-
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion ");
 			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
 
@@ -173,7 +122,6 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU, "  Registro D : %d  ", D);
 			log_info(LOGCPU, "  Registro E : %d  ", E);
 
-
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 
 			actualizarRegistrosTCB();
@@ -182,7 +130,7 @@ int main(int cantArgs, char** args){
 
 			if(respuesta ==-1){
 				log_error(LOGCPU, "No se encontro la instruccion o no tiene los permisos necesarios");
-				printf("No se encontro la instruccion o no tiene los permisos necesarios");
+				printf("\n No se encontro la instruccion o no tiene los permisos necesarios\n");
 
 				log_info(LOGCPU, "Devolver TCB %d al Kernel", PIDactual);
 				log_error(LOGCPU, "Error al interpretar instruccion");
@@ -211,8 +159,6 @@ int main(int cantArgs, char** args){
 	}
 	return 0;
 }
-
-
 
 void cargarArchivoConfiguracion(int cantArgs, char** args){
 	t_config* configuracion = config_create(args[1]);
@@ -352,8 +298,9 @@ void devolverTCBactual(int codOperacion){
 	free(mensaje);
 	log_info(LOGCPU, "Se devolvio TCB al Kernel");
 
+
 	//TODO: cada vez que devuelvo tcb es porq termino ejecucion? entonces poner limpiarRegistros
-	//limpiarRegistros();
+	limpiarRegistros();
 }
 
 

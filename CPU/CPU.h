@@ -70,6 +70,10 @@ t_log* LOGCPU;
 
 int finalizarEjecucion;
 
+errorOperacionesConMemoria = 0;
+errorMemoria = 0;
+
+
 
 /*Definicion de funciones*/
 void cargarArchivoConfiguracion(int cantArgs, char** args);
@@ -87,7 +91,7 @@ int* devolverRegistro(char registro);
 int interpretarYEjecutarInstruccion(char* instruccion);
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
 char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
-
+void hacerunBreak();
 
 enum mensajesMSP{
 	/*enviar mensajes*/
@@ -96,7 +100,9 @@ enum mensajesMSP{
 	crearNuevoSegmento = 2,
 	destruirSegmento = 3,
 	escribirMemoria = 4,
-	errorSegmentationFault = 17,
+	error_memoriaLlena = 16,
+	error_segmentationFault = 17,
+	no_llego_respuesta = 90,
 
 };
 
