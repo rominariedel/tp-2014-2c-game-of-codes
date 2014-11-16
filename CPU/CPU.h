@@ -68,6 +68,7 @@ int RETARDO;
 
 t_log* LOGCPU;
 
+int finalizarEjecucion;
 
 
 /*Definicion de funciones*/

@@ -106,3 +106,83 @@
 [ERROR] 17:24:03:751 MSP_dummy/(11674:11700): No se recibieron los datos correctamente.
 [INFO] 17:27:38:850 MSP_dummy/(11897:11897): Server conectado.
 [INFO] 17:29:15:850 MSP_dummy/(11936:11936): Server conectado.
+[INFO] 19:51:40:190 MSP_dummy/(1924:1924): Server conectado.
+[ERROR] 19:51:44:921 MSP_dummy/(1924:1949): No se recibieron los datos correctamente.
+[INFO] 19:51:49:175 MSP_dummy/(1958:1958): Server conectado.
+[ERROR] 19:51:52:695 MSP_dummy/(1958:1983): No se recibieron los datos correctamente.
+[INFO] 19:52:27:506 MSP_dummy/(2021:2021): Server conectado.
+[ERROR] 19:53:04:667 MSP_dummy/(2021:2031): No se recibieron los datos correctamente.
+[INFO] 19:59:36:147 MSP_dummy/(2163:2163): Server conectado.
+[INFO] 20:01:56:498 MSP_dummy/(2225:2225): Server conectado.
+[ERROR] 20:03:33:968 MSP_dummy/(2225:2251): No se recibieron los datos correctamente.
+[INFO] 20:03:41:189 MSP_dummy/(2335:2335): Server conectado.
+[ERROR] 20:03:46:685 MSP_dummy/(2335:2361): No se recibieron los datos correctamente.
+[INFO] 20:04:13:310 MSP_dummy/(2395:2395): Server conectado.
+[ERROR] 20:04:21:566 MSP_dummy/(2395:2421): No se recibieron los datos correctamente.
+[INFO] 20:07:59:311 MSP_dummy/(2705:2705): Server conectado.
+[ERROR] 20:09:18:582 MSP_dummy/(2705:2716): No se recibieron los datos correctamente.
+[INFO] 20:09:24:77 MSP_dummy/(2812:2812): Server conectado.
+[INFO] 20:14:01:314 MSP_dummy/(2932:2932): Server conectado.
+[INFO] 20:15:19:953 MSP_dummy/(3031:3031): Server conectado.
+[ERROR] 20:15:22:451 MSP_dummy/(3031:3057): No se recibieron los datos correctamente.
+[INFO] 20:15:50:796 MSP_dummy/(3099:3099): Server conectado.
+[ERROR] 20:15:54:971 MSP_dummy/(3099:3126): No se recibieron los datos correctamente.
+[INFO] 20:17:27:967 MSP_dummy/(3218:3218): Server conectado.
+[ERROR] 20:17:30:803 MSP_dummy/(3218:3244): No se recibieron los datos correctamente.
+[INFO] 20:22:41:870 MSP_dummy/(3415:3415): Server conectado.
+[ERROR] 20:22:49:393 MSP_dummy/(3415:3441): No se recibieron los datos correctamente.
+[INFO] 20:29:33:288 MSP_dummy/(3803:3803): Server conectado.
+[ERROR] 20:29:36:433 MSP_dummy/(3803:3829): No se recibieron los datos correctamente.
+[INFO] 20:33:29:469 MSP_dummy/(4036:4036): Server conectado.
+[ERROR] 20:33:39:373 MSP_dummy/(4036:4045): No se recibieron los datos correctamente.
+[INFO] 20:33:43:227 MSP_dummy/(4062:4062): Server conectado.
+[ERROR] 20:36:56:397 MSP_dummy/(4062:4072): No se recibieron los datos correctamente.
+[INFO] 20:37:01:274 MSP_dummy/(4291:4291): Server conectado.
+[ERROR] 20:40:42:320 MSP_dummy/(4291:4304): No se recibieron los datos correctamente.
+[INFO] 20:41:01:859 MSP_dummy/(4571:4571): Server conectado.
+[ERROR] 20:41:16:946 MSP_dummy/(4571:4597): No se recibieron los datos correctamente.
+[INFO] 20:44:10:189 MSP_dummy/(4750:4750): Server conectado.
+[ERROR] 20:44:13:109 MSP_dummy/(4750:4776): No se recibieron los datos correctamente.
+[INFO] 20:45:08:841 MSP_dummy/(4839:4839): Server conectado.
+[ERROR] 20:45:11:281 MSP_dummy/(4839:4865): No se recibieron los datos correctamente.
+[INFO] 20:46:32:986 MSP_dummy/(4939:4939): Server conectado.
+[ERROR] 20:46:49:639 MSP_dummy/(4939:4965): No se recibieron los datos correctamente.
+[INFO] 20:51:41:62 MSP_dummy/(5037:5037): Server conectado.
+[ERROR] 20:51:59:192 MSP_dummy/(5037:5049): No se recibieron los datos correctamente.
+[INFO] 20:54:53:854 MSP_dummy/(5183:5183): Server conectado.
+[ERROR] 20:55:04:894 MSP_dummy/(5183:5203): No se recibieron los datos correctamente.
+[INFO] 20:55:09:504 MSP_dummy/(5215:5215): Server conectado.
+[ERROR] 20:55:17:370 MSP_dummy/(5215:5225): No se recibieron los datos correctamente.
+[INFO] 20:55:21:320 MSP_dummy/(5255:5255): Server conectado.
+[ERROR] 20:55:34:610 MSP_dummy/(5255:5283): No se recibieron los datos correctamente.
+[INFO] 20:56:42:889 MSP_dummy/(5438:5438): Server conectado.
+[INFO] 20:57:29:13 MSP_dummy/(5483:5483): Server conectado.
+[ERROR] 20:57:43:697 MSP_dummy/(5483:5495): No se recibieron los datos correctamente.
+[INFO] 20:58:44:252 MSP_dummy/(5586:5586): Server conectado.
+[ERROR] 20:58:58:544 MSP_dummy/(5586:5612): No se recibieron los datos correctamente.
+[INFO] 19:10:25:172 MSP_dummy/(2643:2643): Server conectado.
+[ERROR] 19:10:34:491 MSP_dummy/(2643:2652): No se recibieron los datos correctamente.
+[INFO] 19:10:39:684 MSP_dummy/(2661:2661): Server conectado.
+[ERROR] 19:10:45:443 MSP_dummy/(2661:2686): No se recibieron los datos correctamente.
+[INFO] 19:11:29:133 MSP_dummy/(2734:2734): Server conectado.
+[ERROR] 19:11:34:990 MSP_dummy/(2734:2760): No se recibieron los datos correctamente.
+[INFO] 19:57:20:440 MSP_dummy/(4565:4565): Server conectado.
+[ERROR] 19:57:27:541 MSP_dummy/(4565:4573): No se recibieron los datos correctamente.
+[INFO] 19:57:31:85 MSP_dummy/(4588:4588): Server conectado.
+[ERROR] 19:57:35:711 MSP_dummy/(4588:4614): No se recibieron los datos correctamente.
+[INFO] 19:59:09:976 MSP_dummy/(4715:4715): Server conectado.
+[ERROR] 20:24:51:51 MSP_dummy/(4715:4728): No se recibieron los datos correctamente.
+[INFO] 20:24:56:292 MSP_dummy/(5077:5077): Server conectado.
+[ERROR] 20:25:13:433 MSP_dummy/(5077:5087): No se recibieron los datos correctamente.
+[INFO] 20:44:21:612 MSP_dummy/(5742:5742): Server conectado.
+[ERROR] 20:45:09:476 MSP_dummy/(5742:5752): No se recibieron los datos correctamente.
+[INFO] 20:45:15:152 MSP_dummy/(5834:5834): Server conectado.
+[ERROR] 20:45:21:831 MSP_dummy/(5834:5861): No se recibieron los datos correctamente.
+[INFO] 20:50:39:191 MSP_dummy/(5951:5951): Server conectado.
+[ERROR] 20:50:45:259 MSP_dummy/(5951:5977): No se recibieron los datos correctamente.
+[INFO] 20:52:25:217 MSP_dummy/(6096:6096): Server conectado.
+[ERROR] 20:52:30:758 MSP_dummy/(6096:6122): No se recibieron los datos correctamente.
+[INFO] 20:59:13:217 MSP_dummy/(6253:6253): Server conectado.
+[ERROR] 21:01:52:48 MSP_dummy/(6253:6275): No se recibieron los datos correctamente.
+[INFO] 21:01:57:157 MSP_dummy/(6326:6326): Server conectado.
+[ERROR] 21:08:57:691 MSP_dummy/(6326:6336): No se recibieron los datos correctamente.

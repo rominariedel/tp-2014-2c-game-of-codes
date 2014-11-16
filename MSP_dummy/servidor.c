@@ -34,7 +34,7 @@ int main(void) {
 
 	logger = log_create("Logging", "MSP_dummy", false, LOG_LEVEL_INFO);
 	int listener; //Socket que recibe las conexiones
-	int cliente; //Socket que se me conect�
+	int cliente; //Socket que se me conecto
 
 	listener = crear_servidor("6667", MAXCONEXIONES);
 	if (listener < 0) {
@@ -57,6 +57,7 @@ int main(void) {
 					"ERROR");
 			exit(-1);
 		}
+
 		printf("Se recibio un mensaje\n");
 		//Recibo mensaje del cliente
 		switch (datos->codigo_operacion) {
@@ -150,7 +151,7 @@ void conectado_a_cpu() {
 				break;
 			case solicitarMemoria:
 				printf("SOLICITAR MEMORIA\n");
-				char* instruccion1 = "CAMI";
+				char* instruccion1 = "INNN";
 				char instruction[4];
 				memcpy(instruction, instruccion1, 4);
 				printf("instruccionAEjecutar: %s", instruction);
@@ -164,6 +165,8 @@ void conectado_a_cpu() {
 				printf("SOLICITAR PARAMETROS\n");
 				char* par = "A5";
 				void* dat = malloc(2);
+				printf("parametros %s", par);
+			//	printf("datos a enviar %s", dat);
 				memcpy(dat, par,2);
 				paquete = crear_paquete(0,dat,2);
 				enviar_datos(cpu_sock, paquete);
