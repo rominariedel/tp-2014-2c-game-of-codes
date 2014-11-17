@@ -52,7 +52,8 @@ int main(int cantArgs, char** args) {
 
 	int* memPpal; //todo chequear repercusiones
 	memPpal = malloc(tamanioMemoria);
-	char* aux = (char*) memPpal;
+	char* aux = malloc(sizeof(char)* tamanioMemoria);
+	aux = (char*) memPpal;
 
 	//int finMemPpal = memPpal + tamanioMemoria;
 	int i;
@@ -69,10 +70,17 @@ int main(int cantArgs, char** args) {
 		pthread_join(hiloConsola, NULL );
 	} else
 		log_error(logger,
-				"Ha ocurrido un error en la  inicialización de la Consola de MSP");
+				"Ha ocurrido un error en la inicialización de la Consola de MSP");
 
 	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL,
 			(void*) iniciarConexiones, NULL );
+	if (hilo_EsperarConexiones == 0) {
+			log_info(logger,
+					"La espera de conexiones se incializó correctamente");
+			pthread_join(hilo_EsperarConexiones, NULL );
+		} else
+			log_error(logger,
+					"Ha ocurrido un error en la espera de conexioness");
 
 	pthread_join(hiloEsperarConexiones, NULL );
 
@@ -188,7 +196,8 @@ void crearMarcos() {
 	marcosLlenos = list_create();
 	marcosVacios = list_create();
 
-	int cantidadMarcos = tamanioMemoria / tamanioPag;
+	float cantidadDeMarcos = (float)tamanioMemoria / (float)tamanioPag;
+	int cantidadMarcos = (int)cantidadDeMarcos;
 	int i;
 
 	for (i = 0; i < cantidadMarcos; i++) {
@@ -358,9 +367,12 @@ static void destruirPag(T_PAGINA* pagina) {
 	T_MARCO* marco = list_find(marcosLlenos, (void*) marcoPorPagina);
 
 	if (marco != NULL ) {
+
 		marco->empty = true;
 		marco->PID = -1;
-		marco->pagina = -1; //todo
+
+		list_remove_by_condition(marcosLlenos,(void*) marcoPorPagina);
+		list_add(marcosVacios,marco);
 	}
 
 	free(pagina);
@@ -435,7 +447,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 						if (pag->marcoID == -1) {
 							asignoMarcoAPagina(PID, seg, pag);
 						}
-						memoriaSolicitada = memoriaSolicitada + pag->data;
+						string_append((char**) memoriaSolicitada,pag->data);
 						tamanio = tamanio - tamanioPag;
 
 						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
@@ -447,7 +459,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 						if (pag->marcoID == -1) {
 							asignoMarcoAPagina(PID, seg, pag);
 						}
-						memoriaSolicitada = memoriaSolicitada + leoMemoria(pag, 0, tamanio);
+						string_append((char**)memoriaSolicitada, leoMemoria(pag, 0, tamanio));
 					}
 				}
 				else {
@@ -926,9 +938,9 @@ char* obtenerFilePath(int PID, int SID, int pagId) {
 	char* filePath = malloc(sizeof(int)*3);
 
 	//todo como pasar de un int a un char*
-	string_append(&filePath, PID);
-	string_append(&filePath, SID);
-	string_append(&filePath, pagId);
+	string_append(&filePath, (char*) PID);
+	string_append(&filePath, (char*) SID);
+	string_append(&filePath, (char*) pagId);
 
 	return filePath;
 }
@@ -936,9 +948,9 @@ char* obtenerFilePath(int PID, int SID, int pagId) {
 T_MARCO* seleccionarMarcoVictima() {
 	T_MARCO* marcoVictima;
 
-	if (*sust_pags == "CLOCK") {
+	if (strcmp(sust_pags,"CLOCK")) {
 		marcoVictima = algoritmoClock();
-	} else if (*sust_pags == "LRU") {
+	} else if (strcmp(sust_pags,"LRU")) {
 		marcoVictima = algoritmoLRU();
 	}
 
