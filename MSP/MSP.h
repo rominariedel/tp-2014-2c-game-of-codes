@@ -96,7 +96,7 @@ T_MARCO*	algoritmoLRU();
 T_MARCO*	algoritmoClock();
 
 T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
-uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
+uint32_t direccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
 
 
 
