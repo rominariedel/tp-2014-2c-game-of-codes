@@ -39,7 +39,7 @@ typedef struct T_PAGINA {
 	int marcoID;
 	long contadorLRU;
 	int bitReferencia;
-	char data [256];
+	char* data;
 }T_PAGINA;
 
 typedef struct T_MARCO {

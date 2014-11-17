@@ -89,22 +89,24 @@ void inicializar(char** args) {
 }
 
 void inicializarConsola() {
-	char* comando = malloc(50);
+	char* comando = malloc(sizeof(char)* 50);
 	int seguimiento = 1;
 
 	while (seguimiento) {
 		printf(">");
-		scanf("%s", comando);
+		scanf("%s", comando); //todo
 
 		interpretarComando(comando);
 		printf("\r\n");
 	}
-
 }
 
 void interpretarComando(char* comando) {
-	char** palabras = string_n_split(comando, 2, " ");
-	char** parametros = NULL;
+	char** palabras;
+	palabras = malloc(sizeof(char*)* 2);
+	palabras = string_n_split(comando, 2, " ");
+	char** parametros;
+	parametros = malloc(sizeof(char*)* 4);
 
 	if (palabras[1] != NULL ) {
 		parametros = string_split(palabras[1], " ");
@@ -287,7 +289,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
 		paginaVacia->contadorLRU = 0;
 		paginaVacia->bitReferencia = 0;
 
-		memset(paginaVacia->data, tamanioPag - 1, '/0');
+		paginaVacia->data = calloc(256,sizeof(char));
 
 		//agrego la pagina a la lista de paginas
 		list_add(paginas, paginaVacia);
@@ -373,7 +375,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
 
-	char* memoriaSolicitada = malloc(tamanio);
+	char* memoriaSolicitada = malloc(sizeof(char)*tamanio);
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -477,10 +479,10 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 char* leoMemoria(T_PAGINA* pag, int inicio, int final)	{
 
-	char* memoria = malloc(final-inicio);
+	char* memoria = malloc(sizeof(char)*(final-inicio));
 	int i;
 	for (i = inicio; final > i; i++) {
-		string_append((char**) &memoria, &(pag->data[i]));
+		//string_append(&memoria,(pag->data[i])); //todo ayuda
 	}
 	return memoria;
 
@@ -921,7 +923,7 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 }
 
 char* obtenerFilePath(int PID, int SID, int pagId) {
-	char* filePath;
+	char* filePath = malloc(sizeof(int)*3);
 
 	//todo como pasar de un int a un char*
 	string_append(&filePath, PID);
