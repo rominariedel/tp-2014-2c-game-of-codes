@@ -848,21 +848,22 @@ void interpretarOperacion(int* socket) {
 		t_datosAEnviar* datos;
 		datos = recibir_datos(*socket);
 		int pid;
-		int tamanioSegmento;
+		int tamanio;
+		char* bytesAEscribir;
 		uint32_t baseSegmento;
+		uint32_t direccion;
 		uint32_t respuesta;
 		t_datosAEnviar* paquete;
 
 		switch (datos->codigo_operacion) {
 
 		case crear_segmento:
-
 			memcpy(&pid, datos->datos, sizeof(int));
-			memcpy(&tamanioSegmento, datos->datos + sizeof(int), sizeof(int));
+			memcpy(&tamanio, datos->datos + sizeof(int), sizeof(int));
 
 			free(datos);
 
-			respuesta = crearSegmento(pid, tamanioSegmento);
+			respuesta = crearSegmento(pid, tamanio);
 
 			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
 
@@ -885,14 +886,33 @@ void interpretarOperacion(int* socket) {
 			break;
 
 		case solicitar_memoria:
-			//todo: hacerlo
+			memcpy(&pid, datos->datos, sizeof(int));
+			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
+			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t), sizeof(int));
+
+			respuesta = solicitarMemoria(pid, direccion, tamanio);
+
+			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
+
+			enviar_datos(*socket, paquete);
+
+			free(datos);
 
 			break;
 
 		case escribir_memoria:
+			memcpy(&pid, datos->datos, sizeof(int));
+			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
+			memcpy(&bytesAEscribir, datos->datos + sizeof(int) + sizeof(uint32_t), sizeof(char*));
+			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t) + sizeof(char*), sizeof(int));
 
-			//todo: hacerlo
+			respuesta = escribirMemoria(pid, direccion, bytesAEscribir, tamanio);
 
+			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
+
+			enviar_datos(*socket, paquete);
+
+			free(datos);
 			break;
 		}
 
