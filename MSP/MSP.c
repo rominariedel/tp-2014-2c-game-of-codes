@@ -52,7 +52,7 @@ int main(int cantArgs, char** args) {
 	printf("\n -------------  MSP  -------------\n");
 	printf("Iniciando...\n");
 
-	logger = log_create(rutaLog, "Log Programa", false, LOG_LEVEL_TRACE);
+	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 	inicializar(args);
 
 	int* memPpal; //todo chequear repercusiones
@@ -115,45 +115,52 @@ void inicializarConsola() {
 void interpretarComando(char* comando) {
 	char** palabras;
 	palabras = string_n_split(comando, 2, " ");
+	log_debug(logger,"La operación a ejecutar es: %s", palabras[0]);
 	char** parametros = NULL;
 
 	if (palabras[1] != NULL ) {
 		parametros = string_split(palabras[1], " ");
-
+		log_debug(logger,"Los parámetros para la operación son: %s, %s", parametros[0], parametros[1]);
 	}
 
 	if (string_equals_ignore_case(palabras[0], "Crear_Segmento")) {
-		printf("Creando segmento...");
-		printf("%d",atoi(parametros[0]));
+		log_debug(logger,"Interpretó el comando de crear_segmento");
+		printf("Creando segmento...\n");
 		crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
 	}
 
 	else if (string_equals_ignore_case(palabras[0], "Destruir_Segmento")) {
-		printf("Destruyendo segmento...");
+		log_debug(logger,"Interpretó el comando de destruir_segmento");
+		printf("Destruyendo segmento...\n");
 		destruirSegmento(atoi(parametros[0]), (uint32_t) atoi(parametros[1]));
 	}
 
 	else if (string_equals_ignore_case(palabras[0], "Escribir_Memoria")) {
-		printf("Iniciando proceso de escritura de memoria...");
+		log_debug(logger,"Interpretó el comando de escribir_memoria");
+		printf("Iniciando proceso de escritura de memoria...\n");
 		escribirMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
 				parametros[2], atoi(parametros[3]));
 	}
 
 	else if (string_equals_ignore_case(palabras[0], "Leer_Memoria")) {
-		printf("Solicitando memoria...");
+		log_debug(logger,"Interpretó el comando de leer_memoria");
+		printf("Solicitando memoria...\n");
 		solicitarMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
 				atoi(parametros[2]));
 	}
 
 	else if (string_equals_ignore_case(palabras[0], "Tabla_De_Paginas")) {
+		log_debug(logger,"Interpretó el comando de tabla_de_paginas");
 		tablaPaginas(atoi(parametros[0]));
 	}
 
 	if (string_equals_ignore_case(palabras[0], "Tabla_De_Segmentos")) {
+		log_debug(logger,"Interpretó el comando de tabla_de_segmentos");
 		tablaSegmentos();
 	}
 
 	else if (string_equals_ignore_case(palabras[0], "Listar_Marcos")) {
+		log_debug(logger,"Interpretó el comando de listar_marcos");
 		tablaMarcos();
 	}
 }
@@ -218,6 +225,7 @@ void crearMarcos() {
 //Crea un nuevo segmento para el programa PID del tamaño tamanio. Devuelve la direccion
 //virtual base del segmento.
 uint32_t crearSegmento(int PID, int tamanio) {
+	log_debug(logger,"Entra a la función crearSegmento");
 
 	if (tamanio > pow(2, 20)) {
 		log_error(logger, "El tamanio supera al mega de capacidad");
@@ -238,21 +246,38 @@ uint32_t crearSegmento(int PID, int tamanio) {
 
 	if (proceso == NULL ) {
 
-		T_PROCESO* proceso = malloc(sizeof(T_PROCESO));
+		log_info(logger,"La memoria al no contar con el proceso para ese PID, se creará uno nuevo");
+		proceso = malloc(sizeof(T_PROCESO));
 		proceso->PID = PID;
+		log_debug(logger,"El PID para el proceso creado es: %d", proceso->PID);
 		proceso->segmentos = list_create();
+		log_debug(logger,"Se creó la lista de segmentos");
 		list_add(procesos, proceso);
-		printf("creo el proceso nuevo");
+		log_debug(logger,"Se agregó el proceso a la lista de procesos");
 	}
-	printf("creo el proceso");
+
+	log_debug(logger,"Salió del if");
 
 	//creo un segmento vacio para luego añadirlo a la lista de segmentos del proceso
+	T_SEGMENTO* segmentoVacio = crearSegmentoVacio(proceso,tamanio);
+
+	list_add(proceso->segmentos, segmentoVacio);
+	log_debug(logger,"Se agrega el segmento a la lista de segmentos del proceso");
+
+	log_info(logger, "La dirección base del segmento creado es %d",
+			segmentoVacio->baseSegmento);
+
+	return segmentoVacio->baseSegmento;
+}
+
+T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio){
 	T_SEGMENTO* segmentoVacio = malloc(sizeof(T_SEGMENTO));
 
-	segmentoVacio->SID = calcularProximoSID(&proceso);
+	segmentoVacio->SID = calcularProximoSID(proceso);
+	log_debug(logger,"el SID del segmento creado es: %d", segmentoVacio->SID);
 
 	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio,
-			segmentoVacio->SID);
+				segmentoVacio->SID);
 	segmentoVacio->tamanio = tamanio;
 
 	T_DIRECCION_LOG direccionLogica;
@@ -262,12 +287,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 
 	(segmentoVacio->baseSegmento) = DireccionLogicaToUint32(direccionLogica);
 
-	list_add(proceso->segmentos, (void*) segmentoVacio);
-
-	log_info(logger, "La dirección base del segmento creado es %d",
-			segmentoVacio->baseSegmento);
-
-	return segmentoVacio->baseSegmento;
+	return segmentoVacio;
 }
 
 int calcularProximoSID(T_PROCESO* proceso) {
@@ -283,23 +303,29 @@ int calcularProximoSID(T_PROCESO* proceso) {
 }
 
 t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
+	log_debug(logger,"Entro a la funcion crearPaginasPorTamanioSegmento");
 	//instancio la lista de paginas
 	t_list* paginas = list_create();
+	log_debug(logger,"Creo la lista de paginas");
 
 	//calculo la cantidad de páginas que va a tener el segmento
 	//necesario que la cantidadPaginas redondee para arriba - me fijo por el resto, si es distinto de 0 le sumo uno
 	div_t division = div(tamanio, tamanioPag);
+	log_debug(logger,"El resto de la division es: %d", division.rem);
 	int cantidadPaginas = division.quot;
 
 	if (division.rem != 0) {
-		cantidadPaginas = +1;
+		cantidadPaginas += 1;
 	}
+	log_debug(logger,"La cantidad de paginas que va a tener el segmento son: %d", cantidadPaginas);
 
 	int i;
 	for (i = 0; i < cantidadPaginas; i++) {
+		log_debug(logger,"Entro al for para crear cada pagina");
 		//creo una pagina vacia
 		T_PAGINA * paginaVacia = malloc(sizeof(T_PAGINA));
 		paginaVacia->paginaID = i;
+		log_debug(logger,"El id de la pag es: %d", paginaVacia->paginaID);
 		paginaVacia->swapped = 0;
 		paginaVacia->marcoID = 0;
 		paginaVacia->SID = SID;
@@ -310,8 +336,10 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
 
 		//agrego la pagina a la lista de paginas
 		list_add(paginas, paginaVacia);
+		log_debug(logger,"Agrego la pagina a la lista de paginas");
 	}
 
+	log_debug(logger,"El tamaño de la lista de paginas es: %d", list_size(paginas));
 	return paginas;
 }
 

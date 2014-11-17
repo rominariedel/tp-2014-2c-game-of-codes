@@ -79,6 +79,7 @@ int 	tablaPaginas(int PID);
 void 		inicializar(char** args);
 void 		cargarArchivoConfiguracion(char** args);
 void 		crearMarcos();
+T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio);
 int 		calcularProximoSID (T_PROCESO* proceso);
 t_list* 	crearPaginasPorTamanioSegmento(int tamanio, int SID);
 static void destruirPag(T_PAGINA* pagina);
