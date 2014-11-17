@@ -369,12 +369,6 @@ static void destruirPag(T_PAGINA* pagina) {
 //comenzando desde direccion.
 char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
-
-	//TODO if (direccionVirtual){
-	//log_error(logger,"Segmentation Fault: La memoria especificada es inválida");
-	//return -1;
-	//}
-
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
@@ -391,7 +385,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return pagina->paginaID == direccionLogica.paginaId;
 	}
 	bool paginaSiguiente(T_PAGINA* pagina) {
-		return pagina->paginaID == contadorPagina;
+		return pagina->paginaID == (contadorPagina+1);
 	}
 	bool marcoPorVacio(T_MARCO* marco) {
 		return marco->empty == true;
@@ -409,14 +403,14 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 			if (pag != NULL ) {
 
-				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio) {
-					log_error(logger,
-							"Segmentation Fault: Se excedieron los limites del segmento");
-					return (char*) -1;
-				}
 				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
 					log_error(logger,
 							"Segmentation Fault: Direccion Invalida");
+					return (char*) -1;
+				}
+				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio) {
+					log_error(logger,
+							"Segmentation Fault: Se excedieron los limites del segmento");
 					return (char*) -1;
 				}
 
@@ -434,20 +428,23 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
 
-					if (pag->marcoID == -1) {
-						asignoMarcoAPagina(PID, seg, pag);
-					}
 					while (tamanio > tamanioPag){
-						memoriaSolicitada = memoriaSolicitada + pag->data;
-						tamanio = tamanio - tamanioPag;
-						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
-						contadorPagina++;
 
 						if (pag->marcoID == -1) {
 							asignoMarcoAPagina(PID, seg, pag);
 						}
+						memoriaSolicitada = memoriaSolicitada + pag->data;
+						tamanio = tamanio - tamanioPag;
+
+						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
+						contadorPagina++;
+
 					}
+
 					if (tamanio > 0){
+						if (pag->marcoID == -1) {
+							asignoMarcoAPagina(PID, seg, pag);
+						}
 						memoriaSolicitada = memoriaSolicitada + leoMemoria(pag, 0, tamanio);
 					}
 				}
@@ -526,16 +523,18 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 			if (pag != NULL ) {
 
+				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
+					log_error(logger,
+							"Segmentation Fault: Direccion Invalida");
+				return (char*) -1;
+
 				if (((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio)
 					|| (string_length(bytesAEscribir) > tamanio)) {
 					log_error(logger,
 							"Segmentation Fault: Se excedieron los limites del segmento");
 					return (char*) -1;
 				}
-				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
-					log_error(logger,
-							"Segmentation Fault: Direccion Invalida");
-					return (char*) -1;
+
 				}
 				if (pag->marcoID == -1) {
 					asignoMarcoAPagina(PID, seg, pag);
@@ -552,21 +551,22 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 					T_PAGINA* pag = list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
 
-					if (pag->marcoID == -1) {
-						asignoMarcoAPagina(PID, seg, pag);
-					}
+
 					while (tamanio > tamanioPag){
+						if (pag->marcoID == -1) {
+							asignoMarcoAPagina(PID, seg, pag);
+						}
 						escriboMemoria(pag, 0, tamanioPag, bytesAEscribir);
 						bytesAEscribir = string_substring_from(bytesAEscribir, tamanioPag);
 						tamanio = tamanio - tamanioPag;
 						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
 						contadorPagina++;
+					}
 
+					if (tamanio > 0){
 						if (pag->marcoID == -1) {
 							asignoMarcoAPagina(PID, seg, pag);
 						}
-					}
-					if (tamanio > 0){
 						escriboMemoria(pag, 0, tamanio, bytesAEscribir);
 					}
 				}
@@ -594,10 +594,12 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	log_info(logger, "Se ha escrito en memoria exitósamente");
 	return 1;
 }
+
 void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir){
 	int i;
 	for (i = inicio; final > i; i++) {
-		pag->data[i] = *string_substring_until(bytesAEscribir, i);
+		pag->data[i] = *string_substring_until(bytesAEscribir, 1);
+		bytesAEscribir = string_substring_from(bytesAEscribir, 1);
 	}
 }
 void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
