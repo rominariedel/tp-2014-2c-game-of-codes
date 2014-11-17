@@ -37,7 +37,7 @@ typedef struct T_PAGINA {
 	int SID;
 	int swapped;
 	int marcoID;
-	long contadorLRU;
+	int contadorLRU;
 	int bitReferencia;
 	char* data;
 }T_PAGINA;

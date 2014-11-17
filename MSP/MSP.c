@@ -31,6 +31,7 @@ char* MSP_CONFIG;
 int tamanioPag = 256;
 int socket_general;
 int backlog;
+int contadorLRU;
 
 t_list* procesos;
 t_list* marcosVacios;
@@ -439,6 +440,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					memoriaSolicitada = leoMemoria(pag, inicio, tamanioPag);
 					tamanio = tamanio - (tamanioPag - inicio);
 
+
 					T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
 
@@ -496,6 +498,9 @@ char* leoMemoria(T_PAGINA* pag, int inicio, int final)	{
 	for (i = inicio; final > i; i++) {
 		//string_append(&memoria,(pag->data[i])); //todo ayuda
 	}
+	pag->bitReferencia = 1;
+	pag->contadorLRU = contadorLRU;
+	contadorLRU++;
 	return memoria;
 
 }
@@ -615,7 +620,11 @@ void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir){
 		pag->data[i] = *string_substring_until(bytesAEscribir, 1);
 		bytesAEscribir = string_substring_from(bytesAEscribir, 1);
 	}
+	pag->bitReferencia = 1;
+	pag->contadorLRU = contadorLRU;
+	contadorLRU++;
 }
+
 void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	T_MARCO* marcoAsignado;
@@ -637,7 +646,6 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	}
 
 	pag->marcoID = marcoAsignado->marcoID;
-	pag->contadorLRU++; //todo modificar
 	pag->bitReferencia = 1;
 
 	marcoAsignado->pagina = pag;
@@ -924,7 +932,7 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 		txt_close_file(archivo);
 		pag->swapped = true;
 		pag->marcoID = -1; //que pasa con la data?? queda llena?
-		cantidadSwap = -tamanioPag;
+		cantidadSwap -= tamanioPag;
 	} else {
 		log_error(logger,
 				"No se pudo crear el archivo de la pagina a swappear");
@@ -958,45 +966,32 @@ T_MARCO* seleccionarMarcoVictima() {
 }
 
 T_MARCO* algoritmoLRU() {
-	int marcoId;
-
-	bool marcoPorId(T_MARCO* marco) {
-		return marco->marcoID == marcoId;
-	}
-
-	long contadorLRU = 10000;
 	T_MARCO* marcoVictima;
-	int i;
-	int cantidadProcesos = list_size(procesos);
 
-	for (i = 0; i < cantidadProcesos; i++) {
+		int marcoId;
+		int contador = 100000;
 
-		T_PROCESO* proceso = list_get(procesos, i);
-		int j;
-		int cantidadSegmentos = list_size(proceso->segmentos);
+		bool marcoPorId(T_MARCO* marco) {
+			return marco->marcoID == marcoId;
+		}
 
-		for (j = 0; j < cantidadSegmentos; j++) {
-			T_SEGMENTO* segmento = list_get(proceso->segmentos, j);
-			int t;
-			int cantidadPaginas = list_size(segmento->paginas);
+		int i;
+		int cantidadPaginasEnMemoria = list_size(paginasEnMemoria);
 
-			for (t = 0; t < cantidadPaginas; t++) {
-				T_PAGINA* pagina = list_get(segmento->paginas, t);
+		for (i = 0; i < cantidadPaginasEnMemoria; i++) {
 
-				if (pagina->marcoID != -1) {
-					if (pagina->contadorLRU < contadorLRU) {
-						contadorLRU = pagina->contadorLRU;
-						marcoId = pagina->marcoID;
-						marcoVictima = list_find(marcosLlenos,
-								(void*) marcoPorId);
-					}
-				}
+			T_PAGINA* pagina = list_get(paginasEnMemoria, i);
+
+			if (pagina->contadorLRU < contador) {
+					contador = pagina->contadorLRU;
+					marcoId = pagina->marcoID;
 			}
 		}
-	}
 
-	return marcoVictima;
+		marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
+		return marcoVictima;
 }
+
 
 T_MARCO* algoritmoClock() {
 	T_MARCO* marcoVictima;
@@ -1016,13 +1011,12 @@ T_MARCO* algoritmoClock() {
 
 		if (pagina->bitReferencia == 0) {
 			marcoId = pagina->marcoID;
-			marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
 			i = cantidadPaginasEnMemoria + 1;
 		} else if (pagina->bitReferencia == 1) {
 			pagina->bitReferencia = 0;
 		}
 
 	}
-
+	marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
 	return marcoVictima;
 }
