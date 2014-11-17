@@ -49,6 +49,10 @@ t_log* logger;
 sem_t* mutex;
 
 int main(int cantArgs, char** args) {
+	printf("\n -------------  MSP  -------------\n");
+	printf("Iniciando...\n");
+
+	logger = log_create(rutaLog, "Log Programa", false, LOG_LEVEL_TRACE);
 	inicializar(args);
 
 	int* memPpal; //todo chequear repercusiones
@@ -91,7 +95,6 @@ int main(int cantArgs, char** args) {
 void inicializar(char** args) {
 	cargarArchivoConfiguracion(args);
 
-	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_TRACE);
 	crearMarcos();
 	procesos = list_create();
 	paginasEnMemoria = list_create();
@@ -103,8 +106,7 @@ void inicializarConsola() {
 
 	while (seguimiento) {
 		printf(">");
-		scanf("%s", comando); //todo
-
+		fgets(comando,50,stdin);
 		interpretarComando(comando);
 		printf("\r\n");
 	}
@@ -112,17 +114,17 @@ void inicializarConsola() {
 
 void interpretarComando(char* comando) {
 	char** palabras;
-	palabras = malloc(sizeof(char*)* 2);
 	palabras = string_n_split(comando, 2, " ");
-	char** parametros;
-	parametros = malloc(sizeof(char*)* 4);
+	char** parametros = NULL;
 
 	if (palabras[1] != NULL ) {
 		parametros = string_split(palabras[1], " ");
+
 	}
 
 	if (string_equals_ignore_case(palabras[0], "Crear_Segmento")) {
 		printf("Creando segmento...");
+		printf("%d",atoi(parametros[0]));
 		crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
 	}
 
@@ -147,7 +149,7 @@ void interpretarComando(char* comando) {
 		tablaPaginas(atoi(parametros[0]));
 	}
 
-	else if (string_equals_ignore_case(palabras[0], "Tabla_De_Segmentos")) {
+	if (string_equals_ignore_case(palabras[0], "Tabla_De_Segmentos")) {
 		tablaSegmentos();
 	}
 
@@ -239,14 +241,16 @@ uint32_t crearSegmento(int PID, int tamanio) {
 		T_PROCESO* proceso = malloc(sizeof(T_PROCESO));
 		proceso->PID = PID;
 		proceso->segmentos = list_create();
-
 		list_add(procesos, proceso);
+		printf("creo el proceso nuevo");
 	}
+	printf("creo el proceso");
 
 	//creo un segmento vacio para luego añadirlo a la lista de segmentos del proceso
 	T_SEGMENTO* segmentoVacio = malloc(sizeof(T_SEGMENTO));
 
-	segmentoVacio->SID = calcularProximoSID(proceso);
+	segmentoVacio->SID = calcularProximoSID(&proceso);
+
 	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio,
 			segmentoVacio->SID);
 	segmentoVacio->tamanio = tamanio;
@@ -267,12 +271,15 @@ uint32_t crearSegmento(int PID, int tamanio) {
 }
 
 int calcularProximoSID(T_PROCESO* proceso) {
-	if (list_size(proceso->segmentos) == 0) {
+
+	if (list_is_empty(proceso->segmentos)) {
 		return 0;
 	}
+
 	T_SEGMENTO* ultimoSegmento = list_get(proceso->segmentos,
 			list_size(proceso->segmentos) - 1);
 	return ((ultimoSegmento->SID) + 1);
+
 }
 
 t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
@@ -441,7 +448,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					tamanio = tamanio - (tamanioPag - inicio);
 
 
-					T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
+					pag= list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
 
 					while (tamanio > tamanioPag){
@@ -452,7 +459,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 						string_append((char**) memoriaSolicitada,pag->data);
 						tamanio = tamanio - tamanioPag;
 
-						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
+						pag= list_find(seg->paginas, (void*) paginaSiguiente);
 						contadorPagina++;
 
 					}
@@ -567,7 +574,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 					bytesAEscribir = string_substring_from(bytesAEscribir, (tamanioPag - inicio));
 					tamanio = tamanio - (tamanioPag - inicio);
 
-					T_PAGINA* pag = list_find(seg->paginas, (void*) paginaSiguiente);
+					pag = list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
 
 
@@ -578,7 +585,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 						escriboMemoria(pag, 0, tamanioPag, bytesAEscribir);
 						bytesAEscribir = string_substring_from(bytesAEscribir, tamanioPag);
 						tamanio = tamanio - tamanioPag;
-						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
+						pag= list_find(seg->paginas, (void*) paginaSiguiente);
 						contadorPagina++;
 					}
 
@@ -890,9 +897,9 @@ void interpretarOperacion(int* socket) {
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
 			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t), sizeof(int));
 
-			respuesta = solicitarMemoria(pid, direccion, tamanio);
+			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
-			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
+			paquete = crear_paquete(0, (void*) resultado, sizeof(uint32_t));
 
 			enviar_datos(*socket, paquete);
 

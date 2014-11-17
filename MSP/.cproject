@@ -41,10 +41,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Sockets/Debug}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.112454776" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="commons"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="Sockets"/>
+									<listOptionValue builtIn="false" value="commons"/>
+									<listOptionValue builtIn="false" value="Sockets"/>
 									<listOptionValue builtIn="false" value="pthread"/>
-									<listOptionValue builtIn="false" value="cspec"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.873957996" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
