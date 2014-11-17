@@ -81,6 +81,7 @@ int main(int cantArgs, char** args) {
 
 void inicializar(char** args) {
 	cargarArchivoConfiguracion(args);
+
 	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_TRACE);
 	crearMarcos();
 	procesos = list_create();
@@ -346,12 +347,28 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 }
 
 static void destruirPag(T_PAGINA* pagina) {
+
+	bool marcoPorPagina(T_MARCO* marco) {
+		return marco->pagina == pagina;
+	}
+
+	//busco en la lista de marcos el marco con esa pagina si esta asignado
+	T_MARCO* marco = list_find(marcosLlenos, (void*) marcoPorPagina);
+
+	if (marco != NULL ) {
+		marco->empty = true;
+		marco->PID = -1;
+		marco->pagina = -1; //todo
+	}
+
 	free(pagina);
+
 }
 
 //Para el espacio de direcciones del proceso PID, devuelve hasta tamanio bytes
 //comenzando desde direccion.
 char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
+
 
 	//TODO if (direccionVirtual){
 	//log_error(logger,"Segmentation Fault: La memoria especificada es inválida");
@@ -359,6 +376,9 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	//}
 
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
+	int contadorPagina;
+	contadorPagina = direccionLogica.paginaId;
+
 	char* memoriaSolicitada = malloc(tamanio);
 
 	bool procesoPorPid(T_PROCESO* proceso) {
@@ -369,6 +389,9 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	}
 	bool paginaPorPagid(T_PAGINA* pagina) {
 		return pagina->paginaID == direccionLogica.paginaId;
+	}
+	bool paginaSiguiente(T_PAGINA* pagina) {
+		return pagina->paginaID == contadorPagina;
 	}
 	bool marcoPorVacio(T_MARCO* marco) {
 		return marco->empty == true;
@@ -381,15 +404,21 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 		if (seg != NULL ) {
 
-			if ((direccionLogica.desplazamiento + tamanio) > seg->tamanio) {
-				log_error(logger,
-						"Segmentation Fault: Se excedieron los limites del segmento");
-				return (char*) -1;
-			}
-
+			//aca me trae la pagina donde esta el desplazamiento pero con el tamanio me puedo pasar de pagina.
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
 			if (pag != NULL ) {
+
+				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio) {
+					log_error(logger,
+							"Segmentation Fault: Se excedieron los limites del segmento");
+					return (char*) -1;
+				}
+				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
+					log_error(logger,
+							"Segmentation Fault: Direccion Invalida");
+					return (char*) -1;
+				}
 
 				if (pag->marcoID == -1) {
 					asignoMarcoAPagina(PID, seg, pag);
@@ -397,13 +426,34 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 				int inicio = direccionLogica.desplazamiento;
 				int final = direccionLogica.desplazamiento + tamanio;
-				int i;
-				for (i = inicio; final > i; i++) {
-					string_append((char**) &memoriaSolicitada, &(pag->data[i]));
-				}
 
-				pag->contadorLRU++;
-				pag->bitReferencia = 1;
+				if (final > tamanioPag) {
+					memoriaSolicitada = leoMemoria(pag, inicio, tamanioPag);
+					tamanio = tamanio - (tamanioPag - inicio);
+
+					T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
+					contadorPagina++;
+
+					if (pag->marcoID == -1) {
+						asignoMarcoAPagina(PID, seg, pag);
+					}
+					while (tamanio > tamanioPag){
+						memoriaSolicitada = memoriaSolicitada + pag->data;
+						tamanio = tamanio - tamanioPag;
+						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
+						contadorPagina++;
+
+						if (pag->marcoID == -1) {
+							asignoMarcoAPagina(PID, seg, pag);
+						}
+					}
+					if (tamanio > 0){
+						memoriaSolicitada = memoriaSolicitada + leoMemoria(pag, 0, tamanio);
+					}
+				}
+				else {
+					memoriaSolicitada = leoMemoria(pag, inicio, final);
+				}
 
 			} else {
 				log_error(logger,
@@ -428,17 +478,25 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	//return memoriaSolicitada; //Esto debería devolver un int, qué se hace con memoriaSolicitada?
 }
 
+char* leoMemoria(T_PAGINA* pag, int inicio, int final)	{
+
+	char* memoria = malloc(final-inicio);
+	int i;
+	for (i = inicio; final > i; i++) {
+		string_append((char**) &memoria, &(pag->data[i]));
+	}
+	return memoria;
+
+}
 //Para el espacio de direcciones del proceso PID, escribe hasta tamanio bytes del buffer bytesAEscribir
 //comenzando en la direccion.
 uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		int tamanio) {
 
-	//TODO if (direccionVirtual){
-	//log_error(logger,"Segmentation Fault: La memoria especificada es inválida");
-	//return -1;
-	//}
-
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
+
+	int contadorPagina;
+	contadorPagina = direccionLogica.paginaId;
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -448,6 +506,9 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	}
 	bool paginaPorPagid(T_PAGINA* pagina) {
 		return pagina->paginaID == direccionLogica.paginaId;
+	}
+	bool paginaSiguiente(T_PAGINA* pagina) {
+		return pagina->paginaID == contadorPagina + 1;
 	}
 	bool marcoPorVacio(T_MARCO* marco) {
 		return marco->empty == true;
@@ -460,30 +521,58 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 		if (seg != NULL ) {
 
-			if (((direccionLogica.desplazamiento + tamanio) > seg->tamanio)
-					|| (string_length(bytesAEscribir) > tamanio)) {
-				log_error(logger,
-						"Segmentation Fault: Se excedieron los límites del segmento");
-				return -1;
-			}
-
+			//aca me trae la pagina donde esta el desplazamiento pero con el tamanio me puedo pasar de pagina.
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
 			if (pag != NULL ) {
 
+				if (((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio)
+					|| (string_length(bytesAEscribir) > tamanio)) {
+					log_error(logger,
+							"Segmentation Fault: Se excedieron los limites del segmento");
+					return (char*) -1;
+				}
+				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
+					log_error(logger,
+							"Segmentation Fault: Direccion Invalida");
+					return (char*) -1;
+				}
 				if (pag->marcoID == -1) {
 					asignoMarcoAPagina(PID, seg, pag);
 				}
 
 				int inicio = direccionLogica.desplazamiento;
 				int final = direccionLogica.desplazamiento + tamanio;
-				int i;
-				for (i = inicio; final > i; i++) {
-					pag->data[i] = *string_substring_until(bytesAEscribir, i);
-				}
 
-				pag->contadorLRU++;
-				pag->bitReferencia = 1;
+				if (final > tamanioPag) {
+					escriboMemoria(pag, inicio, tamanioPag, bytesAEscribir);
+					bytesAEscribir = string_substring_from(bytesAEscribir, (tamanioPag - inicio));
+					tamanio = tamanio - (tamanioPag - inicio);
+
+					T_PAGINA* pag = list_find(seg->paginas, (void*) paginaSiguiente);
+					contadorPagina++;
+
+					if (pag->marcoID == -1) {
+						asignoMarcoAPagina(PID, seg, pag);
+					}
+					while (tamanio > tamanioPag){
+						escriboMemoria(pag, 0, tamanioPag, bytesAEscribir);
+						bytesAEscribir = string_substring_from(bytesAEscribir, tamanioPag);
+						tamanio = tamanio - tamanioPag;
+						T_PAGINA* pag= list_find(seg->paginas, (void*) paginaSiguiente);
+						contadorPagina++;
+
+						if (pag->marcoID == -1) {
+							asignoMarcoAPagina(PID, seg, pag);
+						}
+					}
+					if (tamanio > 0){
+						escriboMemoria(pag, 0, tamanio, bytesAEscribir);
+					}
+				}
+				else {
+					escriboMemoria(pag, inicio, final, bytesAEscribir);
+				}
 
 			} else {
 				log_error(logger,
@@ -505,7 +594,12 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	log_info(logger, "Se ha escrito en memoria exitósamente");
 	return 1;
 }
-
+void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir){
+	int i;
+	for (i = inicio; final > i; i++) {
+		pag->data[i] = *string_substring_until(bytesAEscribir, i);
+	}
+}
 void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	T_MARCO* marcoAsignado;
@@ -527,6 +621,9 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	}
 
 	pag->marcoID = marcoAsignado->marcoID;
+	pag->contadorLRU++; //todo modificar
+	pag->bitReferencia = 1;
+
 	marcoAsignado->pagina = pag;
 	marcoAsignado->PID = PID;
 	marcoAsignado->empty = false;
@@ -693,8 +790,8 @@ void iniciarConexiones() {
 
 	printf("Esperando conexiones...\n");
 
-	pthread_t hiloPlanificador;
 	pthread_t hiloKernel;
+	pthread_t hiloCPU;
 
 	while (1) {
 
@@ -707,21 +804,16 @@ void iniciarConexiones() {
 
 		if (modulo_conectado == soy_CPU) {
 			printf("Se conecto una CPU\n");
-
-			pthread_create(&hiloPlanificador, NULL,
-					(void*) interpretarOperacion, &socket_conectado);
+			pthread_create(&hiloCPU, NULL, (void*) interpretarOperacion, &socket_conectado);
 		}
 
 		else if (modulo_conectado == soy_kernel) {
 			printf("Se conecto el Kernel\n");
-
-			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion,
-					&socket_conectado);
+			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion, &socket_conectado);
 		}
 
 		free(datos->datos);
 		free(datos);
-
 	}
 
 }
