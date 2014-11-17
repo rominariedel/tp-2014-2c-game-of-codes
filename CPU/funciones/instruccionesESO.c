@@ -118,7 +118,7 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 void INTE(tparam_inte* parametrosInte){
 
 	XXXX();
-	KERNEL_ejecutarRutinaKernel(interrupcion ,parametrosInte->direccion);
+	KERNEL_ejecutarRutinaKernel(finaliza_ejecucion ,parametrosInte->direccion);
 
 	/*
 	cuando el proceso CPU notifique al Kernel que un hilo desea ejecutar una llamada al

@@ -116,6 +116,20 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion ");
 			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
 
+			//si hubo algun error con las operaciones con memoria tengo que terminar la ejecucion!!
+
+			if(errorOperacionesConMemoria == -1){
+				switch(errorMemoria){
+				case error_memoriaLlena:
+					devolverTCBactual(error_memoriaLlena);
+					break;
+				case error_segmentationFault:
+					devolverTCBactual(error_segmentationFault);
+					break;
+				}
+				break;
+			}
+
 			log_info(LOGCPU, "  Registro A : %d  ", A);
 			log_info(LOGCPU, "  Registro B : %d  ", B);
 			log_info(LOGCPU, "  Registro C : %d  ", C);
@@ -128,6 +142,7 @@ int main(int cantArgs, char** args){
 
 			// 5. Incrementa el Puntero de Instrucción.
 
+
 			if(respuesta ==-1){
 				log_error(LOGCPU, "No se encontro la instruccion o no tiene los permisos necesarios");
 				printf("\n No se encontro la instruccion o no tiene los permisos necesarios\n");
@@ -138,8 +153,15 @@ int main(int cantArgs, char** args){
 				exit(0);
 			}else{
 				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
-				punteroInstruccionActual =+ respuesta;}
+				punteroInstruccionActual =+ respuesta;
+			}
 				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
+
+			if(finalizarEjecucion == -1){
+				log_info(LOGCPU, "finalizo EJECUCION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				devolverTCBactual(finaliza_ejecucion);
+				break;
+			}
 
 			// 5.b Incrementar quantum
 			quantumActual++;
@@ -286,11 +308,9 @@ void devolverTCBactual(int codOperacion){
 	actualizarTCB();
 
 	log_info(LOGCPU, "Armando paquete con TCB actual PID %d, TID %d", PIDactual, TIDactual);
-	int op = codOperacion; //ver porque lo estoy mandando... termino quantum, por interrupcion, por lo que sea
 	void * mensaje = malloc(sizeof(t_TCB) + sizeof(int));
-	memcpy(mensaje, &op, sizeof(int));
-	memcpy(mensaje + sizeof(int), TCBactual, sizeof(t_TCB));
-	t_datosAEnviar* paquete = crear_paquete(1, mensaje, sizeof(mensaje));
+	memcpy(mensaje, TCBactual, sizeof(t_TCB));
+	t_datosAEnviar* paquete = crear_paquete(codOperacion, mensaje, sizeof(mensaje));
 	int status = enviar_datos(socketKernel, paquete);
 	if(status == -1){
 		log_info(LOGCPU, "No se pudo devolver el TCB actual");
@@ -339,7 +359,8 @@ void limpiarRegistros(){
 
 
 int interpretarYEjecutarInstruccion(char* instruccion){
-	if(0 == strcmp(instruccion,"LOAD")){
+	if(strcmp(instruccion,"LOAD")){
+		printf("ME METI EN LOAD\n");
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
 		tparam_load* parametrosLoad = (tparam_load*) respuesta;
 		log_info(LOGCPU, "LOAD(%d,%c)",parametrosLoad->num, parametrosLoad->reg1);

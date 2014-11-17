@@ -45,6 +45,8 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 int procesarRespuesta(t_datosAEnviar* respuesta){
 	int estado;
+	errorOperacionesConMemoria = 0;
+	errorMemoria = 0;
 	switch(respuesta->codigo_operacion){
 		case error_segmentationFault:
 			devolverTCBactual(error_segmentationFault);

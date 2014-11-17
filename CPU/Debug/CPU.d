@@ -5,7 +5,7 @@ CPU.d: ../CPU.c ../CPU.h \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h \
  /home/utnso/tp-2014-2c-game-of-codes/commons/commons/collections/node.h \
  /home/utnso/workspace/Sockets/sockets.h ../funciones/bibliotecas.h \
- ../t_parametros.h ../funciones/funcionesMSP.h \
+ ../t_parametros.h ../variablesGlobales.h ../funciones/funcionesMSP.h \
  ../funciones/funcionesKernel.h ../funciones/instruccionesESO.h
 
 ../CPU.h:
@@ -25,6 +25,8 @@ CPU.d: ../CPU.c ../CPU.h \
 ../funciones/bibliotecas.h:
 
 ../t_parametros.h:
+
+../variablesGlobales.h:
 
 ../funciones/funcionesMSP.h:
 

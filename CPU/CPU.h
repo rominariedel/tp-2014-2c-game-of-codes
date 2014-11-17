@@ -30,6 +30,7 @@
 #include <sockets.h>
 #include "funciones/bibliotecas.h"
 #include "t_parametros.h"
+#include "variablesGlobales.h"
 #include "funciones/funcionesMSP.h"
 #include "funciones/funcionesKernel.h"
 #include "funciones/instruccionesESO.h"
@@ -70,8 +71,8 @@ t_log* LOGCPU;
 
 int finalizarEjecucion;
 
-errorOperacionesConMemoria = 0;
-errorMemoria = 0;
+//int errorOperacionesConMemoria;
+//int errorMemoria;
 
 
 
@@ -91,7 +92,7 @@ int* devolverRegistro(char registro);
 int interpretarYEjecutarInstruccion(char* instruccion);
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
 char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
-void hacerunBreak();
+
 
 enum mensajesMSP{
 	/*enviar mensajes*/
