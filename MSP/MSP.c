@@ -474,17 +474,22 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					return (char*) -1;
 				}
 
-				log_debug(logger,"Llegue acá");
+				log_debug(logger,"La pagina tiene el marco asignado de id: %d", pag->marcoID);
 				if (pag->marcoID == -1) {
 					log_debug(logger,"Como la página no tiene marco asignado, le asigno");
-					//asignoMarcoAPagina(PID, seg, pag);
+					asignoMarcoAPagina(PID, seg, pag);
 				}
 
 				int inicio = direccionLogica.desplazamiento;
+				log_debug(logger,"Comienza a leer desde: %d", inicio);
 				int final = direccionLogica.desplazamiento + tamanio;
+				log_debug(logger,"Termina a leer en: %d", final);
 
 				if (final > tamanioPag) {
+					log_debug(logger,"El final es mayor que el tamanioPag");
+
 					memoriaSolicitada = leoMemoria(pag, inicio, tamanioPag);
+					log_debug(logger,"La memoria leida es %s", memoriaSolicitada);
 					tamanio = tamanio - (tamanioPag - inicio);
 
 					pag= list_find(seg->paginas, (void*) paginaSiguiente);
@@ -492,25 +497,29 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 					while (tamanio > tamanioPag){
 
-						if (pag->marcoID == -1) {
-							asignoMarcoAPagina(PID, seg, pag);
-						}
-						string_append((char**) memoriaSolicitada,pag->data);
-						tamanio = tamanio - tamanioPag;
+					if (pag->marcoID == -1) {
+						asignoMarcoAPagina(PID, seg, pag);
+					}
 
-						pag= list_find(seg->paginas, (void*) paginaSiguiente);
-						contadorPagina++;
+					string_append(&memoriaSolicitada,pag->data);
+					tamanio = tamanio - tamanioPag;
+
+					pag= list_find(seg->paginas, (void*) paginaSiguiente);
+					contadorPagina++;
 
 					}
 
 					if (tamanio > 0){
+						log_debug(logger,"El tamanio es mayor a 0");
 						if (pag->marcoID == -1) {
 							asignoMarcoAPagina(PID, seg, pag);
 						}
-						string_append((char**)memoriaSolicitada, leoMemoria(pag, 0, tamanio));
+						string_append(&memoriaSolicitada, leoMemoria(pag, 0, tamanio));
 					}
 				}
 				else {
+					log_debug(logger,"El tamanio es menor que el tamanioPag");
+					log_debug(logger,"Lee memoria directamente");
 					memoriaSolicitada = leoMemoria(pag, inicio, final);
 				}
 
@@ -531,19 +540,30 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return (char*) -1;
 	}
 
-	log_info(logger, "EL contenido de la página solicitada es: %s",
+	log_info(logger, "El contenido de la página solicitada es: %s",
 			memoriaSolicitada);
-	return (char*) 1; //Este return es provisorio, capaz memoriaSolicitada haya que usarlo como variable global
+	return memoriaSolicitada; //Este return es provisorio, capaz memoriaSolicitada haya que usarlo como variable global
 	//return memoriaSolicitada; //Esto debería devolver un int, qué se hace con memoriaSolicitada?
 }
 
 char* leoMemoria(T_PAGINA* pag, int inicio, int final)	{
+	log_debug(logger,"Entre a leoMemoria");
 
-	char* memoria = malloc(sizeof(char)*(final-inicio));
+	char* memoria = string_new();
+	int tamanio = final - inicio;
+	memoria = string_substring(pag->data, inicio, tamanio);
+	log_debug(logger,"La memoria es: %s", memoria);
+
+	/*
 	int i;
 	for (i = inicio; final > i; i++) {
+		log_debug(logger,"Entre al for");
+
 		string_append(&memoria,(pag->data[i]));
+		log_debug(logger,"La memoria es: %s", memoria);
 	}
+	*/
+
 	pag->bitReferencia = 1;
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
@@ -688,8 +708,11 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	}
 
 	if (list_is_empty(marcosVacios)) {
+		log_debug(logger,"Entro porque no hay marcos libres");
 		if (cantidadSwap != 0) {
+			log_debug(logger,"Hay cantidad de swap disponible");
 			marcoAsignado = seleccionarMarcoVictima();
+			log_debug(logger,"El marco asignado tiene id: %d", marcoAsignado->marcoID);
 			swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID,
 					marcoAsignado->pagina);
 		} else {
@@ -700,6 +723,7 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	}
 
 	pag->marcoID = marcoAsignado->marcoID;
+	log_debug(logger,"La página tiene el marco asignado de id %d", pag->marcoID);
 	pag->bitReferencia = 1;
 
 	marcoAsignado->pagina = pag;
