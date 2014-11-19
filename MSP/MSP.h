@@ -35,6 +35,7 @@ typedef struct T_SEGMENTO {
 typedef struct T_PAGINA {
 	int paginaID;
 	int SID;
+	int PID;
 	int swapped;
 	int marcoID;
 	int contadorLRU;
