@@ -786,9 +786,10 @@ int tablaMarcos() {
 
 int tablaSegmentos() {
 	log_debug(logger,"Entre a la funcion tablaSegmentos");
-	//printf("%s TABLA DE SEGMENTOS %s", string_repeat('-', 40),
-		//	string_repeat('-', 40));
-
+	printf("\n");
+	printf("%s TABLA DE SEGMENTOS %s", string_repeat('-', 40),
+		string_repeat('-', 40));
+	printf("\n");
 
 	int cantidadProcesos = list_size(procesos);
 	int i;
@@ -809,20 +810,24 @@ int tablaSegmentos() {
 		for (j = 0; cantidadSegmentos > j; j++) {
 			T_SEGMENTO* segmento = list_get(proceso->segmentos, j);
 			printf("%c", '\n');
-			printf("Número de segmento: %d", (int) segmento->SID);
-			printf("Tamaño: %d", segmento->tamanio);
+			printf("Número de segmento: %d    ", (int) segmento->SID);
+			printf("Tamaño: %d    ", segmento->tamanio);
 			printf("Dirección virtual base: %d", (int) segmento->baseSegmento);
 		}
 	}
 
-	//printf("%s\n", string_repeat('-', 100));
+	printf("\n");
+	printf("%s\n", string_repeat('-', 100));
+	printf("\n");
 	log_info(logger, "Tabla de segmentos mostrada satisfactoriamente");
 	return 1;
 }
 
 int tablaPaginas(int PID) {
+	printf("\n");
 	printf("%s TABLA DE PÁGINAS %s", string_repeat('-', 40),
 			string_repeat('-', 40));
+	printf("\n");
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -861,6 +866,7 @@ int tablaPaginas(int PID) {
 
 	printf("%c", '\n');
 	printf("%s", string_repeat('-', 100));
+	printf("\n");
 
 	log_info(logger, "Tabla de páginas mostrada satisfactoriamente");
 	return 1;
