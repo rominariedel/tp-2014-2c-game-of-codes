@@ -46,7 +46,13 @@ pthread_t hiloEsperarConexiones;
 t_log* logger;
 
 //	Semáforos
-sem_t* mutex;
+sem_t* mutex_MemoriaDisponible;
+sem_t* mutex_cantSwap;
+sem_t* mutex_contadorLRU;
+sem_t* mutex_procesos;
+sem_t* mutex_marcosLlenos;
+sem_t* mutex_marcosVacios;
+sem_t* mutex_paginasEnMemoria;
 
 int main(int cantArgs, char** args) {
 	printf("\n -------------  MSP  -------------\n");
@@ -98,6 +104,14 @@ void inicializar(char** args) {
 	crearMarcos();
 	procesos = list_create();
 	paginasEnMemoria = list_create();
+
+	sem_init(&mutex_MemoriaDisponible,0,1);
+	sem_init(&mutex_cantSwap,0,1);
+	sem_init(&mutex_contadorLRU,0,1);
+	sem_init(&mutex_procesos,0,1);
+	sem_init(&mutex_marcosLlenos,0,1);
+	sem_init(&mutex_marcosVacios,0,1);
+	sem_init(&mutex_paginasEnMemoria,0,1);
 }
 
 void inicializarConsola() {
