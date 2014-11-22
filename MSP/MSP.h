@@ -14,10 +14,15 @@
 enum mensajes {
 	soy_CPU = 19,
 	soy_kernel = 29,
-	crear_segmento = 1,
-	destruir_segmento =2,
-	solicitar_memoria = 3,
-	escribir_memoria = 4,
+	crear_segmento = 32,
+	destruir_segmento = 30,
+	solicitar_memoria = 31,
+	escribir_memoria = 2,
+
+	operacion_exitosa = 1,
+	error = -1,
+	error_segmention_fault = -2,
+	error_memoria_llena = -3,
 };
 
 typedef struct T_PROCESO {

@@ -61,19 +61,8 @@ int main(int cantArgs, char** args) {
 	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 	inicializar(args);
 
-	int* memPpal; //todo chequear repercusiones
-	memPpal = malloc(tamanioMemoria);
-	char* aux = malloc(sizeof(char)* tamanioMemoria);
-	aux = (char*) memPpal;
-
-	//int finMemPpal = memPpal + tamanioMemoria;
-	int i;
-	for (i = 0; i < tamanioMemoria; i++) {
-		aux[i] = 0;
-	}
-
-	int hilo_Consola = pthread_create(&hiloConsola, NULL, (void*) inicializarConsola,
-			NULL );
+	int hilo_Consola = pthread_create(&hiloConsola, NULL,
+			(void*) inicializarConsola, NULL );
 	if (hilo_Consola == 0) {
 		log_info(logger,
 				"La Consola de MSP se inicializó correctamente \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginación: %d",
@@ -86,12 +75,10 @@ int main(int cantArgs, char** args) {
 	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL,
 			(void*) iniciarConexiones, NULL );
 	if (hilo_EsperarConexiones == 0) {
-			log_info(logger,
-					"La espera de conexiones se incializó correctamente");
-			pthread_join(hilo_EsperarConexiones, NULL );
-		} else
-			log_error(logger,
-					"Ha ocurrido un error en la espera de conexioness");
+		log_info(logger, "La espera de conexiones se incializó correctamente");
+		pthread_join(hilo_EsperarConexiones, NULL );
+	} else
+		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
 
 	pthread_join(hiloEsperarConexiones, NULL );
 
@@ -105,89 +92,89 @@ void inicializar(char** args) {
 	procesos = list_create();
 	paginasEnMemoria = list_create();
 
-	sem_init(&mutex_MemoriaDisponible,0,1);
-	sem_init(&mutex_cantSwap,0,1);
-	sem_init(&mutex_contadorLRU,0,1);
-	sem_init(&mutex_procesos,0,1);
-	sem_init(&mutex_marcosLlenos,0,1);
-	sem_init(&mutex_marcosVacios,0,1);
-	sem_init(&mutex_paginasEnMemoria,0,1);
+	sem_init(&mutex_MemoriaDisponible, 0, 1);
+	sem_init(&mutex_cantSwap, 0, 1);
+	sem_init(&mutex_contadorLRU, 0, 1);
+	sem_init(&mutex_procesos, 0, 1);
+	sem_init(&mutex_marcosLlenos, 0, 1);
+	sem_init(&mutex_marcosVacios, 0, 1);
+	sem_init(&mutex_paginasEnMemoria, 0, 1);
 }
 
 void inicializarConsola() {
-	char* comando = malloc(sizeof(char)* 50);
+	char* comando = malloc(sizeof(char) * 50);
 	int seguimiento = 1;
 
 	while (seguimiento) {
 		printf(">");
-		fgets(comando,50,stdin);
-		comando[string_length(comando)-1] = '\0'; //todo aca no habia un if?
+		fgets(comando, 50, stdin);
+		comando[string_length(comando) - 1] = '\0'; //todo aca no habia un if?
 
 		if (string_equals_ignore_case(comando, "Cerrar")) {
-			log_debug(logger,"Se pidió Cerrar Consola");
+			log_debug(logger, "Se pidió Cerrar Consola");
 			seguimiento = 0;
-		}
-		else {
+		} else {
 			interpretarComando(comando);
 		}
 		printf("\r\n");
 	}
-	log_debug(logger,"Se cerro la Consola");
+	log_debug(logger, "Se cerro la Consola");
 	//deberia matar al hilo? todo
 }
 
 void interpretarComando(char* comando) {
 	char** operacion;
 	operacion = string_n_split(comando, 2, " ");
-	log_debug(logger,"La operación a ejecutar es: %s", operacion[0]);
+	log_debug(logger, "La operación a ejecutar es: %s", operacion[0]);
 	char** parametros = NULL;
 
-	if (operacion[1] != NULL) {
+	if (operacion[1] != NULL ) {
 		parametros = string_split(operacion[1], " ");
-		log_debug(logger,"Los parámetros para la operación son: %s, %s, %s", parametros[0], parametros[1], parametros[2]);
+		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s",
+				parametros[0], parametros[1], parametros[2]);
 	}
 
 	if (string_equals_ignore_case(operacion[0], "Crear_Segmento")) {
-		log_debug(logger,"Interpretó el comando de crear_segmento");
+		log_debug(logger, "Interpretó el comando de crear_segmento");
 		printf("Creando segmento...\n");
 		crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Destruir_Segmento")) {
-		log_debug(logger,"Interpretó el comando de destruir_segmento");
+		log_debug(logger, "Interpretó el comando de destruir_segmento");
 		printf("Destruyendo segmento...\n");
 		destruirSegmento(atoi(parametros[0]), (uint32_t) atoi(parametros[1]));
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Escribir_Memoria")) {
-		log_debug(logger,"Interpretó el comando de escribir_memoria");
+		log_debug(logger, "Interpretó el comando de escribir_memoria");
 		printf("Iniciando proceso de escritura de memoria...\n");
 		escribirMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
 				parametros[2], atoi(parametros[3]));
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Leer_Memoria")) {
-		log_debug(logger,"Interpretó el comando de leer_memoria");
+		log_debug(logger, "Interpretó el comando de leer_memoria");
 		printf("Solicitando memoria...\n");
-		solicitarMemoria(atoi(parametros[0]), atoi(parametros[1]), atoi(parametros[2]));
+		solicitarMemoria(atoi(parametros[0]), atoi(parametros[1]),
+				atoi(parametros[2]));
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Tabla_De_Paginas")) {
-		log_debug(logger,"Interpretó el comando de tabla_de_paginas");
+		log_debug(logger, "Interpretó el comando de tabla_de_paginas");
 		tablaPaginas(atoi(parametros[0]));
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Tabla_De_Segmentos")) {
-		log_debug(logger,"Interpretó el comando de tabla_de_segmentos");
+		log_debug(logger, "Interpretó el comando de tabla_de_segmentos");
 		tablaSegmentos();
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Listar_Marcos")) {
-		log_debug(logger,"Interpretó el comando de listar_marcos");
+		log_debug(logger, "Interpretó el comando de listar_marcos");
 		tablaMarcos();
 	}
 }
-
 
 void cargarArchivoConfiguracion(char** args) {
 	t_config* configuracion = config_create(args[1]);
@@ -230,8 +217,8 @@ void crearMarcos() {
 	marcosLlenos = list_create();
 	marcosVacios = list_create();
 
-	float cantidadDeMarcos = (float)tamanioMemoria / (float)tamanioPag;
-	int cantidadMarcos = (int)cantidadDeMarcos;
+	float cantidadDeMarcos = (float) tamanioMemoria / (float) tamanioPag;
+	int cantidadMarcos = (int) cantidadDeMarcos;
 	int i;
 
 	for (i = 0; i < cantidadMarcos; i++) {
@@ -249,17 +236,17 @@ void crearMarcos() {
 //Crea un nuevo segmento para el programa PID del tamaño tamanio. Devuelve la direccion
 //virtual base del segmento.
 uint32_t crearSegmento(int PID, int tamanio) {
-	log_debug(logger,"Entra a la función crearSegmento");
+	log_debug(logger, "Entra a la función crearSegmento");
 
 	if (tamanio > pow(2, 20)) {
 		log_error(logger, "El tamanio supera al mega de capacidad");
-		return -1;
+		return error;
 	}
 
 	if (memoriaDisponible < tamanio) {
 		log_error(logger,
 				"La memoria disponible no es suficiente para el tamanio del segmento");
-		return -1;
+		return error_memoria_llena;
 	}
 
 	bool procesoPorPid(T_PROCESO* proceso) {
@@ -271,23 +258,25 @@ uint32_t crearSegmento(int PID, int tamanio) {
 
 	if (proceso == NULL ) {
 
-		log_info(logger,"La memoria al no contar con el proceso para ese PID, creará uno nuevo");
+		log_info(logger,
+				"La memoria al no contar con el proceso para ese PID, creará uno nuevo");
 		proceso = malloc(sizeof(T_PROCESO));
 		proceso->PID = PID;
-		log_debug(logger,"El PID para el proceso creado es: %d", proceso->PID);
+		log_debug(logger, "El PID para el proceso creado es: %d", proceso->PID);
 		proceso->segmentos = list_create();
-		log_debug(logger,"Se creó la lista de segmentos");
+		log_debug(logger, "Se creó la lista de segmentos");
 		list_add(procesos, proceso);
-		log_debug(logger,"Se agregó el proceso a la lista de procesos");
+		log_debug(logger, "Se agregó el proceso a la lista de procesos");
 	}
 
-	log_debug(logger,"Salió del if");
+	log_debug(logger, "Salió del if");
 
 	//creo un segmento vacio para luego añadirlo a la lista de segmentos del proceso
-	T_SEGMENTO* segmentoVacio = crearSegmentoVacio(proceso,tamanio);
+	T_SEGMENTO* segmentoVacio = crearSegmentoVacio(proceso, tamanio);
 
 	list_add(proceso->segmentos, segmentoVacio);
-	log_debug(logger,"Se agrega el segmento a la lista de segmentos del proceso");
+	log_debug(logger,
+			"Se agrega el segmento a la lista de segmentos del proceso");
 
 	log_info(logger, "La dirección base del segmento creado es %d",
 			segmentoVacio->baseSegmento);
@@ -296,14 +285,14 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	return segmentoVacio->baseSegmento;
 }
 
-T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio){
+T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio) {
 	T_SEGMENTO* segmentoVacio = malloc(sizeof(T_SEGMENTO));
 
 	segmentoVacio->SID = calcularProximoSID(proceso);
-	log_debug(logger,"el SID del segmento creado es: %d", segmentoVacio->SID);
+	log_debug(logger, "el SID del segmento creado es: %d", segmentoVacio->SID);
 
 	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio,
-				segmentoVacio->SID, proceso->PID);
+			segmentoVacio->SID, proceso->PID);
 	segmentoVacio->tamanio = tamanio;
 
 	T_DIRECCION_LOG direccionLogica;
@@ -329,52 +318,56 @@ int calcularProximoSID(T_PROCESO* proceso) {
 }
 
 t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
-	log_debug(logger,"Entro a la funcion crearPaginasPorTamanioSegmento");
+	log_debug(logger, "Entro a la funcion crearPaginasPorTamanioSegmento");
 	//instancio la lista de paginas
 	t_list* paginas = list_create();
-	log_debug(logger,"Creo la lista de paginas");
+	log_debug(logger, "Creo la lista de paginas");
 
 	//calculo la cantidad de páginas que va a tener el segmento
 	//necesario que la cantidadPaginas redondee para arriba - me fijo por el resto, si es distinto de 0 le sumo uno
 	div_t division = div(tamanio, tamanioPag);
-	log_debug(logger,"El resto de la division es: %d", division.rem);
+	log_debug(logger, "El resto de la division es: %d", division.rem);
 	int cantidadPaginas = division.quot;
 
 	if (division.rem != 0) {
 		cantidadPaginas += 1;
 	}
-	log_debug(logger,"La cantidad de paginas que va a tener el segmento son: %d", cantidadPaginas);
+	log_debug(logger,
+			"La cantidad de paginas que va a tener el segmento son: %d",
+			cantidadPaginas);
 
 	int i;
 	for (i = 0; i < cantidadPaginas; i++) {
-		log_debug(logger,"Entro al for para crear cada pagina");
+		log_debug(logger, "Entro al for para crear cada pagina");
 		//creo una pagina vacia
 		T_PAGINA * paginaVacia = malloc(sizeof(T_PAGINA));
 		paginaVacia->paginaID = i;
-		log_debug(logger,"El id de la pag es: %d", paginaVacia->paginaID);
+		log_debug(logger, "El id de la pag es: %d", paginaVacia->paginaID);
 		paginaVacia->swapped = 0;
 		paginaVacia->marcoID = -1;
-		log_debug(logger,"El id del marco para la pag es: %d", paginaVacia->marcoID);
+		log_debug(logger, "El id del marco para la pag es: %d",
+				paginaVacia->marcoID);
 		paginaVacia->SID = SID;
 		paginaVacia->PID = PID;
 		paginaVacia->contadorLRU = 0;
 		paginaVacia->bitReferencia = 0;
 
-		paginaVacia->data = calloc(256,sizeof(char));
+		paginaVacia->data = calloc(256, sizeof(char));
 
 		//agrego la pagina a la lista de paginas
 		list_add(paginas, paginaVacia);
-		log_debug(logger,"Agrego la pagina a la lista de paginas");
+		log_debug(logger, "Agrego la pagina a la lista de paginas");
 	}
 
-	log_debug(logger,"El tamaño de la lista de paginas es: %d", list_size(paginas));
+	log_debug(logger, "El tamaño de la lista de paginas es: %d",
+			list_size(paginas));
 	return paginas;
 }
 
 //Destruye el segmento identificado por baseSegmento del programa PID y libera la
 //memoria que ocupaba ese segmento.
 uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
-	log_debug(logger,"Entro a la función destruirSegmento");
+	log_debug(logger, "Entro a la función destruirSegmento");
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -389,23 +382,29 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
-		log_debug(logger,"Encontró al proceso con el pid: %d", proceso->PID);
+		log_debug(logger, "Encontró al proceso con el pid: %d", proceso->PID);
 		//busco en la lista de segmentos del proceso el segmento con esa base
 		T_SEGMENTO * seg = list_find(proceso->segmentos,
 				(void*) segmentoPorBase);
-		log_debug(logger,"Encontró al proceso con la base: %d", seg->baseSegmento);
+		log_debug(logger, "Encontró al proceso con la base: %d",
+				seg->baseSegmento);
 
 		if (seg != NULL ) {
 
 			//elimino las paginas del segmento
 			list_clean_and_destroy_elements(seg->paginas, (void*) destruirPag);
-			log_debug(logger,"Se eliminaron las páginas del segmento, ahora el tamaño de la lista de paginas es: %d", list_size(seg->paginas));
+			log_debug(logger,
+					"Se eliminaron las páginas del segmento, ahora el tamaño de la lista de paginas es: %d",
+					list_size(seg->paginas));
 
 			//elimino de la lista de segmentos del proceso, el segmento
-			log_debug(logger,"El proceso tiene %d segmentos", list_size(proceso->segmentos));
+			log_debug(logger, "El proceso tiene %d segmentos",
+					list_size(proceso->segmentos));
 			list_remove_by_condition(proceso->segmentos,
 					(void*) segmentoPorBase);
-			log_debug(logger,"Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmento/s", list_size(proceso->segmentos));
+			log_debug(logger,
+					"Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmento/s",
+					list_size(proceso->segmentos));
 
 			sem_wait(&mutex_MemoriaDisponible);
 			memoriaDisponible = memoriaDisponible + sizeof(seg->tamanio);
@@ -417,18 +416,18 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 		else {
 			log_error(logger,
 					"El segmento no ha sido destruido porque es inexistente");
-			return -1;
+			return error;
 		}
 	} else {
 		log_error(logger,
 				"El segmento no ha sido destruido porque el proceso con PID: %d no existe",
 				PID);
-		return -1;
+		return error;
 	}
 
 	sem_post(&mutex_procesos);
 	log_info(logger, "El segmento ha sido detruido exitosamente");
-	return 1;
+	return operacion_exitosa;
 }
 
 static void destruirPag(T_PAGINA* pagina) {
@@ -436,6 +435,7 @@ static void destruirPag(T_PAGINA* pagina) {
 	bool marcoPorPagina(T_MARCO* marco) {
 		return marco->pagina == pagina;
 	}
+
 	bool paginaPorId(T_PAGINA* pag) {
 		return pag->paginaID == pagina->paginaID;
 	}
@@ -454,10 +454,10 @@ static void destruirPag(T_PAGINA* pagina) {
 		list_remove_by_condition(paginasEnMemoria, (void*) paginaPorId);
 		sem_post(&mutex_paginasEnMemoria);
 
-		list_remove_by_condition(marcosLlenos,(void*) marcoPorPagina);
+		list_remove_by_condition(marcosLlenos, (void*) marcoPorPagina);
 
 		sem_wait(&mutex_marcosVacios);
-		list_add(marcosVacios,marco);
+		list_add(marcosVacios, marco);
 		sem_post(&mutex_marcosVacios);
 	}
 
@@ -470,13 +470,13 @@ static void destruirPag(T_PAGINA* pagina) {
 //Para el espacio de direcciones del proceso PID, devuelve hasta tamanio bytes
 //comenzando desde direccion.
 char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
-	log_debug(logger,"Entro a la funcion solicitarMemoria");
+	log_debug(logger, "Entro a la funcion solicitarMemoria");
 
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
 
-	char* memoriaSolicitada = malloc(sizeof(char)*tamanio);
+	char* memoriaSolicitada = malloc(sizeof(char) * tamanio);
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -494,110 +494,118 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return marco->empty == true;
 	}
 
-	sem_wait(&mutex_procesos);
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
-		log_debug(logger,"Encontró el proceso de PID %d", proceso->PID);
+		log_debug(logger, "Encontró el proceso de PID %d", proceso->PID);
 		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
 
 		if (seg != NULL ) {
-			log_debug(logger,"Encontró el segmento de SID %d", seg->SID);
+			log_debug(logger, "Encontró el segmento de SID %d", seg->SID);
 			//aca me trae la pagina donde esta el desplazamiento pero con el tamanio me puedo pasar de pagina.
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
 			if (pag != NULL ) {
-				log_debug(logger,"Encontró la pagina de ID %d y marcoId %d", pag->paginaID, pag->marcoID);
-				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
-					log_error(logger,
-							"Segmentation Fault: Direccion Invalida");
-					return (char*) -1;
+				log_debug(logger, "Encontró la pagina de ID %d y marcoId %d",
+						pag->paginaID, pag->marcoID);
+				if ((tamanioPag * (pag->paginaID)
+						+ direccionLogica.desplazamiento) > seg->tamanio) {
+					log_error(logger, "Segmentation Fault: Direccion Invalida");
+					return (char*) error_segmentation_fault;
 				}
-				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio) {
+				if ((tamanioPag * (pag->paginaID)
+						+ direccionLogica.desplazamiento + tamanio)
+						> seg->tamanio) {
 					log_error(logger,
 							"Segmentation Fault: Se excedieron los limites del segmento");
-					return (char*) -1;
+					return (char*) error_segmentation_fault;
 				}
 
-				log_debug(logger,"La pagina tiene el marco asignado de id: %d", pag->marcoID);
+				log_debug(logger, "La pagina tiene el marco asignado de id: %d",
+						pag->marcoID);
 				if (pag->marcoID == -1) {
-					log_debug(logger,"Como la página no tiene marco asignado, le asigno");
+					log_debug(logger,
+							"Como la página no tiene marco asignado, le asigno");
 					int resultado = asignoMarcoAPagina(PID, seg, pag);
 
-					if (resultado == -1){
-						log_error(logger, "No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
-						return (char*) -1;
+					if (resultado < 0) {
+						log_error(logger,
+								"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+						return (char*) resultado;
 					}
 				}
 
 				int inicio = direccionLogica.desplazamiento;
-				log_debug(logger,"Comienza a leer desde: %d", inicio);
+				log_debug(logger, "Comienza a leer desde: %d", inicio);
 				int final = direccionLogica.desplazamiento + tamanio;
-				log_debug(logger,"Termina a leer en: %d", final);
+				log_debug(logger, "Termina a leer en: %d", final);
 
 				if (final > tamanioPag) {
-					log_debug(logger,"El final es mayor que el tamanioPag");
+					log_debug(logger, "El final es mayor que el tamanioPag");
 
 					memoriaSolicitada = leoMemoria(pag, inicio, tamanioPag);
-					log_debug(logger,"La memoria leida es %s", memoriaSolicitada);
+					log_debug(logger, "La memoria leida es %s",
+							memoriaSolicitada);
 					tamanio = tamanio - (tamanioPag - inicio);
 
-					pag= list_find(seg->paginas, (void*) paginaSiguiente);
+					pag = list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
 
-					while (tamanio > tamanioPag){
+					while (tamanio > tamanioPag) {
 
-					if (pag->marcoID == -1) {
-						int resultado = asignoMarcoAPagina(PID, seg, pag);
-
-						if (resultado == -1){
-							log_error(logger, "No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
-							return (char*) -1;
-						}
-					}
-
-					string_append(&memoriaSolicitada,pag->data);
-					tamanio = tamanio - tamanioPag;
-
-					pag= list_find(seg->paginas, (void*) paginaSiguiente);
-					contadorPagina++;
-
-					}
-
-					if (tamanio > 0){
-						log_debug(logger,"El tamanio es mayor a 0");
 						if (pag->marcoID == -1) {
 							int resultado = asignoMarcoAPagina(PID, seg, pag);
 
-							if (resultado == -1){
-								log_error(logger, "No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
-								return (char*) -1;
+							if (resultado < 0) {
+								log_error(logger,
+										"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+								return (char*) resultado;
 							}
 						}
-						string_append(&memoriaSolicitada, leoMemoria(pag, 0, tamanio));
+
+						string_append(&memoriaSolicitada, pag->data);
+						tamanio = tamanio - tamanioPag;
+
+						pag = list_find(seg->paginas, (void*) paginaSiguiente);
+						contadorPagina++;
+
 					}
-				}
-				else {
-					log_debug(logger,"El tamanio es menor que el tamanioPag");
-					log_debug(logger,"Lee memoria directamente");
+
+					if (tamanio > 0) {
+						log_debug(logger, "El tamanio es mayor a 0");
+						if (pag->marcoID == -1) {
+							int resultado = asignoMarcoAPagina(PID, seg, pag);
+
+							if (resultado < 0) {
+								log_error(logger,
+										"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+								return (char*) resultado;
+							}
+						}
+						string_append(&memoriaSolicitada,
+								leoMemoria(pag, 0, tamanio));
+					}
+				} else {
+					log_debug(logger, "El tamanio es menor que el tamanioPag");
+					log_debug(logger, "Lee memoria directamente");
 					memoriaSolicitada = leoMemoria(pag, inicio, final);
 				}
 
 			} else {
 				log_error(logger,
 						"No se ha podido solicitar memoria ya que la página es inexistente");
-				return (char*) -1;
+				return (char*) error;
 			}
 		} else {
 			log_error(logger,
 					"No se ha podido solicitar memoria ya que el segmento es inexistente");
-			return (char*) -1;
+			return (char*) error;
 		}
 	} else {
 		log_error(logger,
 				"No se ha podido solicitar memoria ya que el proceso de PID: %d es inexistente",
 				PID);
-		return (char*) -1;
+		return (char*) error;
 	}
 
 	sem_post(&mutex_procesos);
@@ -607,44 +615,33 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	//return memoriaSolicitada; //Esto debería devolver un int, qué se hace con memoriaSolicitada?
 }
 
-char* leoMemoria(T_PAGINA* pag, int inicio, int final)	{
-	log_debug(logger,"Entre a leoMemoria");
+char* leoMemoria(T_PAGINA* pag, int inicio, int final) {
+	log_debug(logger, "Entre a leoMemoria");
 
 	char* memoria = string_new();
 	int tamanio = final - inicio;
 	memoria = string_substring(pag->data, inicio, tamanio);
-	log_debug(logger,"La memoria es: %s", memoria);
-
-	/*
-	int i;
-	for (i = inicio; final > i; i++) {
-		log_debug(logger,"Entre al for");
-
-		string_append(&memoria,(pag->data[i]));
-		log_debug(logger,"La memoria es: %s", memoria);
-	}
-	*/
+	log_debug(logger, "La memoria es: %s", memoria);
 
 	pag->bitReferencia = 1;
-
 	sem_wait(&mutex_contadorLRU);
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
 	sem_post(&mutex_contadorLRU);
 
 	return memoria;
-
 }
+
 //Para el espacio de direcciones del proceso PID, escribe hasta tamanio bytes del buffer bytesAEscribir
 //comenzando en la direccion.
 uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		int tamanio) {
-	log_debug(logger,"Entro a la funcion escribirMemoria");
+	log_debug(logger, "Entro a la funcion escribirMemoria");
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
 
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
-	log_debug(logger,"El contador de página es: %d", contadorPagina);
+	log_debug(logger, "El contador de página es: %d", contadorPagina);
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -666,39 +663,43 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
-		log_debug(logger,"Encontró al proceso de PID: %d", proceso->PID);
+		log_debug(logger, "Encontró al proceso de PID: %d", proceso->PID);
 
 		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
 
 		if (seg != NULL ) {
-			log_debug(logger,"Encontró al segmento de SID: %d", seg->SID);
+			log_debug(logger, "Encontró al segmento de SID: %d", seg->SID);
 
 			//aca me trae la pagina donde esta el desplazamiento pero con el tamanio me puedo pasar de pagina.
 			T_PAGINA* pag = list_find(seg->paginas, (void*) paginaPorPagid);
 
 			if (pag != NULL ) {
-				log_debug(logger,"Encontró a la página de ID: %d", pag->paginaID);
+				log_debug(logger, "Encontró a la página de ID: %d",
+						pag->paginaID);
 
-				if ((tamanioPag * (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
-					log_error(logger,
-							"Segmentation Fault: Dirección Invalida");
-				return -1;
+				if ((tamanioPag * (pag->paginaID)
+						+ direccionLogica.desplazamiento) > seg->tamanio) {
+					log_error(logger, "Segmentation Fault: Dirección Invalida");
+					return error_segmentation_fault;
 
-				if (((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio)
-					|| (string_length(bytesAEscribir) > tamanio)) {
-					log_error(logger,
-							"Segmentation Fault: Se excedieron los limites del segmento");
-					return -1;
-				}
+					if (((tamanioPag * (pag->paginaID)
+							+ direccionLogica.desplazamiento + tamanio)
+							> seg->tamanio)
+							|| (string_length(bytesAEscribir) > tamanio)) {
+						log_error(logger,
+								"Segmentation Fault: Se excedieron los limites del segmento");
+						return error_segmentation_fault;
+					}
 
 				}
 				if (pag->marcoID == -1) {
-					log_debug(logger,"Como la pag no tenía marco, le asigno");
+					log_debug(logger, "Como la pag no tenía marco, le asigno");
 					int resultado = asignoMarcoAPagina(PID, seg, pag);
 
-					if (resultado == -1){
-						log_error(logger, "No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
-						return -1;
+					if (resultado < 0) {
+						log_error(logger,
+								"No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
+						return resultado;
 					}
 				}
 
@@ -707,84 +708,85 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 				if (final > tamanioPag) {
 					escriboMemoria(pag, inicio, tamanioPag, bytesAEscribir);
-					bytesAEscribir = string_substring_from(bytesAEscribir, (tamanioPag - inicio));
+					bytesAEscribir = string_substring_from(bytesAEscribir,
+							(tamanioPag - inicio));
 					tamanio = tamanio - (tamanioPag - inicio);
 
 					pag = list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
 
-
-					while (tamanio > tamanioPag){
+					while (tamanio > tamanioPag) {
 						if (pag->marcoID == -1) {
 							int resultado = asignoMarcoAPagina(PID, seg, pag);
 
-							if (resultado == -1){
-								log_error(logger, "No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
-								return -1;
+							if (resultado < 0) {
+								log_error(logger,
+										"No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
+								return resultado;
 							}
 						}
 
 						escriboMemoria(pag, 0, tamanioPag, bytesAEscribir);
-						bytesAEscribir = string_substring_from(bytesAEscribir, tamanioPag);
+						bytesAEscribir = string_substring_from(bytesAEscribir,
+								tamanioPag);
 						tamanio = tamanio - tamanioPag;
-						pag= list_find(seg->paginas, (void*) paginaSiguiente);
+						pag = list_find(seg->paginas, (void*) paginaSiguiente);
 						contadorPagina++;
 					}
 
-					if (tamanio > 0){
+					if (tamanio > 0) {
 						if (pag->marcoID == -1) {
 							int resultado = asignoMarcoAPagina(PID, seg, pag);
 
-							if (resultado == -1){
-								log_error(logger, "No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
-								return -1;
+							if (resultado < 0) {
+								log_error(logger,
+										"No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
+								return resultado;
 							}
 						}
 						escriboMemoria(pag, 0, tamanio, bytesAEscribir);
 					}
-				}
-				else {
+				} else {
 					escriboMemoria(pag, inicio, final, bytesAEscribir);
 				}
 
 			} else {
 				log_error(logger,
 						"No se ha podido escribir en memoria porque la página es inexistente");
-				return -1;
+				return error;
 			}
 		} else {
 			log_error(logger,
 					"No se ha podido escribir en memoria porque el segmento es inexistente");
-			return -1;
+			return error;
 		}
 	} else {
 		log_error(logger,
 				"No se ha podido escribir en memoria porque el proceso de PID: %d es inexistente",
 				PID);
-		return -1;
+		return error;
 	}
 
-	sem_post(&mutex_procesos);
 	log_info(logger, "Se ha escrito en memoria exitósamente");
-	return 1;
+	return operacion_exitosa;
 }
 
-void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir){
+void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir) {
 	int i;
 	for (i = inicio; final > i; i++) {
 		pag->data[i] = *string_substring_until(bytesAEscribir, 1);
 		bytesAEscribir = string_substring_from(bytesAEscribir, 1);
 	}
-	pag->bitReferencia = 1;
 
 	sem_wait(&mutex_contadorLRU);
+	pag->bitReferencia = 1;
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
 	sem_post(&mutex_contadorLRU);
 }
 
 int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
-	log_debug(logger,"Entro a la funcion asignoMarcoAPagina");
+	log_debug(logger, "Entro a la funcion asignoMarcoAPagina");
 
 	T_MARCO* marcoAsignado;
 
@@ -793,28 +795,30 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	sem_wait(&mutex_paginasEnMemoria);
 
 	if (pag->swapped) {
-		log_debug(logger,"Como la pag está swappeada, hago un Swap in");
+		log_debug(logger, "Como la pag está swappeada, hago un Swap in");
 		pag = swapInPagina(PID, seg, pag);
 	}
 
 	if (list_is_empty(marcosVacios)) {
-		log_debug(logger,"Entro porque no hay marcos libres");
-		if (cantidadSwap != 0) { //todo no tendria que ser > a tamanioPag??? porque con cantidadSwap = 3 no deberia entrar
-			log_debug(logger,"Hay cantidad de swap disponible");
+		log_debug(logger, "Entro porque no hay marcos libres");
+		if (cantidadSwap < tamanioPag) {
+			log_debug(logger, "Hay cantidad de swap disponible");
 			marcoAsignado = seleccionarMarcoVictima();
-			log_debug(logger,"El marco asignado tiene id: %d", marcoAsignado->marcoID);
+			log_debug(logger, "El marco asignado tiene id: %d",
+					marcoAsignado->marcoID);
 			swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID,
 					marcoAsignado->pagina);
 		} else {
 			log_error(logger, "No hay sufiente espacio de swapping");
-			return -1;
+			return error_memoria_llena;
 		}
 	} else {
 		marcoAsignado = list_remove(marcosVacios, 0);
 	}
 
 	pag->marcoID = marcoAsignado->marcoID;
-	log_debug(logger,"La página tiene el marco asignado de id %d", pag->marcoID);
+	log_debug(logger, "La página tiene el marco asignado de id %d",
+			pag->marcoID);
 	pag->bitReferencia = 1;
 
 	marcoAsignado->pagina = pag;
@@ -828,7 +832,7 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	sem_post(&mutex_marcosLlenos);
 	sem_post(&mutex_marcosVacios);
 
-	return 1;
+	return operacion_exitosa;
 }
 
 int tablaMarcos() {
@@ -859,20 +863,21 @@ int tablaMarcos() {
 		} else
 			printf("Marco ocupado por el proceso: %d", marco->PID);
 		//printf("Información de los algoritmos de sustitución de páginas: %s",
-				//marco->alg_meta_data); todo ver
+		//marco->alg_meta_data); todo ver
 	}
 	printf("%s\n", string_repeat('-', 100));
 
 	sem_post(&mutex_marcosLlenos);
 	sem_post(&mutex_marcosVacios);
-	return 1;
+
+	return operacion_exitosa;
 }
 
 int tablaSegmentos() {
-	log_debug(logger,"Entre a la funcion tablaSegmentos");
+	log_debug(logger, "Entre a la funcion tablaSegmentos");
 	printf("\n");
 	printf("%s TABLA DE SEGMENTOS %s", string_repeat('-', 40),
-		string_repeat('-', 40));
+			string_repeat('-', 40));
 	printf("\n");
 
 	sem_wait(&mutex_procesos);
@@ -889,7 +894,7 @@ int tablaSegmentos() {
 		if (cantidadSegmentos == 0) {
 			printf("%c", '\n');
 			log_info(logger, "El proceso no tiene segmentos");
-			return 1;
+			return operacion_exitosa;
 		}
 
 		for (j = 0; cantidadSegmentos > j; j++) {
@@ -907,8 +912,7 @@ int tablaSegmentos() {
 	printf("%s\n", string_repeat('-', 100));
 	printf("\n");
 	log_info(logger, "Tabla de segmentos mostrada satisfactoriamente");
-
-	return 1;
+	return operacion_exitosa;
 }
 
 int tablaPaginas(int PID) {
@@ -917,11 +921,11 @@ int tablaPaginas(int PID) {
 			string_repeat('-', 40));
 	printf("\n");
 
+	sem_wait(&mutex_procesos);
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
 	}
 
-	sem_wait(&mutex_procesos);
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
@@ -940,7 +944,7 @@ int tablaPaginas(int PID) {
 				printf("PáginaID = %d", pagina->paginaID);
 				if (pagina->swapped) {
 					printf("La página se encuentra swappeada");
-				} else if ((pagina->marcoID) != -1 ) {
+				} else if ((pagina->marcoID) != -1) {
 					log_info(logger,
 							"La página se encuentra en memoria principal en el marco de ID: %d",
 							pagina->marcoID);
@@ -951,7 +955,7 @@ int tablaPaginas(int PID) {
 		}
 	} else {
 		log_error(logger, "El proceso de PID: %d es inexistente", PID);
-		return -1;
+		return error;
 	}
 
 	sem_post(&mutex_procesos);
@@ -961,7 +965,7 @@ int tablaPaginas(int PID) {
 	printf("\n");
 
 	log_info(logger, "Tabla de páginas mostrada satisfactoriamente");
-	return 1;
+	return operacion_exitosa;
 }
 
 T_DIRECCION_LOG uint32ToDireccionLogica(uint32_t intDireccion) {
@@ -1007,12 +1011,14 @@ void iniciarConexiones() {
 
 		if (modulo_conectado == soy_CPU) {
 			printf("Se conecto una CPU\n");
-			pthread_create(&hiloCPU, NULL, (void*) interpretarOperacion, &socket_conectado);
+			pthread_create(&hiloCPU, NULL, (void*) interpretarOperacion,
+					&socket_conectado);
 		}
 
 		else if (modulo_conectado == soy_kernel) {
 			printf("Se conecto el Kernel\n");
-			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion, &socket_conectado);
+			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion,
+					&socket_conectado);
 		}
 
 		free(datos->datos);
@@ -1067,7 +1073,8 @@ void interpretarOperacion(int* socket) {
 		case solicitar_memoria:
 			memcpy(&pid, datos->datos, sizeof(int));
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
-			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t), sizeof(int));
+			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t),
+					sizeof(int));
 
 			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
@@ -1082,10 +1089,15 @@ void interpretarOperacion(int* socket) {
 		case escribir_memoria:
 			memcpy(&pid, datos->datos, sizeof(int));
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
-			memcpy(&bytesAEscribir, datos->datos + sizeof(int) + sizeof(uint32_t), sizeof(char*));
-			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t) + sizeof(char*), sizeof(int));
+			memcpy(&bytesAEscribir,
+					datos->datos + sizeof(int) + sizeof(uint32_t),
+					sizeof(char*));
+			memcpy(&tamanio,
+					datos->datos + sizeof(int) + sizeof(uint32_t)
+							+ sizeof(char*), sizeof(int));
 
-			respuesta = escribirMemoria(pid, direccion, bytesAEscribir, tamanio);
+			respuesta = escribirMemoria(pid, direccion, bytesAEscribir,
+					tamanio);
 
 			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
 
@@ -1114,7 +1126,7 @@ T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 		cantidadSwap = +tamanioPag;
 	} else {
 		log_error(logger, "No existe el archivo de la pagina swappeada");
-		//todo return error
+		return error;
 	}
 
 	return pag;
@@ -1135,14 +1147,14 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 	} else {
 		log_error(logger,
 				"No se pudo crear el archivo de la pagina a swappear");
-		return -1; //todo chequear
+		return error; //todo chequear
 	}
 
 	return 0;
 }
 
 char* obtenerFilePath(int PID, int SID, int pagId) {
-	char* filePath = malloc(sizeof(int)*3);
+	char* filePath = malloc(sizeof(int) * 3);
 
 	string_append(&filePath, string_itoa(PID));
 	string_append(&filePath, string_itoa(SID));
@@ -1154,9 +1166,9 @@ char* obtenerFilePath(int PID, int SID, int pagId) {
 T_MARCO* seleccionarMarcoVictima() {
 	T_MARCO* marcoVictima;
 
-	if (strcmp(sust_pags,"CLOCK")) {
+	if (strcmp(sust_pags, "CLOCK")) {
 		marcoVictima = algoritmoClock();
-	} else if (strcmp(sust_pags,"LRU")) {
+	} else if (strcmp(sust_pags, "LRU")) {
 		marcoVictima = algoritmoLRU();
 	}
 
@@ -1181,15 +1193,14 @@ T_MARCO* algoritmoLRU() {
 		T_PAGINA* pagina = list_get(paginasEnMemoria, i);
 
 		if (pagina->contadorLRU < contador) {
-				contador = pagina->contadorLRU;
-				marcoId = pagina->marcoID;
+			contador = pagina->contadorLRU;
+			marcoId = pagina->marcoID;
 		}
 	}
 
 	marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
 	return marcoVictima;
 }
-
 
 T_MARCO* algoritmoClock() {
 	T_MARCO* marcoVictima;
@@ -1218,12 +1229,12 @@ T_MARCO* algoritmoClock() {
 	if (marcoId == -1) {
 		for (i = 0; i < cantidadPaginasEnMemoria; i++) {
 
-				T_PAGINA* pagina = list_get(paginasEnMemoria, i);
+			T_PAGINA* pagina = list_get(paginasEnMemoria, i);
 
-				if (pagina->bitReferencia == 0) {
-					marcoId = pagina->marcoID;
-					i = cantidadPaginasEnMemoria + 1;
-				}
+			if (pagina->bitReferencia == 0) {
+				marcoId = pagina->marcoID;
+				i = cantidadPaginasEnMemoria + 1;
+			}
 		}
 	}
 
