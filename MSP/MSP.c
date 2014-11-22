@@ -82,6 +82,14 @@ int main(int cantArgs, char** args) {
 
 	pthread_join(hiloEsperarConexiones, NULL );
 
+	sem_destroy(mutex_MemoriaDisponible);
+	sem_destroy(mutex_cantSwap);
+	sem_destroy(mutex_contadorLRU);
+	sem_destroy(mutex_procesos);
+	sem_destroy(mutex_marcosLlenos);
+	sem_destroy(mutex_marcosVacios);
+	sem_destroy(mutex_paginasEnMemoria);
+
 	exit(0);
 }
 
@@ -99,6 +107,7 @@ void inicializar(char** args) {
 	sem_init(&mutex_marcosLlenos, 0, 1);
 	sem_init(&mutex_marcosVacios, 0, 1);
 	sem_init(&mutex_paginasEnMemoria, 0, 1);
+
 }
 
 void inicializarConsola() {

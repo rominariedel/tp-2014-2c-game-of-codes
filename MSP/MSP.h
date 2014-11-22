@@ -21,7 +21,7 @@ enum mensajes {
 
 	operacion_exitosa = 1,
 	error = -1,
-	error_segmention_fault = -2,
+	error_segmentation_fault = -2,
 	error_memoria_llena = -3,
 };
 
