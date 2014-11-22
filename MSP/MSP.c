@@ -108,9 +108,18 @@ void inicializarConsola() {
 		printf(">");
 		fgets(comando,50,stdin);
 		comando[string_length(comando)-1] = '\0'; //todo aca no habia un if?
-		interpretarComando(comando);
+
+		if (string_equals_ignore_case(comando, "Cerrar")) {
+			log_debug(logger,"Se pidió Cerrar Consola");
+			seguimiento = 0;
+		}
+		else {
+			interpretarComando(comando);
+		}
 		printf("\r\n");
 	}
+	log_debug(logger,"Se cerro la Consola");
+	//deberia matar al hilo? todo
 }
 
 void interpretarComando(char* comando) {
@@ -163,7 +172,6 @@ void interpretarComando(char* comando) {
 		log_debug(logger,"Interpretó el comando de listar_marcos");
 		tablaMarcos();
 	}
-
 }
 
 
