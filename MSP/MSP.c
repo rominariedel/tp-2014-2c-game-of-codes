@@ -107,7 +107,7 @@ void inicializarConsola() {
 	while (seguimiento) {
 		printf(">");
 		fgets(comando,50,stdin);
-		comando[string_length(comando)-1] = '\0';
+		comando[string_length(comando)-1] = '\0'; //todo aca no habia un if?
 		interpretarComando(comando);
 		printf("\r\n");
 	}
@@ -279,7 +279,7 @@ T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio){
 	log_debug(logger,"el SID del segmento creado es: %d", segmentoVacio->SID);
 
 	segmentoVacio->paginas = crearPaginasPorTamanioSegmento(tamanio,
-				segmentoVacio->SID);
+				segmentoVacio->SID, proceso->PID);
 	segmentoVacio->tamanio = tamanio;
 
 	T_DIRECCION_LOG direccionLogica;
@@ -304,7 +304,7 @@ int calcularProximoSID(T_PROCESO* proceso) {
 
 }
 
-t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
+t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 	log_debug(logger,"Entro a la funcion crearPaginasPorTamanioSegmento");
 	//instancio la lista de paginas
 	t_list* paginas = list_create();
@@ -332,6 +332,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID) {
 		paginaVacia->marcoID = -1;
 		log_debug(logger,"El id del marco para la pag es: %d", paginaVacia->marcoID);
 		paginaVacia->SID = SID;
+		paginaVacia->PID = PID;
 		paginaVacia->contadorLRU = 0;
 		paginaVacia->bitReferencia = 0;
 
@@ -414,11 +415,13 @@ static void destruirPag(T_PAGINA* pagina) {
 
 		marco->empty = true;
 		marco->PID = -1;
+		marco->pagina = NULL;
 
 		list_remove_by_condition(marcosLlenos,(void*) marcoPorPagina);
 		list_add(marcosVacios,marco);
 	}
 
+	free(pagina->data);
 	free(pagina);
 
 }
@@ -444,7 +447,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return pagina->paginaID == direccionLogica.paginaId;
 	}
 	bool paginaSiguiente(T_PAGINA* pagina) {
-		return pagina->paginaID == (contadorPagina+1);
+		return pagina->paginaID == (contadorPagina + 1);
 	}
 	bool marcoPorVacio(T_MARCO* marco) {
 		return marco->empty == true;
@@ -613,16 +616,16 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 			if (pag != NULL ) {
 				log_debug(logger,"Encontró a la página de ID: %d", pag->paginaID);
 
-				if ((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
+				if ((tamanioPag * (pag->paginaID) + direccionLogica.desplazamiento) > seg->tamanio) {
 					log_error(logger,
 							"Segmentation Fault: Dirección Invalida");
-				return (char*) -1;
+				return -1;
 
 				if (((tamanioPag* (pag->paginaID) + direccionLogica.desplazamiento + tamanio) > seg->tamanio)
 					|| (string_length(bytesAEscribir) > tamanio)) {
 					log_error(logger,
 							"Segmentation Fault: Se excedieron los limites del segmento");
-					return (char*) -1;
+					return -1;
 				}
 
 				}
@@ -709,7 +712,7 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	if (list_is_empty(marcosVacios)) {
 		log_debug(logger,"Entro porque no hay marcos libres");
-		if (cantidadSwap != 0) {
+		if (cantidadSwap != 0) { //todo no tendria que ser > a tamanioPag??? porque con cantidadSwap = 3 no deberia entrar
 			log_debug(logger,"Hay cantidad de swap disponible");
 			marcoAsignado = seleccionarMarcoVictima();
 			log_debug(logger,"El marco asignado tiene id: %d", marcoAsignado->marcoID);
@@ -717,6 +720,7 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 					marcoAsignado->pagina);
 		} else {
 			log_error(logger, "No hay sufiente espacio de swapping");
+
 		}
 	} else {
 		marcoAsignado = list_remove(marcosVacios, 0);
@@ -777,8 +781,8 @@ int tablaMarcos() {
 			printf("Marco disponible");
 		} else
 			printf("Marco ocupado por el proceso: %d", marco->PID);
-		printf("Información de los algoritmos de sustitución de páginas: %s",
-				marco->alg_meta_data);
+		//printf("Información de los algoritmos de sustitución de páginas: %s",
+				//marco->alg_meta_data); todo ver
 	}
 	printf("%s\n", string_repeat('-', 100));
 	return 1;
@@ -848,9 +852,10 @@ int tablaPaginas(int PID) {
 			for (j = 0; cantidadPaginas > j; j++) {
 				T_PAGINA* pagina = list_get(segmento->paginas, j);
 				printf("%c", '\n');
+				printf("PáginaID = %d", pagina->paginaID);
 				if (pagina->swapped) {
 					printf("La página se encuentra swappeada");
-				} else if (&(pagina->marcoID) != NULL ) {
+				} else if ((pagina->marcoID) != -1 ) {
 					log_info(logger,
 							"La página se encuentra en memoria principal en el marco de ID: %d",
 							pagina->marcoID);
@@ -1037,7 +1042,8 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 		txt_write_in_file(archivo, pag->data);
 		txt_close_file(archivo);
 		pag->swapped = true;
-		pag->marcoID = -1; //que pasa con la data?? queda llena?
+		pag->marcoID = -1;
+		pag->data = NULL;
 		cantidadSwap -= tamanioPag;
 	} else {
 		log_error(logger,
@@ -1073,28 +1079,28 @@ T_MARCO* seleccionarMarcoVictima() {
 T_MARCO* algoritmoLRU() {
 	T_MARCO* marcoVictima;
 
-		int marcoId;
-		int contador = 100000;
+	int marcoId;
+	int contador = 100000;
 
-		bool marcoPorId(T_MARCO* marco) {
-			return marco->marcoID == marcoId;
+	bool marcoPorId(T_MARCO* marco) {
+		return marco->marcoID == marcoId;
+	}
+
+	int i;
+	int cantidadPaginasEnMemoria = list_size(paginasEnMemoria);
+
+	for (i = 0; i < cantidadPaginasEnMemoria; i++) {
+
+		T_PAGINA* pagina = list_get(paginasEnMemoria, i);
+
+		if (pagina->contadorLRU < contador) {
+				contador = pagina->contadorLRU;
+				marcoId = pagina->marcoID;
 		}
+	}
 
-		int i;
-		int cantidadPaginasEnMemoria = list_size(paginasEnMemoria);
-
-		for (i = 0; i < cantidadPaginasEnMemoria; i++) {
-
-			T_PAGINA* pagina = list_get(paginasEnMemoria, i);
-
-			if (pagina->contadorLRU < contador) {
-					contador = pagina->contadorLRU;
-					marcoId = pagina->marcoID;
-			}
-		}
-
-		marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
-		return marcoVictima;
+	marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
+	return marcoVictima;
 }
 
 

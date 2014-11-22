@@ -82,7 +82,7 @@ void 		cargarArchivoConfiguracion(char** args);
 void 		crearMarcos();
 T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio);
 int 		calcularProximoSID (T_PROCESO* proceso);
-t_list* 	crearPaginasPorTamanioSegmento(int tamanio, int SID);
+t_list* 	crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID);
 static void destruirPag(T_PAGINA* pagina);
 void 		asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
 void 		iniciarConexiones();
