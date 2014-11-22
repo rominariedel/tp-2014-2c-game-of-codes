@@ -14,10 +14,15 @@
 enum mensajes {
 	soy_CPU = 19,
 	soy_kernel = 29,
-	crear_segmento = 1,
-	destruir_segmento =2,
-	solicitar_memoria = 3,
-	escribir_memoria = 4,
+	crear_segmento = 32,
+	destruir_segmento = 30,
+	solicitar_memoria = 31,
+	escribir_memoria = 2,
+
+	operacion_exitosa = 1,
+	error = -1,
+	error_segmention_fault = -2,
+	error_memoria_llena = -3,
 };
 
 typedef struct T_PROCESO {
@@ -35,11 +40,12 @@ typedef struct T_SEGMENTO {
 typedef struct T_PAGINA {
 	int paginaID;
 	int SID;
+	int PID;
 	int swapped;
 	int marcoID;
-	long contadorLRU;
+	int contadorLRU;
 	int bitReferencia;
-	char data [256];
+	char* data;
 }T_PAGINA;
 
 typedef struct T_MARCO {
@@ -79,13 +85,15 @@ int 	tablaPaginas(int PID);
 void 		inicializar(char** args);
 void 		cargarArchivoConfiguracion(char** args);
 void 		crearMarcos();
+T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio);
 int 		calcularProximoSID (T_PROCESO* proceso);
-t_list* 	crearPaginasPorTamanioSegmento(int tamanio, int SID);
+t_list* 	crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID);
 static void destruirPag(T_PAGINA* pagina);
-void 		asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
-void 		actualizarMarcos();
+int 		asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
 void 		iniciarConexiones();
 void		interpretarOperacion(int* socket);
+char* 		leoMemoria(T_PAGINA* pag, int inicio, int final);
+void		escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir);
 T_MARCO*	seleccionarMarcoVictima();
 char*		obtenerFilePath(int PID, int SID, int paginaID);
 T_PAGINA*	swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
@@ -94,7 +102,7 @@ T_MARCO*	algoritmoLRU();
 T_MARCO*	algoritmoClock();
 
 T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
-uint32_t DireccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
+uint32_t direccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);
 
 
 
