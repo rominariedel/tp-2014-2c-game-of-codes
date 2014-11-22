@@ -1107,7 +1107,7 @@ T_MARCO* algoritmoLRU() {
 T_MARCO* algoritmoClock() {
 	T_MARCO* marcoVictima;
 
-	int marcoId;
+	int marcoId = -1;
 
 	bool marcoPorId(T_MARCO* marco) {
 		return marco->marcoID == marcoId;
@@ -1126,8 +1126,20 @@ T_MARCO* algoritmoClock() {
 		} else if (pagina->bitReferencia == 1) {
 			pagina->bitReferencia = 0;
 		}
-
 	}
+	//si sale del for y no encontro ningun cero vuelve a recorrer todas las pginas.
+	if (marcoId == -1) {
+		for (i = 0; i < cantidadPaginasEnMemoria; i++) {
+
+				T_PAGINA* pagina = list_get(paginasEnMemoria, i);
+
+				if (pagina->bitReferencia == 0) {
+					marcoId = pagina->marcoID;
+					i = cantidadPaginasEnMemoria + 1;
+				}
+		}
+	}
+
 	marcoVictima = list_find(marcosLlenos, (void*) marcoPorId);
 	return marcoVictima;
 }
