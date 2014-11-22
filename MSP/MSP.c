@@ -266,11 +266,12 @@ uint32_t crearSegmento(int PID, int tamanio) {
 		return proceso->PID == PID;
 	}
 
+	sem_wait(&mutex_procesos);
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso == NULL ) {
 
-		log_info(logger,"La memoria al no contar con el proceso para ese PID, se creará uno nuevo");
+		log_info(logger,"La memoria al no contar con el proceso para ese PID, creará uno nuevo");
 		proceso = malloc(sizeof(T_PROCESO));
 		proceso->PID = PID;
 		log_debug(logger,"El PID para el proceso creado es: %d", proceso->PID);
@@ -291,6 +292,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	log_info(logger, "La dirección base del segmento creado es %d",
 			segmentoVacio->baseSegmento);
 
+	sem_post(&mutex_procesos);
 	return segmentoVacio->baseSegmento;
 }
 
@@ -382,6 +384,7 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 		return segmento->baseSegmento == baseSegmento;
 	}
 
+	sem_wait(&mutex_procesos);
 	//busco en la lista de procesos el proceso con ese PID
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
@@ -404,7 +407,10 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 					(void*) segmentoPorBase);
 			log_debug(logger,"Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmento/s", list_size(proceso->segmentos));
 
+			sem_wait(&mutex_MemoriaDisponible);
 			memoriaDisponible = memoriaDisponible + sizeof(seg->tamanio);
+			sem_post(&mutex_MemoriaDisponible);
+
 			free(seg);
 		}
 
@@ -420,6 +426,7 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 		return -1;
 	}
 
+	sem_post(&mutex_procesos);
 	log_info(logger, "El segmento ha sido detruido exitosamente");
 	return 1;
 }
@@ -429,8 +436,12 @@ static void destruirPag(T_PAGINA* pagina) {
 	bool marcoPorPagina(T_MARCO* marco) {
 		return marco->pagina == pagina;
 	}
+	bool paginaPorId(T_PAGINA* pag) {
+		return pag->paginaID == pagina->paginaID;
+	}
 
 	//busco en la lista de marcos el marco con esa pagina si esta asignado
+	sem_wait(&mutex_marcosLlenos);
 	T_MARCO* marco = list_find(marcosLlenos, (void*) marcoPorPagina);
 
 	if (marco != NULL ) {
@@ -439,10 +450,18 @@ static void destruirPag(T_PAGINA* pagina) {
 		marco->PID = -1;
 		marco->pagina = NULL;
 
+		sem_wait(&mutex_paginasEnMemoria);
+		list_remove_by_condition(paginasEnMemoria, (void*) paginaPorId);
+		sem_post(&mutex_paginasEnMemoria);
+
 		list_remove_by_condition(marcosLlenos,(void*) marcoPorPagina);
+
+		sem_wait(&mutex_marcosVacios);
 		list_add(marcosVacios,marco);
+		sem_post(&mutex_marcosVacios);
 	}
 
+	sem_post(&mutex_marcosLlenos);
 	free(pagina->data);
 	free(pagina);
 
@@ -475,6 +494,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return marco->empty == true;
 	}
 
+	sem_wait(&mutex_procesos);
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
@@ -580,6 +600,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return (char*) -1;
 	}
 
+	sem_post(&mutex_procesos);
 	log_info(logger, "El contenido de la página solicitada es: %s",
 			memoriaSolicitada);
 	return memoriaSolicitada; //Este return es provisorio, capaz memoriaSolicitada haya que usarlo como variable global
@@ -605,8 +626,12 @@ char* leoMemoria(T_PAGINA* pag, int inicio, int final)	{
 	*/
 
 	pag->bitReferencia = 1;
+
+	sem_wait(&mutex_contadorLRU);
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
+	sem_post(&mutex_contadorLRU);
+
 	return memoria;
 
 }
@@ -637,6 +662,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		return marco->empty == true;
 	}
 
+	sem_wait(&mutex_procesos);
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
@@ -738,6 +764,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		return -1;
 	}
 
+	sem_post(&mutex_procesos);
 	log_info(logger, "Se ha escrito en memoria exitósamente");
 	return 1;
 }
@@ -749,14 +776,21 @@ void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir){
 		bytesAEscribir = string_substring_from(bytesAEscribir, 1);
 	}
 	pag->bitReferencia = 1;
+
+	sem_wait(&mutex_contadorLRU);
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
+	sem_post(&mutex_contadorLRU);
 }
 
 int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	log_debug(logger,"Entro a la funcion asignoMarcoAPagina");
 
 	T_MARCO* marcoAsignado;
+
+	sem_wait(&mutex_marcosLlenos);
+	sem_wait(&mutex_marcosVacios);
+	sem_wait(&mutex_paginasEnMemoria);
 
 	if (pag->swapped) {
 		log_debug(logger,"Como la pag está swappeada, hago un Swap in");
@@ -789,26 +823,12 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	list_add(paginasEnMemoria, pag);
 	list_add(marcosLlenos, marcoAsignado);
+
+	sem_post(&mutex_paginasEnMemoria);
+	sem_post(&mutex_marcosLlenos);
+	sem_post(&mutex_marcosVacios);
+
 	return 1;
-}
-
-void actualizarMarcos() {
-	t_list* marcos = list_create();
-	list_add_all(marcos, marcosLlenos);
-	list_add_all(marcos, marcosVacios);
-
-	bool marcoPorVacio(T_MARCO* marco) {
-		return marco->empty == true;
-	}
-	bool marcoPorLleno(T_MARCO* marco) {
-		return marco->empty == false;
-	}
-
-	list_clean(marcosVacios);
-	list_add_all(marcosVacios, list_filter(marcos, (void*) marcoPorVacio));
-
-	list_clean(marcosLlenos);
-	list_add_all(marcosLlenos, list_filter(marcos, (void*) marcoPorLleno));
 }
 
 int tablaMarcos() {
@@ -820,6 +840,9 @@ int tablaMarcos() {
 	}
 
 	t_list* marcos = list_create();
+
+	sem_wait(&mutex_marcosLlenos);
+	sem_wait(&mutex_marcosVacios);
 
 	list_add_all(marcos, marcosLlenos);
 	list_add_all(marcos, marcosVacios);
@@ -839,6 +862,9 @@ int tablaMarcos() {
 				//marco->alg_meta_data); todo ver
 	}
 	printf("%s\n", string_repeat('-', 100));
+
+	sem_post(&mutex_marcosLlenos);
+	sem_post(&mutex_marcosVacios);
 	return 1;
 }
 
@@ -849,6 +875,7 @@ int tablaSegmentos() {
 		string_repeat('-', 40));
 	printf("\n");
 
+	sem_wait(&mutex_procesos);
 	int cantidadProcesos = list_size(procesos);
 	int i;
 	int j;
@@ -874,10 +901,13 @@ int tablaSegmentos() {
 		}
 	}
 
+	sem_post(&mutex_procesos);
+
 	printf("\n");
 	printf("%s\n", string_repeat('-', 100));
 	printf("\n");
 	log_info(logger, "Tabla de segmentos mostrada satisfactoriamente");
+
 	return 1;
 }
 
@@ -891,6 +921,7 @@ int tablaPaginas(int PID) {
 		return proceso->PID == PID;
 	}
 
+	sem_wait(&mutex_procesos);
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
@@ -922,6 +953,8 @@ int tablaPaginas(int PID) {
 		log_error(logger, "El proceso de PID: %d es inexistente", PID);
 		return -1;
 	}
+
+	sem_post(&mutex_procesos);
 
 	printf("%c", '\n');
 	printf("%s", string_repeat('-', 100));
@@ -990,7 +1023,7 @@ void iniciarConexiones() {
 
 void interpretarOperacion(int* socket) {
 
-	while (1) {
+	while (1) { //todo va con while?????
 		t_datosAEnviar* datos;
 		datos = recibir_datos(*socket);
 		int pid;
