@@ -502,7 +502,12 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 				log_debug(logger,"La pagina tiene el marco asignado de id: %d", pag->marcoID);
 				if (pag->marcoID == -1) {
 					log_debug(logger,"Como la página no tiene marco asignado, le asigno");
-					asignoMarcoAPagina(PID, seg, pag);
+					int resultado = asignoMarcoAPagina(PID, seg, pag);
+
+					if (resultado == -1){
+						log_error(logger, "No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+						return (char*) -1;
+					}
 				}
 
 				int inicio = direccionLogica.desplazamiento;
@@ -523,7 +528,12 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					while (tamanio > tamanioPag){
 
 					if (pag->marcoID == -1) {
-						asignoMarcoAPagina(PID, seg, pag);
+						int resultado = asignoMarcoAPagina(PID, seg, pag);
+
+						if (resultado == -1){
+							log_error(logger, "No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+							return (char*) -1;
+						}
 					}
 
 					string_append(&memoriaSolicitada,pag->data);
@@ -537,7 +547,12 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					if (tamanio > 0){
 						log_debug(logger,"El tamanio es mayor a 0");
 						if (pag->marcoID == -1) {
-							asignoMarcoAPagina(PID, seg, pag);
+							int resultado = asignoMarcoAPagina(PID, seg, pag);
+
+							if (resultado == -1){
+								log_error(logger, "No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+								return (char*) -1;
+							}
 						}
 						string_append(&memoriaSolicitada, leoMemoria(pag, 0, tamanio));
 					}
@@ -653,7 +668,12 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 				}
 				if (pag->marcoID == -1) {
 					log_debug(logger,"Como la pag no tenía marco, le asigno");
-					asignoMarcoAPagina(PID, seg, pag);
+					int resultado = asignoMarcoAPagina(PID, seg, pag);
+
+					if (resultado == -1){
+						log_error(logger, "No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
+						return -1;
+					}
 				}
 
 				int inicio = direccionLogica.desplazamiento;
@@ -670,8 +690,14 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 					while (tamanio > tamanioPag){
 						if (pag->marcoID == -1) {
-							asignoMarcoAPagina(PID, seg, pag);
+							int resultado = asignoMarcoAPagina(PID, seg, pag);
+
+							if (resultado == -1){
+								log_error(logger, "No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
+								return -1;
+							}
 						}
+
 						escriboMemoria(pag, 0, tamanioPag, bytesAEscribir);
 						bytesAEscribir = string_substring_from(bytesAEscribir, tamanioPag);
 						tamanio = tamanio - tamanioPag;
@@ -681,7 +707,12 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 					if (tamanio > 0){
 						if (pag->marcoID == -1) {
-							asignoMarcoAPagina(PID, seg, pag);
+							int resultado = asignoMarcoAPagina(PID, seg, pag);
+
+							if (resultado == -1){
+								log_error(logger, "No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
+								return -1;
+							}
 						}
 						escriboMemoria(pag, 0, tamanio, bytesAEscribir);
 					}
@@ -722,7 +753,7 @@ void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir){
 	contadorLRU++;
 }
 
-void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
+int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	log_debug(logger,"Entro a la funcion asignoMarcoAPagina");
 
 	T_MARCO* marcoAsignado;
@@ -742,7 +773,7 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 					marcoAsignado->pagina);
 		} else {
 			log_error(logger, "No hay sufiente espacio de swapping");
-
+			return -1;
 		}
 	} else {
 		marcoAsignado = list_remove(marcosVacios, 0);
@@ -758,6 +789,7 @@ void asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	list_add(paginasEnMemoria, pag);
 	list_add(marcosLlenos, marcoAsignado);
+	return 1;
 }
 
 void actualizarMarcos() {

@@ -84,7 +84,7 @@ T_SEGMENTO* crearSegmentoVacio(T_PROCESO* proceso, int tamanio);
 int 		calcularProximoSID (T_PROCESO* proceso);
 t_list* 	crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID);
 static void destruirPag(T_PAGINA* pagina);
-void 		asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
+int 		asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
 void 		iniciarConexiones();
 void		interpretarOperacion(int* socket);
 char* 		leoMemoria(T_PAGINA* pag, int inicio, int final);
