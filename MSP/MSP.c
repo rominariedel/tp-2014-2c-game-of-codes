@@ -304,6 +304,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	log_debug(logger,
 			"Se agrega el segmento a la lista de segmentos del proceso");
 
+	log_info(logger,"Se creó exitósamente el segmento");
 	log_info(logger, "La dirección base del segmento creado es %d",
 			segmentoVacio->baseSegmento);
 
@@ -454,7 +455,7 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 	}
 
 	sem_post(&mutex_procesos);
-	log_info(logger, "El segmento ha sido detruido exitosamente");
+	log_info(logger, "El segmento ha sido detruido exitósamente");
 	return operacion_exitosa;
 }
 
@@ -1096,12 +1097,14 @@ void iniciarConexiones() {
 
 		if (modulo_conectado == soy_CPU) {
 			printf("Se conecto una CPU\n");
+			log_info(logger,"Se conectó una CPU");
 			pthread_create(&hiloCPU, NULL, (void*) interpretarOperacion,
 					&socket_conectado);
 		}
 
 		else if (modulo_conectado == soy_kernel) {
 			printf("Se conecto el Kernel\n");
+			log_info(logger,"Se concectó el Kernel");
 			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion,
 					&socket_conectado);
 		}
@@ -1128,8 +1131,12 @@ void interpretarOperacion(int* socket) {
 		switch (datos->codigo_operacion) {
 
 		case crear_segmento:
+			log_info(logger,"Se solicitó crear un segmento");
+
 			memcpy(&pid, datos->datos, sizeof(int));
 			memcpy(&tamanio, datos->datos + sizeof(int), sizeof(int));
+
+			log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, tamanio);
 
 			free(datos);
 
@@ -1142,8 +1149,12 @@ void interpretarOperacion(int* socket) {
 			break;
 
 		case destruir_segmento:
+			log_info(logger,"Se solicitó destruir un segmento");
+
 			memcpy(&pid, datos->datos, sizeof(int));
 			memcpy(&baseSegmento, datos->datos + sizeof(int), sizeof(uint32_t));
+
+			log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, baseSegmento);
 
 			respuesta = destruirSegmento(pid, baseSegmento);
 
@@ -1156,10 +1167,14 @@ void interpretarOperacion(int* socket) {
 			break;
 
 		case solicitar_memoria:
+			log_info(logger,"Se solicitó leer memoria");
+
 			memcpy(&pid, datos->datos, sizeof(int));
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
 			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t),
 					sizeof(int));
+
+			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, baseSegmento);
 
 			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
@@ -1172,6 +1187,8 @@ void interpretarOperacion(int* socket) {
 			break;
 
 		case escribir_memoria:
+			log_info(logger,"Se solicitó escribir en memoria");
+
 			memcpy(&pid, datos->datos, sizeof(int));
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
 			memcpy(&bytesAEscribir,
@@ -1180,6 +1197,8 @@ void interpretarOperacion(int* socket) {
 			memcpy(&tamanio,
 					datos->datos + sizeof(int) + sizeof(uint32_t)
 							+ sizeof(char*), sizeof(int));
+
+			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, baseSegmento);
 
 			respuesta = escribirMemoria(pid, direccion, bytesAEscribir,
 					tamanio);
