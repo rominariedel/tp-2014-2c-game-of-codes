@@ -481,58 +481,66 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		log_info(LOGCPU,"MALC()");
 		MALC();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"MALC")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar MALC()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1; }
+			return -1; }}
 	if(0 == strcmp(instruccion,"FREE") && KMactual == 1){
 		log_info(LOGCPU,"FREE()");
 		FREE();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"FREE")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar FREE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}
+			return -1;}}
 	if(0 == strcmp(instruccion,"INNN") && KMactual == 1){
 		log_info(LOGCPU,"INNN()");
 		INNN();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"INNN")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar INNN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}
+			return -1;}}
 	if(0 == strcmp(instruccion,"OUTN") && KMactual == 1){
 		log_info(LOGCPU,"OUTN()");
 		OUTN();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"OUTN")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar OUTN()", PIDactual, KMactual);
-			printf("no tiene permiso para ejecutar esta instruccion");return -1;}
-	if(0 == strcmp(instruccion,"CREA") && KMactual == 1){
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -1;}}
+	if(1/*0 == strcmp(instruccion,"CREA\0")&& KMactual == 1*/ ){ //TODO: SACAR EL COMENTARIO!!!!
 		log_info(LOGCPU,"CREA()");
 		CREA();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"CREA")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar CREA()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}
+			return -1;}}
 	if(0 == strcmp(instruccion,"JOIN") && KMactual == 1){
 		log_info(LOGCPU,"JOIN()");
 		JOIN();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"JOIN")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar JOIN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}
+			return -1;}}
 	if(0 == strcmp(instruccion,"BLOK") && KMactual == 1){
 		log_info(LOGCPU,"BLOK()");
 		BLOK();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"BLOK")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar BLOK()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}
+			return -1;}}
 	if(0 == strcmp(instruccion,"WAKE") && KMactual == 1){
 		log_info(LOGCPU,"WAKE()");
 		WAKE();
 		return 0; }else{
+			if(0 == strcmp(instruccion,"WAKE")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar WAKE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}
-
+			return -1;}}
 	return -1;
 
 }

@@ -32,7 +32,7 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 
 	int status = procesarRespuesta(respuesta);
 
-	char* proximaInstruccion = malloc(4);
+	char* proximaInstruccion = calloc(4, sizeof(char));
 	if(status == 0){
 	memcpy(proximaInstruccion, respuesta -> datos, 4);
 	}else{

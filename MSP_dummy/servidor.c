@@ -155,7 +155,7 @@ void conectado_a_cpu() {
 			case solicitarMemoria:
 				printf("SOLICITAR MEMORIA\n");
 				char* instruccion1 = string_new();
-				instruccion1 = "INNN";
+				instruccion1 = "CREA";
 				//char instruction[4];
 				//memcpy(instruction, instruccion1, 4);
 				//printf("instruccionAEjecutar: %s", instruction);
