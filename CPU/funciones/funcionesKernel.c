@@ -26,6 +26,7 @@ int KERNEL_IngreseNumeroPorConsola(int PID){
 	//codOperacion = solicitarNumero
 	char codigo = 'N';
 	char * datos = malloc(sizeof (char));
+
 	memcpy(datos, &codigo, sizeof(char));
 	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(char));
 	enviar_datos(socketKernel,paquete);
@@ -73,7 +74,6 @@ void KERNEL_MostrarCadenaPorConsola(int PID, char* cadena){
 	free(datos);
 	free(paquete);
 }
-
 
 t_TCB* KERNEL_CrearNuevoHilo(t_TCB* TCB){
 	char * datos = malloc(sizeof(t_TCB));

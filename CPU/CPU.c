@@ -99,7 +99,7 @@ int main(int cantArgs, char** args){
 
 		finalizarEjecucion = 1;
 
-		while((quantumActual<quantum /*|| KMactual==1*/) && finalizarEjecucion) //TODO: sacar los comentarios
+		while((quantumActual<quantum /*|| KMactual==1*/ ) && finalizarEjecucion) //TODO: sacar los comentarios
 		{
 			log_info(LOGCPU, "quantum = %d ",quantumActual);
 			printf("\n %d \n", quantumActual);
@@ -109,7 +109,7 @@ int main(int cantArgs, char** args){
 			char* proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
 			log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
 
-			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda. Para conocer todas las instrucciones existentes y su propósito, ver el Anexo I: Especificación de ESO.
+			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda.
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
 			usleep(RETARDO);
 
@@ -172,6 +172,7 @@ int main(int cantArgs, char** args){
 		}
 	  }
 	}
+
 	return 0;
 }
 
