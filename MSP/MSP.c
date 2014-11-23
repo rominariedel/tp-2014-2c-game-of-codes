@@ -117,7 +117,7 @@ void inicializarConsola() {
 	while (seguimiento) {
 		printf(">");
 		fgets(comando, 50, stdin);
-		comando[string_length(comando) - 1] = '\0'; //todo aca no habia un if?
+		comando[string_length(comando) - 1] = '\0';
 
 		if (string_equals_ignore_case(comando, "Cerrar")) {
 			log_debug(logger, "Se pidió Cerrar Consola");
@@ -253,11 +253,14 @@ uint32_t crearSegmento(int PID, int tamanio) {
 		return error;
 	}
 
+	sem_wait(&mutex_MemoriaDisponible);
 	if (memoriaDisponible < tamanio) {
 		log_error(logger,
 				"La memoria disponible no es suficiente para el tamanio del segmento");
+		sem_post(&mutex_MemoriaDisponible);
 		return error_memoria_llena;
 	}
+	sem_post(&mutex_MemoriaDisponible);
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -426,12 +429,14 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 		else {
 			log_error(logger,
 					"El segmento no ha sido destruido porque es inexistente");
+			sem_post(&mutex_procesos);
 			return error;
 		}
 	} else {
 		log_error(logger,
 				"El segmento no ha sido destruido porque el proceso con PID: %d no existe",
 				PID);
+		sem_post(&mutex_procesos);
 		return error;
 	}
 
@@ -504,6 +509,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 		return marco->empty == true;
 	}
 
+	sem_wait(&mutex_procesos);
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
 
 	if (proceso != NULL ) {
@@ -521,6 +527,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 				if ((tamanioPag * (pag->paginaID)
 						+ direccionLogica.desplazamiento) > seg->tamanio) {
 					log_error(logger, "Segmentation Fault: Direccion Invalida");
+					sem_post(&mutex_procesos);
 					return (char*) error_segmentation_fault;
 				}
 				if ((tamanioPag * (pag->paginaID)
@@ -528,6 +535,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 						> seg->tamanio) {
 					log_error(logger,
 							"Segmentation Fault: Se excedieron los limites del segmento");
+					sem_post(&mutex_procesos);
 					return (char*) error_segmentation_fault;
 				}
 
@@ -541,6 +549,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					if (resultado < 0) {
 						log_error(logger,
 								"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+						sem_post(&mutex_procesos);
 						return (char*) resultado;
 					}
 				}
@@ -569,6 +578,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 							if (resultado < 0) {
 								log_error(logger,
 										"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+								sem_post(&mutex_procesos);
 								return (char*) resultado;
 							}
 						}
@@ -589,6 +599,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 							if (resultado < 0) {
 								log_error(logger,
 										"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
+								sem_post(&mutex_procesos);
 								return (char*) resultado;
 							}
 						}
@@ -604,17 +615,20 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 			} else {
 				log_error(logger,
 						"No se ha podido solicitar memoria ya que la página es inexistente");
+				sem_post(&mutex_procesos);
 				return (char*) error;
 			}
 		} else {
 			log_error(logger,
 					"No se ha podido solicitar memoria ya que el segmento es inexistente");
+			sem_post(&mutex_procesos);
 			return (char*) error;
 		}
 	} else {
 		log_error(logger,
 				"No se ha podido solicitar memoria ya que el proceso de PID: %d es inexistente",
 				PID);
+		sem_post(&mutex_procesos);
 		return (char*) error;
 	}
 
@@ -634,6 +648,7 @@ char* leoMemoria(T_PAGINA* pag, int inicio, int final) {
 	log_debug(logger, "La memoria es: %s", memoria);
 
 	pag->bitReferencia = 1;
+
 	sem_wait(&mutex_contadorLRU);
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
@@ -820,6 +835,8 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	if (list_is_empty(marcosVacios)) {
 		log_debug(logger, "Entro porque no hay marcos libres");
+
+		sem_wait(&mutex_cantSwap);
 		if (cantidadSwap < tamanioPag) {
 			log_debug(logger, "Hay cantidad de swap disponible");
 			marcoAsignado = seleccionarMarcoVictima();
@@ -829,8 +846,14 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 					marcoAsignado->pagina);
 		} else {
 			log_error(logger, "No hay sufiente espacio de swapping");
+			sem_post(&mutex_cantSwap);
+			sem_post(&mutex_marcosLlenos);
+			sem_post(&mutex_marcosVacios);
+			sem_post(&mutex_paginasEnMemoria);
+
 			return error_memoria_llena;
 		}
+		sem_post(&mutex_cantSwap);
 	} else {
 		marcoAsignado = list_remove(marcosVacios, 0);
 	}
@@ -911,11 +934,12 @@ int tablaSegmentos() {
 		T_PROCESO* proceso = list_get(procesos, i);
 		int cantidadSegmentos = list_size(proceso->segmentos);
 
-		printf("\n Para el proceso de ID: %d", proceso->PID);
+		printf("\nPara el proceso de ID: %d", proceso->PID);
 
 		if (cantidadSegmentos == 0) {
 			printf("%c", '\n');
 			log_info(logger, "El proceso no tiene segmentos");
+			sem_post(&mutex_procesos);
 			return operacion_exitosa;
 		}
 
@@ -928,7 +952,8 @@ int tablaSegmentos() {
 			printf("   ");
 			printf("Dirección virtual base: %-d \n", (int) segmento->baseSegmento);
 		}
-		printf("%s", string_repeat('*', 50));
+
+		printf("\n %s \n", string_repeat('*', 90));
 	}
 
 	sem_post(&mutex_procesos);
@@ -961,7 +986,7 @@ int tablaPaginas(int PID) {
 
 		for (i = 0; cantidadSegmentos > i; i++) {
 			T_SEGMENTO* segmento = list_get(proceso->segmentos, i);
-			printf("\n Para el segmento de ID: %d", segmento->SID);
+			printf("\nPara el segmento de ID: %d", segmento->SID);
 
 			int cantidadPaginas = list_size(segmento->paginas);
 			for (j = 0; cantidadPaginas > j; j++) {
@@ -975,14 +1000,16 @@ int tablaPaginas(int PID) {
 					printf("   ");
 					printf("Se encuentra en memoria principal en el marco de ID: %-d \n",
 							pagina->marcoID);
-				} else
+				} else {
 					printf("   ");
 					printf("No se encuentra en memoria principal \n");
+				}
 			}
-			printf("%s", string_repeat('*', 50));
+			printf("\n %s \n", string_repeat('*', 90));
 		}
 	} else {
 		log_error(logger, "El proceso de PID: %-d es inexistente \n", PID);
+		sem_post(&mutex_procesos);
 		return error;
 	}
 
@@ -1151,7 +1178,10 @@ T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 		remove(archivo);
 
-		cantidadSwap = +tamanioPag;
+		sem_wait(&mutex_cantSwap);
+		cantidadSwap += tamanioPag;
+		sem_post(&mutex_cantSwap);
+
 	} else {
 		log_error(logger, "No existe el archivo de la pagina swappeada");
 		return error;
@@ -1171,7 +1201,11 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 		pag->swapped = true;
 		pag->marcoID = -1;
 		pag->data = NULL;
+
+		sem_wait(&mutex_cantSwap);
 		cantidadSwap -= tamanioPag;
+		sem_post(&mutex_cantSwap);
+
 	} else {
 		log_error(logger,
 				"No se pudo crear el archivo de la pagina a swappear");
