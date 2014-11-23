@@ -89,6 +89,9 @@ void loader() {
 						consola_conectada->PID);
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
+				if(datos == NULL){
+					printf("Se desconecto la consola\n");
+				}
 				TCB_struct * nuevoTCB;
 
 				int * aux;
@@ -182,6 +185,11 @@ void boot() {
 
 	TCB_struct * tcb_km = malloc(sizeof(TCB_struct));
 	tcb_km->KM = 1;
+
+	/*int base_segmento_codigo = solicitar_segmento(tcb_km, 8);
+	escribir_memoria(tcb_km, base_segmento_codigo, 8, "holahola");
+	int base_segmento_stack = solicitar_segmento(tcb_km, 4);
+	 */
 
 	int base_segmento_codigo = solicitar_segmento(tcb_km,
 			tamanio_codigo_syscalls);
