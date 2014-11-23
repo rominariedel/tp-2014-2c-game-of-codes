@@ -53,7 +53,6 @@ typedef struct T_MARCO {
 	int empty;
 	int PID;
 	T_PAGINA* pagina;
-	char* alg_meta_data;
 }T_MARCO;
 
 typedef struct T_DIRECCION_LOG {
