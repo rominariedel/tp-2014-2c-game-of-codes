@@ -31,6 +31,8 @@ void enviar_a_ejecucion(TCB_struct *);
 void dispatcher();
 void copiarRegistros(int registro1[5], int registro2[5]);
 void handshake_MSP(int socketMSP);
+void fijarse_joins(int tid);
+void matar_hijos(int PID);
 
 int main(int argc, char ** argv) {
 
@@ -113,6 +115,7 @@ void loader() {
 					nuevoTCB = malloc(sizeof(TCB_struct));
 					nuevoTCB->PID = consola_conectada->PID;
 					nuevoTCB->TID = obtener_TID();
+					consola_conectada->TID_padre = nuevoTCB->TID;
 					int segmento_codigo = solicitar_segmento(nuevoTCB->PID,
 							datos->codigo_operacion);
 
@@ -120,7 +123,7 @@ void loader() {
 							TAMANIO_STACK);
 
 					//TODO finalizar conexion si hubo un problema al solicitar un segmento.
-
+					//Si hay Segmentation Fault hay que terminar toodo el proceso
 					escribir_memoria(nuevoTCB->PID, segmento_codigo,
 							datos->tamanio, datos->datos);
 
@@ -247,10 +250,6 @@ void boot() {
 			consola_conectada->socket_consola = socket_conectado;
 			consola_conectada->cantidad_hilos = 0;
 			list_add(consola_list, consola_conectada);
-			if (list_size(consola_list) == 0) {
-				printf("No se agrego la consola correctamente\n");
-				exit(-1);
-			}
 			printf("Se agrego una consola de PID: %d\n",
 					consola_conectada->PID);
 			if (descriptor_mas_alto_consola == 0) {
@@ -399,10 +398,49 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
 	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*) es_TCB);
-	free(tcb_exec); //TODO: sacar de ejecucion, va a exit------
+	free(tcb_exec);
+	/*TODO: sacar de ejecucion, va a exit------
+	*Fijarse si hay algun hilo esperando joins
+	*Si es el padre hay que abortar los hilos (hay que fijarse si el tid es el mismo que tiene guardada la consola
+	*asociada).
+	*Si hay una asociada, hay que eliminar el nodo y fijarse si el tid llamador no esta esperando a otro hilo.
+	*Si no está esperando a otro habria que consultar si va a exit o a ejecucion nuevamente.*/
+
+	fijarse_joins(TID);
+	struct_consola * consola_asociada = obtener_consolaAsociada(PID);
+	if(consola_asociada->TID_padre == TID){
+		consola_asociada->termino_ejecucion = true;
+		matar_hijos(PID);
+	}
+	queue_push(EXIT, tcb);
 
 	sem_post(&sem_CPU);
 
+}
+
+void matar_hijos(int PID){
+
+}
+
+void fijarse_joins(int tid){
+
+	bool esta_esperando_tid(struct_join *estructura){
+		return estructura->tid_a_esperar == tid;
+	}
+	t_list * lista_bloqueados_por_tid = list_filter(hilos_join, (void*)esta_esperando_tid);
+
+	void desbloquear_por_join(struct_join * estructura){
+		TCB_struct * tcb_bloqueado = malloc(sizeof(TCB_struct));
+		memcpy(tcb_bloqueado, estructura->tcb_llamador, sizeof(TCB_struct));
+		meter_en_ready(1, tcb_bloqueado);
+	}
+
+	if(lista_bloqueados_por_tid != NULL){
+		list_map(hilos_join, (void*)desbloquear_por_join);
+		list_destroy_and_destroy_elements(lista_bloqueados_por_tid, free);
+		//Como el filter contiene referencias a estructuras que contiene hilos_join, con liberar los elementos del
+		//filter tendrían que dejar de estar los elementos en hilos_join
+	}
 }
 
 void finalizo_ejecucion(TCB_struct *tcb) {
