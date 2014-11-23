@@ -94,15 +94,18 @@ char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
 char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
 
 
+enum operaciones{
+	operacionExitosa = 1,
+};
+
 enum mensajesMSP{
 	/*enviar mensajes*/
-	solicitarMemoria = 1,
-	solicitarMemoriaP = 80,
-	crearNuevoSegmento = 2,
-	destruirSegmento = 3,
-	escribirMemoria = 4,
-	error_memoriaLlena = 16,
-	error_segmentationFault = 17,
+	solicitarMemoria = 31,
+	crearNuevoSegmento = 32,
+	destruirSegmento = 30,
+	escribirMemoria = 2,
+	error_memoriaLlena = -3,
+	error_segmentationFault = -2,
 	no_llego_respuesta = 90,
 
 };
@@ -127,7 +130,7 @@ enum mensajesKernelCodOperacion{
 };
 
 enum instruccionesCPU{
-	_LOAD = 15,
+	_LOAD,
 	_GETM,
 	_MOVR,
 	_ADDR,

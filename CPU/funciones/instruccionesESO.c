@@ -18,6 +18,8 @@ void LOAD(tparam_load* parametrosLoad){ //Carga en el registro, el número dado.
 void SETM(tparam_setm* parametrosSetm){
 	//Pone tantos bytes desde el segundo registro, hacia la memoria apuntada por el primer registro
 
+	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *devolverRegistro(parametrosSetm->reg2), parametrosSetm->num, solicitarMemoria);
+	MSP_EscribirEnMemoria(PIDactual, parametrosSetm->reg1, respuesta->datos, respuesta->tamanio);
 	//explicacion Gaston: pone en los n bytes del registro bx en la dirección de memoria apuntanda por el registro ax
 	//(ax = numero que es una posición de memoria)
 }
@@ -25,9 +27,7 @@ void SETM(tparam_setm* parametrosSetm){
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)), sizeof(int), solicitarMemoria);
-	char* buffer = malloc(sizeof(respuesta));
-	buffer = deserializarPaqueteMSP(respuesta);
-	memcpy(devolverRegistro(parametrosGetm->reg1),buffer, sizeof(buffer));
+	memcpy((devolverRegistro(parametrosGetm->reg1)), respuesta->datos, respuesta->tamanio);
 }
 
 void MOVR(tparam_movr* parametrosMovr){ //Copia el valor del segundo registro hacia el primero
@@ -39,15 +39,15 @@ void ADDR(tparam_addr* parametrosAddr){ //Suma el primer registro con el segundo
 }
 
 void SUBR(tparam_subr* parametrosSubr){ //Resta el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
-	 A =  *devolverRegistro(parametrosSubr->reg1) -  *devolverRegistro(parametrosSubr->reg2);
+	A =  *devolverRegistro(parametrosSubr->reg1) -  *devolverRegistro(parametrosSubr->reg2);
 }
 
 void MULR(tparam_mulr* parametrosMulr){ //Multiplica el primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
-	 A = (*devolverRegistro(parametrosMulr->reg1)) * (*devolverRegistro(parametrosMulr->reg2));
+	A = (*devolverRegistro(parametrosMulr->reg1)) * (*devolverRegistro(parametrosMulr->reg2));
 }
 
 void MODR(tparam_modr* parametrosModr){ //Obtiene el resto de la división del primer registro con el segundo registro. El resultado de la operación se almacena en el registro A.
-	 A = ( *devolverRegistro(parametrosModr->reg1)) % ( *devolverRegistro(parametrosModr->reg2));
+	A = ( *devolverRegistro(parametrosModr->reg1)) % ( *devolverRegistro(parametrosModr->reg2));
 }
 
 void DIVR(tparam_divr* parametrosDivr){
@@ -62,7 +62,7 @@ void DIVR(tparam_divr* parametrosDivr){
 		devolverTCBactual(desconexion);
 	}
 	else {
-		 A = (*devolverRegistro(parametrosDivr->reg1)) % (*devolverRegistro(parametrosDivr->reg2));
+		A = (*devolverRegistro(parametrosDivr->reg1)) % (*devolverRegistro(parametrosDivr->reg2));
 	}
 }
 
@@ -87,7 +87,7 @@ void CGEQ(tparam_cgeq* parametrosCgeq){
 
 void CLEQ(tparam_cleq* parametrosCleq){
 	//Compara si el primer registro es menor o igual al segundo. De ser verdadero, se almacena el valor 1. De lo contrario el valor 0. El resultado de la operación se almacena en el registro A.
-	 A = *devolverRegistro(parametrosCleq->reg1) <=  *devolverRegistro(parametrosCleq->reg2);
+	A = *devolverRegistro(parametrosCleq->reg1) <=  *devolverRegistro(parametrosCleq->reg2);
 }
 
 
@@ -116,9 +116,9 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 }
 
 void INTE(tparam_inte* parametrosInte){
-
+	punteroInstruccionActual += 8;
 	XXXX();
-	KERNEL_ejecutarRutinaKernel(finaliza_ejecucion ,parametrosInte->direccion);
+	KERNEL_ejecutarRutinaKernel(interrupcion ,parametrosInte->direccion);
 
 	/*
 	cuando el proceso CPU notifique al Kernel que un hilo desea ejecutar una llamada al

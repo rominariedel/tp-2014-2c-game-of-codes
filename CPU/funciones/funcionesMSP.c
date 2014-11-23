@@ -14,7 +14,6 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
 
 	return respuesta;
-
 }
 
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
@@ -40,35 +39,9 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 		memcpy(proximaInstruccion,&status, 1);
 	}
 
-	return proximaInstruccion;
-}
+	free(respuesta);
 
-int procesarRespuesta(t_datosAEnviar* respuesta){
-	int estado;
-	errorOperacionesConMemoria = 0;
-	errorMemoria = 0;
-	switch(respuesta->codigo_operacion){
-		case error_segmentationFault:
-			devolverTCBactual(error_segmentationFault);
-			errorOperacionesConMemoria = -1;
-			errorMemoria = error_segmentationFault;
-			estado = -1;
-			break;
-		case error_memoriaLlena:
-			devolverTCBactual(error_memoriaLlena);
-			errorOperacionesConMemoria = -1;
-			errorMemoria = error_memoriaLlena;
-			estado = -1;
-			break;
-		}
-	if(respuesta == NULL){
-		log_error(LOGCPU, "  No se pudieron recibir datos MSP  ");
-		errorOperacionesConMemoria = -1;
-		errorMemoria = no_llego_respuesta;
-		estado = -1;
-	}
-	estado =0;
-	return estado;
+	return proximaInstruccion;
 }
 
 char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
@@ -76,7 +49,7 @@ char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
 	memcpy(datos, &PIDactual, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
 	memcpy(datos + sizeof(int) + sizeof(int), &cantidadParametros, sizeof(int));
-	t_datosAEnviar * paquete = crear_paquete(solicitarMemoriaP, (void*) datos, 3 * sizeof(int)); //TODO: cambiar a solicitarMemoria, el solicitarMemoriaP es para usar la MSPdummy
+	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
 	enviar_datos(socketMSP,paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
@@ -89,6 +62,8 @@ char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
 	}else{
 		memcpy(parametros,&status, 1);
 	}
+
+	free(respuesta);
 
 	return parametros;
 
@@ -113,6 +88,8 @@ int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 		memcpy(dir_base,&status, 1);
 	}
 
+	free(respuesta);
+
 	return *dir_base;
 
 }
@@ -122,8 +99,11 @@ void MSP_DestruirSegmento(int PID, int baseSegmento){
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &baseSegmento, sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(destruirSegmento, (void*) datos, 2* sizeof(int));
-
 	enviar_datos(socketMSP,paquete);
+
+	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+	procesarRespuesta(respuesta);
+	free(respuesta);
 	free(datos);
 }
 
@@ -143,5 +123,35 @@ void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 
 	t_datosAEnviar* respuesta  = recibir_datos(socketMSP);
 	procesarRespuesta(respuesta);
+	free(respuesta);
+}
 
+int procesarRespuesta(t_datosAEnviar* respuesta){
+	int estado;
+	errorOperacionesConMemoria = 0;
+	errorMemoria = 0;
+	switch(respuesta->codigo_operacion){
+		case error_segmentationFault:
+			devolverTCBactual(error_segmentationFault);
+			errorOperacionesConMemoria = -1;
+			errorMemoria = error_segmentationFault;
+			estado = -1;
+			log_error(LOGCPU, "ERROR MSP: Segmentation Fault");
+			break;
+		case error_memoriaLlena:
+			devolverTCBactual(error_memoriaLlena);
+			errorOperacionesConMemoria = -1;
+			errorMemoria = error_memoriaLlena;
+			estado = -1;
+			log_error(LOGCPU, "ERROR MSP: Memoria Llena");
+			break;
+		}
+	if(respuesta == NULL){
+		errorOperacionesConMemoria = -1;
+		errorMemoria = no_llego_respuesta;
+		estado = -1;
+		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
+	}
+	estado =0;
+	return estado;
 }

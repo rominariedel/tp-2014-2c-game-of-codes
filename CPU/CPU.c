@@ -113,20 +113,13 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
 			usleep(RETARDO);
 
-			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion ");
+			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion");
 			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
 
 			//si hubo algun error con las operaciones con memoria tengo que terminar la ejecucion!!
 
 			if(errorOperacionesConMemoria == -1){
-				switch(errorMemoria){
-				case error_memoriaLlena:
-					devolverTCBactual(error_memoriaLlena);
-					break;
-				case error_segmentationFault:
-					devolverTCBactual(error_segmentationFault);
-					break;
-				}
+				devolverTCBactual(ejecucion_erronea);
 				break;
 			}
 
@@ -153,7 +146,7 @@ int main(int cantArgs, char** args){
 				exit(0);
 			}else{
 				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
-				punteroInstruccionActual =+ respuesta;
+				punteroInstruccionActual =+ (respuesta + 4) ;
 			}
 				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
 
