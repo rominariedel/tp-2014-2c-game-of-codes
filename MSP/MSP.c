@@ -59,8 +59,8 @@ int main(int cantArgs, char** args) {
 	printf("\n -------------  MSP  -------------\n");
 	printf("Iniciando...\n");
 
-	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 	inicializar(args);
+	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 
 	int hilo_Consola = pthread_create(&hiloConsola, NULL,
 			(void*) inicializarConsola, NULL );
@@ -114,12 +114,13 @@ void inicializar(char** args) {
 }
 
 void inicializarConsola() {
-	char* comando = malloc(sizeof(char) * 50);
+	char* comando = malloc(sizeof(char) * 1500);
 	int seguimiento = 1;
 
 	while (seguimiento) {
 		printf(">");
-		fgets(comando, 50, stdin);
+		fgets(comando, 1500, stdin);
+		//scanf("%s",comando);
 		comando[string_length(comando) - 1] = '\0';
 
 		if (string_equals_ignore_case(comando, "Cerrar")) {
@@ -135,16 +136,17 @@ void inicializarConsola() {
 }
 
 void interpretarComando(char* comando) {
+	printf("%s \n",comando);
 	char** operacion;
-	operacion = string_n_split(comando, 2, " ");
+	operacion = string_n_split(comando,2, " ");
 	log_debug(logger, "La operación a ejecutar es: %s", operacion[0]);
 	char** parametros = NULL;
 
 	log_debug(logger,"%s", operacion[1]);
-	if (operacion[1] != NULL ) {
+	if (operacion[1] != NULL) {
 		parametros = string_split(operacion[1], ",");
-		log_debug(logger, "Los parámetros para la operación son: %s",
-				parametros[0]);
+		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s, %s",
+				parametros[0], parametros[1], parametros[3], parametros[2]);
 	}
 
 	if (string_equals_ignore_case(operacion[0], "Crear_Segmento")) {
@@ -506,6 +508,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	contadorPagina = direccionLogica.paginaId;
 
 	char* memoriaSolicitada = malloc(sizeof(char) * tamanio);
+	int tamanioLeido;
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -576,10 +579,14 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 				if (final > tamanioPag) {
 					log_debug(logger, "El final es mayor que el tamanioPag");
 
-					memoriaSolicitada = leoMemoria(pag, inicio, tamanioPag);
+					memcpy(memoriaSolicitada, pag->data + inicio, tamanioPag - inicio);
+					leoMemoria(pag); //aviso que lei para que settea atributos de algoritmos a las paginas
+
+					tamanio = tamanio - (tamanioPag - inicio);
+					tamanioLeido = (tamanioPag - inicio);
+
 					log_debug(logger, "La memoria leida es %s",
 							memoriaSolicitada);
-					tamanio = tamanio - (tamanioPag - inicio);
 
 					pag = list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
@@ -597,7 +604,10 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 							}
 						}
 
-						string_append(&memoriaSolicitada, pag->data);
+						memcpy(memoriaSolicitada + tamanioLeido, pag->data, tamanioPag);
+						leoMemoria(pag);
+
+						tamanioLeido += tamanioPag;
 						tamanio = tamanio - tamanioPag;
 
 						pag = list_find(seg->paginas, (void*) paginaSiguiente);
@@ -617,13 +627,14 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 								return (char*) resultado;
 							}
 						}
-						string_append(&memoriaSolicitada,
-								leoMemoria(pag, 0, tamanio));
+						memcpy(memoriaSolicitada + tamanioLeido, pag->data, tamanio);
+						leoMemoria(pag);
 					}
 				} else {
 					log_debug(logger, "El tamanio es menor que el tamanioPag");
 					log_debug(logger, "Lee memoria directamente");
-					memoriaSolicitada = leoMemoria(pag, inicio, final);
+					memcpy(memoriaSolicitada, pag->data + inicio, final - inicio);
+					leoMemoria(pag);
 				}
 
 			} else {
@@ -649,26 +660,29 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	sem_post(&mutex_procesos);
 	log_info(logger, "El contenido de la página solicitada es: %s",
 			memoriaSolicitada);
+
+
+	FILE* archivo = txt_open_for_append("config.txt");
+	txt_write_in_file(archivo,memoriaSolicitada);
 	return memoriaSolicitada; //Este return es provisorio, capaz memoriaSolicitada haya que usarlo como variable global
 	//return memoriaSolicitada; //Esto debería devolver un int, qué se hace con memoriaSolicitada?
 }
 
-char* leoMemoria(T_PAGINA* pag, int inicio, int final) {
+void leoMemoria(T_PAGINA* pag) {
 	log_debug(logger, "Entre a leoMemoria");
 
-	char* memoria = string_new();
-	int tamanio = final - inicio;
-	memoria = string_substring(pag->data, inicio, tamanio);
-	log_debug(logger, "La memoria es: %s", memoria);
+	//int tamanio = final - inicio;
+	//char* memoria = malloc(tamanio);
+	//memcpy(memoria, pag->data + inicio, tamanio);
 
-	pag->bitReferencia = 1;
+	//log_debug(logger, "La memoria es: %s", memoria);
+	//log_debug(logger, "La memoria es: %d", memoria);
 
 	sem_wait(&mutex_contadorLRU);
+	pag->bitReferencia = 1;
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
 	sem_post(&mutex_contadorLRU);
-
-	return memoria;
 }
 
 //Para el espacio de direcciones del proceso PID, escribe hasta tamanio bytes del buffer bytesAEscribir
@@ -676,11 +690,16 @@ char* leoMemoria(T_PAGINA* pag, int inicio, int final) {
 uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		int tamanio) {
 	log_debug(logger, "Entro a la funcion escribirMemoria");
+	log_debug(logger, "Tamaño de los bytes a escribir %d", string_length(bytesAEscribir));
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
-
+	log_debug(logger, "Sid %d", direccionLogica.SID);
+	log_debug(logger, "desplazamiento %d", direccionLogica.desplazamiento);
+	log_debug(logger, "paginaId %d", direccionLogica.paginaId);
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
 	log_debug(logger, "El contador de página es: %d", contadorPagina);
+
+	char* aux = malloc(tamanio);
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -699,7 +718,9 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	}
 
 	sem_wait(&mutex_procesos);
+	log_debug(logger, "procesos %d", list_size(procesos));
 	T_PROCESO* proceso = list_find(procesos, (void*) procesoPorPid);
+	log_debug(logger, "segs %d", list_size(proceso->segmentos));
 
 	if (proceso != NULL ) {
 		log_debug(logger, "Encontró al proceso de PID: %d", proceso->PID);
@@ -737,6 +758,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 				if (pag->marcoID == -1) {
 					log_debug(logger, "Como la pag no tenía marco, le asigno");
 					int resultado = asignoMarcoAPagina(PID, seg, pag);
+					log_debug(logger,"El resultado de asignarMarco es: %d",resultado);
 
 					if (resultado < 0) {
 						log_error(logger,
@@ -747,18 +769,27 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 				}
 
 				int inicio = direccionLogica.desplazamiento;
+				log_debug(logger,"El inicio para escribir es: %d", inicio);
 				int final = direccionLogica.desplazamiento + tamanio;
+				log_debug(logger,"El final para escribir es: %d",final);
 
 				if (final > tamanioPag) {
+					log_debug(logger,"EL final es mayor que el tamanioPag");
 					escriboMemoria(pag, inicio, tamanioPag, bytesAEscribir);
-					bytesAEscribir = string_substring_from(bytesAEscribir,
-							(tamanioPag - inicio));
+
 					tamanio = tamanio - (tamanioPag - inicio);
+					memcpy(aux,bytesAEscribir + (tamanioPag-inicio), tamanio);
+					memcpy(bytesAEscribir, aux, tamanio);
+					bytesAEscribir[tamanio]= '\0';
+
+					log_debug(logger,"Quedan escribir: %d bytes", tamanio);
 
 					pag = list_find(seg->paginas, (void*) paginaSiguiente);
+					log_debug(logger,"Encontro la página de id %d", pag->paginaID);
 					contadorPagina++;
 
 					while (tamanio > tamanioPag) {
+						log_debug(logger,"El tamanio es mayor a tamanioPag");
 						if (pag->marcoID == -1) {
 							int resultado = asignoMarcoAPagina(PID, seg, pag);
 
@@ -771,9 +802,14 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 						}
 
 						escriboMemoria(pag, 0, tamanioPag, bytesAEscribir);
-						bytesAEscribir = string_substring_from(bytesAEscribir,
-								tamanioPag);
+
 						tamanio = tamanio - tamanioPag;
+						memcpy(aux,bytesAEscribir + (tamanioPag), tamanio);
+						memcpy(bytesAEscribir, aux, tamanio);
+						bytesAEscribir[tamanio]= '\0';
+
+						log_debug(logger,"El tamanio a escribir es %d bytes", tamanio);
+
 						pag = list_find(seg->paginas, (void*) paginaSiguiente);
 						contadorPagina++;
 					}
@@ -781,6 +817,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 					if (tamanio > 0) {
 						if (pag->marcoID == -1) {
 							int resultado = asignoMarcoAPagina(PID, seg, pag);
+							log_debug(logger,"EL resultado de asignar marcoAPag es %d", resultado);
 
 							if (resultado < 0) {
 								log_error(logger,
@@ -821,12 +858,20 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 }
 
 void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir) {
-	int i;
-	for (i = inicio; final > i; i++) {
-		pag->data[i] = *string_substring_until(bytesAEscribir, 1);
-		bytesAEscribir = string_substring_from(bytesAEscribir, 1);
-	}
+	log_debug(logger,"Entre a escriboMemoria");
+	//int i;
+	memcpy(pag->data + inicio,bytesAEscribir, final - inicio);
+	log_debug(logger,"%s", pag->data+(100));
+	log_debug(logger,"%s", pag->data+(210));
+	//for (i = inicio; final > i; i++) {
+		//log_debug(logger,"Entro al for para escribir");
+		//pag->data[i] = *string_substring_until(bytesAEscribir, 1);
+		//bytesAEscribir = string_substring_from(bytesAEscribir, 1);
+		//log_debug(logger,"%s", pag->data);
 
+	//}
+
+	log_debug(logger,"sale del for");
 	sem_wait(&mutex_contadorLRU);
 	pag->bitReferencia = 1;
 	pag->contadorLRU = contadorLRU;
@@ -887,6 +932,7 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 		}
 		sem_post(&mutex_cantSwap);
 	} else {
+		log_debug(logger,"Tengo marcosVacios entonces le asigno uno de esos");
 		marcoAsignado = list_remove(marcosVacios, 0);
 	}
 
@@ -900,7 +946,9 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	marcoAsignado->empty = false;
 
 	list_add(paginasEnMemoria, pag);
+	log_debug(logger,"EL tamanio de pagsEnMemoria es: %d", list_size(paginasEnMemoria));
 	list_add(marcosLlenos, marcoAsignado);
+	log_debug(logger,"EL tamanio de marcosLlenos es: %d", list_size(marcosLlenos));
 
 	sem_post(&mutex_paginasEnMemoria);
 	sem_post(&mutex_marcosLlenos);
@@ -1172,11 +1220,14 @@ void interpretarOperacion(int* socket) {
 			log_info(logger,"Se solicitó leer memoria");
 
 			memcpy(&pid, datos->datos, sizeof(int));
+			log_debug(logger,"El pid es: %d", pid);
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
-			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(int),
-					sizeof(int));
+			log_debug(logger,"La direccion es: %d", direccion);
+			memcpy(&tamanio,
+						datos->datos + datos->tamanio - sizeof(int), sizeof(int));
+			log_debug(logger,"El tamanio es: %d", tamanio);
 
-			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, baseSegmento);
+			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, tamanio);
 
 			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
@@ -1195,14 +1246,17 @@ void interpretarOperacion(int* socket) {
 			log_debug(logger,"El pid es: %d", pid);
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
 			log_debug(logger,"La direccion es: %d", direccion);
-			bytesAEscribir = malloc(datos->tamanio);
+			bytesAEscribir = malloc(datos->tamanio - sizeof(int)*3);
+			log_debug(logger,"tamanio - sizeof(int) %d",datos->tamanio - sizeof(int)*3 );
 			memcpy(bytesAEscribir,
 					datos->datos + sizeof(int) + sizeof(int),
 					datos->tamanio - (3 * sizeof(int)));
-			//log_debug(logger,"Los bytes a escribir son: %s", bytesAEscribir);
+			log_debug(logger,"bytes a escribir %s", bytesAEscribir);
+			log_debug(logger,"Los bytes a escribir son: %d", string_length(bytesAEscribir+300));
 			memcpy(&tamanio,
 					datos->datos + datos->tamanio - sizeof(int), sizeof(int));
 			log_debug(logger,"El tamanio es: %d", tamanio);
+			bytesAEscribir[tamanio] = '\0';
 
 			//log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, baseSegmento);
 
