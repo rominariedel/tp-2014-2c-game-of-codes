@@ -3,6 +3,7 @@
 #include <commons/log.h>
 #include <sockets.h>
 #include <pthread.h>
+#include <commons/string.h>
 #define MAXCONEXIONES 10
 
 enum mensajes {
@@ -12,10 +13,10 @@ enum mensajes {
 	soy_cpu = 19,
 
 	//MENSAJES QUE RECIBIRIA DE LA CPU. ESTOS HAY QUE HACERLOS COINCIDIR CON LOS QUE ESTAN EN KERNEL
-	solicitarMemoria = 1,
-	crearNuevoSegmento = 2,
-	destruirSegmento = 3,
-	escribirMemoria = 4,
+	solicitarMemoria = 31,
+	crearNuevoSegmento = 32,
+	destruirSegmento = 30,
+	escribirMemoria = 2,
 	solicitarMemoriaP = 80,
 
 };
@@ -63,8 +64,10 @@ int main(void) {
 		switch (datos->codigo_operacion) {
 		case soy_kernel:
 			kernel_sock = cliente;
+			printf("Creando hilo para el kernel\n");
 			pthread_create(&hilo_kernel, NULL, (void*) conectado_a_Kernel,
 					NULL );
+			printf("Creado hilo para el kernel\n");
 			break;
 		case soy_cpu:
 			cpu_sock = cliente;
@@ -151,10 +154,11 @@ void conectado_a_cpu() {
 				break;
 			case solicitarMemoria:
 				printf("SOLICITAR MEMORIA\n");
-				char* instruccion1 = "INNN";
-				char instruction[4];
-				memcpy(instruction, instruccion1, 4);
-				printf("instruccionAEjecutar: %s", instruction);
+				char* instruccion1 = string_new();
+				instruccion1 = "INNN";
+				//char instruction[4];
+				//memcpy(instruction, instruccion1, 4);
+				//printf("instruccionAEjecutar: %s", instruction);
 				void* datosMSP = malloc(4);
 				memcpy(datosMSP,instruccion1,4);
 				paquete = crear_paquete(0,datosMSP,4);

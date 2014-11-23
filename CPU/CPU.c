@@ -142,8 +142,8 @@ int main(int cantArgs, char** args){
 
 				log_info(LOGCPU, "Devolver TCB %d al Kernel", PIDactual);
 				log_error(LOGCPU, "Error al interpretar instruccion");
-				devolverTCBactual(error_al_interpretar_instruccion);
-				exit(0);
+				devolverTCBactual(interrupcion);
+				break;
 			}else{
 				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
 				punteroInstruccionActual =+ (respuesta + 4) ;
@@ -302,9 +302,9 @@ void devolverTCBactual(int codOperacion){
 	actualizarTCB();
 
 	log_info(LOGCPU, "Armando paquete con TCB actual PID %d, TID %d", PIDactual, TIDactual);
-	void * mensaje = malloc(sizeof(t_TCB) + sizeof(int));
+	void * mensaje = malloc(sizeof(t_TCB));
 	memcpy(mensaje, TCBactual, sizeof(t_TCB));
-	t_datosAEnviar* paquete = crear_paquete(codOperacion, mensaje, sizeof(mensaje));
+	t_datosAEnviar* paquete = crear_paquete(codOperacion, mensaje, sizeof(t_TCB));
 	int status = enviar_datos(socketKernel, paquete);
 	if(status == -1){
 		log_info(LOGCPU, "No se pudo devolver el TCB actual");
@@ -353,7 +353,7 @@ void limpiarRegistros(){
 
 
 int interpretarYEjecutarInstruccion(char* instruccion){
-	if(strcmp(instruccion,"LOAD")){
+	if(0 == strcmp(instruccion,"LOAD")){
 		printf("ME METI EN LOAD\n");
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
 		tparam_load* parametrosLoad = (tparam_load*) respuesta;
@@ -542,7 +542,7 @@ int recibirTCByQuantum(t_datosAEnviar *  datosKernel){
 
 	log_info(LOGCPU, "  Desempaquetando Paquete  ");
 	char* buffer  = malloc(datosKernel -> tamanio);
-	memcpy(buffer,datosKernel->datos,datosKernel -> tamanio - sizeof(int));
+	memcpy(buffer,datosKernel->datos,sizeof(t_TCB));
 	TCBactual = (t_TCB *) buffer;
 	cargarDatosTCB(TCBactual);
 	memcpy(&quantum,datosKernel->datos + sizeof(t_TCB),sizeof(int));

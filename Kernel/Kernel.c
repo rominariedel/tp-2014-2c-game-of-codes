@@ -16,25 +16,6 @@ enum bit_de_estado {
 	libre = 0, ocupado = 1,
 };
 
-/*FUNCIONES*/
-void loader();
-void boot();
-void obtenerDatosConfig(char**);
-void boot();
-void escribir_memoria(int, int, int, void*);
-void obtenerDatosConfig(char**);
-void sacar_de_ejecucion(TCB_struct *);
-int solicitar_segmento(int, int);
-void iniciar_semaforos();
-void enviar_a_ejecucion(TCB_struct *);
-void dispatcher();
-void copiarRegistros(int registro1[5], int registro2[5]);
-void handshake_MSP(int socketMSP);
-void fijarse_joins(int tid);
-void matar_hijos(int PID);
-void matar_hijos_en_lista(int, t_list*);
-void matar_hijo_en_diccionario(int PID);
-
 int main(int argc, char ** argv) {
 
 	printf("\n -------------  KERNEL  -------------\n");
@@ -119,16 +100,21 @@ void loader() {
 					nuevoTCB->PID = consola_conectada->PID;
 					nuevoTCB->TID = obtener_TID();
 					consola_conectada->TID_padre = nuevoTCB->TID;
-					int segmento_codigo = solicitar_segmento(nuevoTCB->PID,
+
+					int segmento_codigo = solicitar_segmento(nuevoTCB,
 							datos->codigo_operacion);
+					if(segmento_codigo <0){
+						exit(0);
+					}
 
-					int segmento_stack = solicitar_segmento(nuevoTCB->PID,
+					int segmento_stack = solicitar_segmento(nuevoTCB,
 							TAMANIO_STACK);
+					if(segmento_stack<0){
+						exit(-1);
+					}
 
-					//TODO finalizar conexion si hubo un problema al solicitar un segmento.
-					//Si hay Segmentation Fault hay que terminar toodo el proceso
-					escribir_memoria(nuevoTCB->PID, segmento_codigo,
-							datos->tamanio, datos->datos);
+					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
+							datos->datos);
 
 					nuevoTCB->KM = 0;
 					nuevoTCB->M = segmento_codigo;
@@ -192,20 +178,27 @@ void boot() {
 	handshake_MSP(socket_MSP);
 	printf("\n Solicitando segmento para las syscalls de tamanio %d\n",
 			(int) tamanio_codigo_syscalls);
-	int base_segmento_codigo = solicitar_segmento(pid_KM_boot,
-			tamanio_codigo_syscalls);
-	//TODO: validar la base del segmento
-	escribir_memoria(pid_KM_boot, base_segmento_codigo,
-			(int) tamanio_codigo_syscalls, (void*) syscalls);
-
-	free(syscalls);
 	printf("\n Solicitando segmento para el stack del tcb km\n");
-	int base_segmento_stack = solicitar_segmento(pid_KM_boot, TAMANIO_STACK);
-	//TODO: validar la base del stack
-	printf("Creando TCB Modo Kernel\n");
 
 	TCB_struct * tcb_km = malloc(sizeof(TCB_struct));
 	tcb_km->KM = 1;
+
+	int base_segmento_codigo = solicitar_segmento(tcb_km,
+			tamanio_codigo_syscalls);
+	if(base_segmento_codigo <0 ){
+		printf("Error al solicitar segmento para las syscalls");
+		exit(-1);
+	}
+	escribir_memoria(tcb_km, base_segmento_codigo,
+			(int) tamanio_codigo_syscalls, (void*) syscalls);
+	free(syscalls);
+
+	int base_segmento_stack = solicitar_segmento(tcb_km, TAMANIO_STACK);
+	if(base_segmento_stack < 0){
+		printf("Error al solicitar segmento de stack para las syscalls");
+		exit(-1);
+	}
+
 	tcb_km->M = base_segmento_codigo;
 	tcb_km->tamanioSegmentoCodigo = tamanio_codigo_syscalls;
 	tcb_km->P = 0;
@@ -305,7 +298,7 @@ void crear_hilo(TCB_struct tcb, int socketCPU) {
 
 	TCB_struct nuevoTCB;
 
-	int base_stack = solicitar_segmento(tcb.PID, TAMANIO_STACK);
+	int base_stack = solicitar_segmento(&tcb, TAMANIO_STACK);
 
 	nuevoTCB.PID = tcb.PID;
 	int tid = obtener_TID(tcb.PID);
@@ -345,10 +338,10 @@ void copiarRegistros(int registro1[5], int registro2[5]) {
 
 /*Esta operacion le solicita a la MSP un segmento, retorna la direccion base del
  * segmento reservado*/
-int solicitar_segmento(int pid, int tamanio_del_segmento) {
+int solicitar_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 
 	char * datos = malloc(2 * sizeof(int));
-	memcpy(datos, &pid, sizeof(int));
+	memcpy(datos, &(tcb->PID), sizeof(int));
 	memcpy(datos + sizeof(int), &tamanio_del_segmento, sizeof(int));
 
 	t_datosAEnviar * paquete = crear_paquete(crear_segmento, (void*) datos,
@@ -357,13 +350,19 @@ int solicitar_segmento(int pid, int tamanio_del_segmento) {
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
-
+	if(respuesta == NULL){
+		printf("no se recibio una respuesta\n");
+	}
 	int * dir_base = malloc(sizeof(int));
 	memcpy(dir_base, respuesta->datos, sizeof(int));
 	free(respuesta->datos);
 	free(respuesta);
-	if (*dir_base == error_segmentationFault) {
-		//ERROR
+	if ((*dir_base == error_memoriaLlena) || (*dir_base == error_general)) {
+		struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
+		//Copio el tid padre en el tcb para poder terminar la ejecucion del ese tid y que en consecuencia
+		//aborte toodo el proceso
+		tcb->TID = consola_asociada->TID_padre;
+		abortar(tcb);
 		return -1;
 	}
 	printf("Se recibio la direccion base: %d\n", *dir_base);
@@ -371,11 +370,12 @@ int solicitar_segmento(int pid, int tamanio_del_segmento) {
 	return *dir_base;
 }
 
-void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
+void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
+		void * bytes) {
 
 	char * datos = malloc((3 * sizeof(int)) + tamanio);
 
-	memcpy(datos, &pid, sizeof(int));
+	memcpy(datos, &tcb->PID, sizeof(int));
 	memcpy(datos + sizeof(int), &dir_logica, sizeof(int));
 	memcpy(datos + (2 * sizeof(int)), bytes, tamanio);
 	memcpy(datos + (2 * sizeof(int)) + tamanio, &tamanio, sizeof(int));
@@ -386,11 +386,21 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
 	free(datos);
 	free(paquete);
 
+	paquete = recibir_datos(socket_MSP);
+	if ((paquete->codigo_operacion == error_segmentationFault)
+			|| (paquete->codigo_operacion == error_general)) {
+		struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
+		//Copio el tid padre en el tcb para poder terminar la ejecucion del ese tid y que en consecuencia
+		//aborte toodo el proceso
+		tcb->TID = consola_asociada->TID_padre;
+		abortar(tcb);
+	}
+
 }
 
 void finalizo_quantum(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
-	if(chequear_proceso_abortado(tcb) <0){
+	if (chequear_proceso_abortado(tcb) < 0) {
 		//EL PADRE DE ESE PROCESO TERMINO
 		exit(0);
 	}
@@ -409,12 +419,12 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*) es_TCB);
 	free(tcb_exec);
 
-	 /* Fijarse si hay algun hilo esperando joins
-	 * Si es el padre hay que abortar los hilos (hay que fijarse si el tid es el mismo que tiene guardada la consola
-	 * asociada).
-	 * Si hay una asociada, hay que eliminar el nodo y fijarse si el tid llamador no esta esperando a otro hilo.
-	 * (Creo que no puede estar esperando a otro hilo, este caso no esta implementado)
-	 * Si no está esperando a otro habria que consultar si va a exit o a ejecucion nuevamente.*/
+	/* Fijarse si hay algun hilo esperando joins
+	 Si es el padre hay que abortar los hilos (hay que fijarse si el tid es el mismo que tiene guardada la consola
+	 asociada).
+	 Si hay una asociada, hay que eliminar el nodo y fijarse si el tid llamador no esta esperando a otro hilo.
+	 (Creo que no puede estar esperando a otro hilo, este caso no esta implementado)
+	 Si no está esperando a otro habria que consultar si va a exit o a ejecucion nuevamente.*/
 
 	fijarse_joins(TID);
 	struct_consola * consola_asociada = obtener_consolaAsociada(PID);
@@ -434,17 +444,16 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		free(consola_asociada);
 	}
 
-
 	sem_post(&sem_CPU);
 
 }
 
-void mandar_a_exit(TCB_struct * tcb){
+void mandar_a_exit(TCB_struct * tcb) {
 
 	sem_wait(&sem_exit);
 
 	//LIBERACION DE RECURSOS
-	int tamanio = 2* sizeof(int);
+	int tamanio = 2 * sizeof(int);
 	void * datos = malloc(tamanio);
 	memcpy(datos, &tcb->PID, sizeof(int));
 	memcpy(datos + sizeof(int), &tcb->X, sizeof(int));
@@ -513,11 +522,11 @@ void fijarse_joins(int tid) {
 
 void finalizo_ejecucion(TCB_struct *tcb) {
 
-	if(tcb->KM == 1){
+	if (tcb->KM == 1) {
 		queue_push(BLOCK.prioridad_0, tcb);
 		sem_post(&sem_kmDisponible);
-	}else{
-	sacar_de_ejecucion(tcb);
+	} else {
+		sacar_de_ejecucion(tcb);
 	}
 }
 
@@ -537,6 +546,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 		exit(-1);
 	}
 	list_add(EXEC, tcb);
+	printf("\n\nQUANTUM: %d\n", QUANTUM);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
