@@ -331,3 +331,12 @@ void realizar_desbloqueo(int id_recurso){
 		exit(-1);
 	}
 }
+
+int chequear_proceso_abortado(TCB_struct * tcb){
+	struct_consola * consola = obtener_consolaAsociada(tcb->PID);
+	if(consola->termino_ejecucion){
+		queue_push(EXIT, tcb);
+		return -1;
+	}
+	return 0;
+}

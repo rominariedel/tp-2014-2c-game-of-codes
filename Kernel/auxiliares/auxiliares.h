@@ -81,6 +81,7 @@ sem_t sem_procesoListo;
 sem_t sem_CPU;
 sem_t mutex_entradaSalida;
 sem_t sem_READY;
+sem_t sem_kmDisponible;
 
 /*       FUNCIONES        */
 
@@ -112,6 +113,7 @@ char * extraer_syscalls(char *);
 void planificar_hilo_creado(TCB_struct *);
 void realizar_bloqueo(TCB_struct *, int);
 void realizar_desbloqueo(int);
+int chequear_proceso_abortado(TCB_struct *);
 
 enum mensajes {
 

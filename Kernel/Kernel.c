@@ -13,8 +13,7 @@
 /*VARIABLES GLOBALES*/
 
 enum bit_de_estado {
-	libre = 0,
-	ocupado = 1,
+	libre = 0, ocupado = 1,
 };
 
 /*FUNCIONES*/
@@ -33,6 +32,8 @@ void copiarRegistros(int registro1[5], int registro2[5]);
 void handshake_MSP(int socketMSP);
 void fijarse_joins(int tid);
 void matar_hijos(int PID);
+void matar_hijos_en_lista(int, t_list*);
+void matar_hijo_en_diccionario(int PID);
 
 int main(int argc, char ** argv) {
 
@@ -59,6 +60,7 @@ void iniciar_semaforos() {
 	sem_init(&sem_procesoListo, 0, 0);
 	sem_init(&sem_CPU, 0, 0);
 	sem_init(&sem_READY, 0, 1);
+	sem_init(&sem_kmDisponible, 0, 0);
 }
 
 void obtenerDatosConfig(char ** argv) {
@@ -160,7 +162,7 @@ void loader() {
 	}
 }
 
-void handshake_MSP(int socketMSP){
+void handshake_MSP(int socketMSP) {
 	t_datosAEnviar * datos = crear_paquete(soy_kernel, NULL, 0);
 	enviar_datos(socketMSP, datos);
 	free(datos);
@@ -201,7 +203,7 @@ void boot() {
 	//TODO: validar la base del stack
 	printf("Creando TCB Modo Kernel\n");
 
-	tcb_km = malloc(sizeof(TCB_struct));
+	TCB_struct * tcb_km = malloc(sizeof(TCB_struct));
 	tcb_km->KM = 1;
 	tcb_km->M = base_segmento_codigo;
 	tcb_km->tamanioSegmentoCodigo = tamanio_codigo_syscalls;
@@ -220,6 +222,7 @@ void boot() {
 	printf("Bloqueando TCB KM\n");
 
 	queue_push(BLOCK.prioridad_0, (void *) tcb_km);
+	sem_post(&sem_kmDisponible);
 
 	printf("Esperando conexiones...\n");
 
@@ -320,12 +323,12 @@ void crear_hilo(TCB_struct tcb, int socketCPU) {
 
 }
 
-void planificar_hilo_creado(TCB_struct * nuevoTCB){
+void planificar_hilo_creado(TCB_struct * nuevoTCB) {
 
 	meter_en_ready(1, nuevoTCB);
 	sem_post(&sem_procesoListo);
 
-		//Indico que la cantidad de hilos de un proceso aumentó
+	//Indico que la cantidad de hilos de un proceso aumentó
 	struct_consola * consola_asociada = obtener_consolaAsociada(nuevoTCB->PID);
 	consola_asociada->cantidad_hilos++;
 
@@ -386,6 +389,10 @@ void escribir_memoria(int pid, int dir_logica, int tamanio, void * bytes) {
 
 void finalizo_quantum(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
+	if(chequear_proceso_abortado(tcb) <0){
+		//EL PADRE DE ESE PROCESO TERMINO
+		exit(0);
+	}
 	meter_en_ready(1, tcb);
 	sem_post(&sem_procesoListo);
 
@@ -400,15 +407,15 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*) es_TCB);
 	free(tcb_exec);
 	/*TODO: sacar de ejecucion, va a exit------
-	*Fijarse si hay algun hilo esperando joins
-	*Si es el padre hay que abortar los hilos (hay que fijarse si el tid es el mismo que tiene guardada la consola
-	*asociada).
-	*Si hay una asociada, hay que eliminar el nodo y fijarse si el tid llamador no esta esperando a otro hilo.
-	*Si no está esperando a otro habria que consultar si va a exit o a ejecucion nuevamente.*/
+	 *Fijarse si hay algun hilo esperando joins
+	 *Si es el padre hay que abortar los hilos (hay que fijarse si el tid es el mismo que tiene guardada la consola
+	 *asociada).
+	 *Si hay una asociada, hay que eliminar el nodo y fijarse si el tid llamador no esta esperando a otro hilo.
+	 *Si no está esperando a otro habria que consultar si va a exit o a ejecucion nuevamente.*/
 
 	fijarse_joins(TID);
 	struct_consola * consola_asociada = obtener_consolaAsociada(PID);
-	if(consola_asociada->TID_padre == TID){
+	if (consola_asociada->TID_padre == TID) {
 		consola_asociada->termino_ejecucion = true;
 		matar_hijos(PID);
 	}
@@ -418,25 +425,52 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 
 }
 
-void matar_hijos(int PID){
+void matar_hijos(int PID) {
+	matar_hijos_en_lista(PID, READY.prioridad_1->elements);
+	matar_hijos_en_lista(PID, BLOCK.prioridad_1);
+	matar_hijos_en_lista(PID, SYS_CALL->elements);
+	matar_hijos_en_lista(PID, hilos_join);
+	matar_hijo_en_diccionario(PID);
+}
+
+void matar_hijo_en_diccionario(int PID) {
+	void matar_hijo(t_queue * bloqueado_por_recurso) {
+		matar_hijos_en_lista(PID, bloqueado_por_recurso->elements);
+	}
+	dictionary_iterator(dic_bloqueados, (void*) matar_hijo);
+}
+
+void matar_hijos_en_lista(int PID, t_list* lista) {
+	bool tiene_mismo_pid(TCB_struct * tcb) {
+		return tcb->PID == PID;
+	}
+	int cantidad = list_count_satisfying(lista, (void*) tiene_mismo_pid);
+	int contador = 0;
+	while (contador < cantidad) {
+		TCB_struct * tcb = list_remove_by_condition(lista,
+				(void*) tiene_mismo_pid);
+		queue_push(EXIT, tcb);
+		contador++;
+	}
 
 }
 
-void fijarse_joins(int tid){
+void fijarse_joins(int tid) {
 
-	bool esta_esperando_tid(struct_join *estructura){
+	bool esta_esperando_tid(struct_join *estructura) {
 		return estructura->tid_a_esperar == tid;
 	}
-	t_list * lista_bloqueados_por_tid = list_filter(hilos_join, (void*)esta_esperando_tid);
+	t_list * lista_bloqueados_por_tid = list_filter(hilos_join,
+			(void*) esta_esperando_tid);
 
-	void desbloquear_por_join(struct_join * estructura){
+	void desbloquear_por_join(struct_join * estructura) {
 		TCB_struct * tcb_bloqueado = malloc(sizeof(TCB_struct));
 		memcpy(tcb_bloqueado, estructura->tcb_llamador, sizeof(TCB_struct));
 		meter_en_ready(1, tcb_bloqueado);
 	}
 
-	if(lista_bloqueados_por_tid != NULL){
-		list_map(hilos_join, (void*)desbloquear_por_join);
+	if (lista_bloqueados_por_tid != NULL ) {
+		list_map(hilos_join, (void*) desbloquear_por_join);
 		list_destroy_and_destroy_elements(lista_bloqueados_por_tid, free);
 		//Como el filter contiene referencias a estructuras que contiene hilos_join, con liberar los elementos del
 		//filter tendrían que dejar de estar los elementos en hilos_join
@@ -445,7 +479,13 @@ void fijarse_joins(int tid){
 
 void finalizo_ejecucion(TCB_struct *tcb) {
 	sacar_de_ejecucion(tcb);
+
+	if(tcb->KM == 1){
+		queue_push(BLOCK.prioridad_0, tcb);
+		sem_post(&sem_kmDisponible);
+	}else{
 	queue_push(EXIT, tcb);
+	}
 }
 
 void abortar(TCB_struct* tcb) {
@@ -496,6 +536,8 @@ void dispatcher() {
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
+			sem_wait(&sem_kmDisponible);
+			TCB_struct * tcb_km = queue_pop(BLOCK.prioridad_0);
 			copiarRegistros(tcb_km->registrosProgramacion,
 					tcb_ejecutandoSysCall->registrosProgramacion);
 			tcb_km->PID = tcb_ejecutandoSysCall->PID;
