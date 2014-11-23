@@ -91,7 +91,7 @@ static void destruirPag(T_PAGINA* pagina);
 int 		asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
 void 		iniciarConexiones();
 void		interpretarOperacion(int* socket);
-char* 		leoMemoria(T_PAGINA* pag, int inicio, int final);
+void 		leoMemoria(T_PAGINA* pag);
 void		escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir);
 T_MARCO*	seleccionarMarcoVictima();
 char*		obtenerFilePath(int PID, int SID, int paginaID);

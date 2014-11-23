@@ -59,8 +59,8 @@ int main(int cantArgs, char** args) {
 	printf("\n -------------  MSP  -------------\n");
 	printf("Iniciando...\n");
 
-	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 	inicializar(args);
+	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 
 	int hilo_Consola = pthread_create(&hiloConsola, NULL,
 			(void*) inicializarConsola, NULL );
@@ -508,6 +508,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	contadorPagina = direccionLogica.paginaId;
 
 	char* memoriaSolicitada = malloc(sizeof(char) * tamanio);
+	int tamanioLeido;
 
 	bool procesoPorPid(T_PROCESO* proceso) {
 		return proceso->PID == PID;
@@ -578,10 +579,14 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 				if (final > tamanioPag) {
 					log_debug(logger, "El final es mayor que el tamanioPag");
 
-					memoriaSolicitada = leoMemoria(pag, inicio, tamanioPag);
+					memcpy(memoriaSolicitada, pag->data + inicio, tamanioPag - inicio);
+					leoMemoria(pag); //aviso que lei para que settea atributos de algoritmos a las paginas
+
+					tamanio = tamanio - (tamanioPag - inicio);
+					tamanioLeido = (tamanioPag - inicio);
+
 					log_debug(logger, "La memoria leida es %s",
 							memoriaSolicitada);
-					tamanio = tamanio - (tamanioPag - inicio);
 
 					pag = list_find(seg->paginas, (void*) paginaSiguiente);
 					contadorPagina++;
@@ -599,7 +604,10 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 							}
 						}
 
-						string_append(&memoriaSolicitada, pag->data);
+						memcpy(memoriaSolicitada + tamanioLeido, pag->data, tamanioPag);
+						leoMemoria(pag);
+
+						tamanioLeido += tamanioPag;
 						tamanio = tamanio - tamanioPag;
 
 						pag = list_find(seg->paginas, (void*) paginaSiguiente);
@@ -619,13 +627,14 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 								return (char*) resultado;
 							}
 						}
-						string_append(&memoriaSolicitada,
-								leoMemoria(pag, 0, tamanio));
+						memcpy(memoriaSolicitada + tamanioLeido, pag->data, tamanio);
+						leoMemoria(pag);
 					}
 				} else {
 					log_debug(logger, "El tamanio es menor que el tamanioPag");
 					log_debug(logger, "Lee memoria directamente");
-					memoriaSolicitada = leoMemoria(pag, inicio, final);
+					memcpy(memoriaSolicitada, pag->data + inicio, final - inicio);
+					leoMemoria(pag);
 				}
 
 			} else {
@@ -651,26 +660,29 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	sem_post(&mutex_procesos);
 	log_info(logger, "El contenido de la página solicitada es: %s",
 			memoriaSolicitada);
+
+
+	FILE* archivo = txt_open_for_append("config.txt");
+	txt_write_in_file(archivo,memoriaSolicitada);
 	return memoriaSolicitada; //Este return es provisorio, capaz memoriaSolicitada haya que usarlo como variable global
 	//return memoriaSolicitada; //Esto debería devolver un int, qué se hace con memoriaSolicitada?
 }
 
-char* leoMemoria(T_PAGINA* pag, int inicio, int final) {
+void leoMemoria(T_PAGINA* pag) {
 	log_debug(logger, "Entre a leoMemoria");
 
-	char* memoria = string_new();
-	int tamanio = final - inicio;
-	memoria = string_substring(pag->data, inicio, tamanio);
-	log_debug(logger, "La memoria es: %s", memoria);
+	//int tamanio = final - inicio;
+	//char* memoria = malloc(tamanio);
+	//memcpy(memoria, pag->data + inicio, tamanio);
 
-	pag->bitReferencia = 1;
+	//log_debug(logger, "La memoria es: %s", memoria);
+	//log_debug(logger, "La memoria es: %d", memoria);
 
 	sem_wait(&mutex_contadorLRU);
+	pag->bitReferencia = 1;
 	pag->contadorLRU = contadorLRU;
 	contadorLRU++;
 	sem_post(&mutex_contadorLRU);
-
-	return memoria;
 }
 
 //Para el espacio de direcciones del proceso PID, escribe hasta tamanio bytes del buffer bytesAEscribir
@@ -764,8 +776,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 				if (final > tamanioPag) {
 					log_debug(logger,"EL final es mayor que el tamanioPag");
 					escriboMemoria(pag, inicio, tamanioPag, bytesAEscribir);
-					//bytesAEscribir = string_substring_from(bytesAEscribir,
-					//		(tamanioPag - inicio));
+
 					tamanio = tamanio - (tamanioPag - inicio);
 					memcpy(aux,bytesAEscribir + (tamanioPag-inicio), tamanio);
 					memcpy(bytesAEscribir, aux, tamanio);
@@ -791,10 +802,14 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 						}
 
 						escriboMemoria(pag, 0, tamanioPag, bytesAEscribir);
-						bytesAEscribir = string_substring_from(bytesAEscribir,
-								tamanioPag);
+
 						tamanio = tamanio - tamanioPag;
+						memcpy(aux,bytesAEscribir + (tamanioPag), tamanio);
+						memcpy(bytesAEscribir, aux, tamanio);
+						bytesAEscribir[tamanio]= '\0';
+
 						log_debug(logger,"El tamanio a escribir es %d bytes", tamanio);
+
 						pag = list_find(seg->paginas, (void*) paginaSiguiente);
 						contadorPagina++;
 					}
@@ -1205,11 +1220,14 @@ void interpretarOperacion(int* socket) {
 			log_info(logger,"Se solicitó leer memoria");
 
 			memcpy(&pid, datos->datos, sizeof(int));
+			log_debug(logger,"El pid es: %d", pid);
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
-			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(int),
-					sizeof(int));
+			log_debug(logger,"La direccion es: %d", direccion);
+			memcpy(&tamanio,
+						datos->datos + datos->tamanio - sizeof(int), sizeof(int));
+			log_debug(logger,"El tamanio es: %d", tamanio);
 
-			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, baseSegmento);
+			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, tamanio);
 
 			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
