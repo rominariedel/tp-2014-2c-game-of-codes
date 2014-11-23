@@ -107,6 +107,7 @@ enum mensajesMSP{
 	error_memoriaLlena = -3,
 	error_segmentationFault = -2,
 	no_llego_respuesta = 90,
+	solicitarMemoriaP = 1111,
 
 };
 

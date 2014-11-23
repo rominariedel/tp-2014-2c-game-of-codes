@@ -9,7 +9,6 @@ RM := rm
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include funciones/subdir.mk
--include Default/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -27,14 +26,14 @@ endif
 all: CPU
 
 dependents:
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
-	-cd /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
+	-cd /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
 
 # Tool invocations
-CPU: $(OBJS) $(USER_OBJS) /home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
+CPU: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug" -L"/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug" -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug" -L"/home/utnso/tp-2014-2c-game-of-codes/commons/Debug" -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -45,7 +44,7 @@ clean:
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/git/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
-/home/utnso/git/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so:
+/home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
+/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so:
 
 -include ../makefile.targets

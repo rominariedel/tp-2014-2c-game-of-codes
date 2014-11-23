@@ -133,13 +133,13 @@ void KERNEL_WakePrograma(int recurso){
 
 void KERNEL_CrearHilo(t_TCB * TCB, int registro){
 	t_TCB* hiloNuevo = KERNEL_CrearNuevoHilo(TCB);
-		A = hiloNuevo->TID;
-		hiloNuevo->punteroInstruccion = registro;
-		t_datosAEnviar* respuesta = MSP_SolicitarMemoria(TCB->TID, TCB->baseStack, TCB->cursorStack - TCB->baseStack, solicitarMemoria);
-		void* stackACopiar = malloc(TCB->cursorStack  - TCB->baseStack);
-		memcpy(&stackACopiar, respuesta->datos , cursorStackActual - baseStackActual);
-		MSP_EscribirEnMemoria(hiloNuevo->PID,hiloNuevo->baseStack, stackACopiar, TCB->cursorStack - TCB->baseStack);
-		KERNEL_PlanificarHilo(hiloNuevo);
-		free(stackACopiar);
+	A = hiloNuevo->TID;
+	hiloNuevo->P = registro;
+	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(TCB->TID, TCB->X, TCB->S - TCB->X, solicitarMemoria);
+	void* stackACopiar = malloc(TCB->S  - TCB->X);
+	memcpy(&stackACopiar, respuesta->datos , cursorStackActual - baseStackActual);
+	MSP_EscribirEnMemoria(hiloNuevo->PID,hiloNuevo->X, stackACopiar, TCB->S - TCB->X);
+	KERNEL_PlanificarHilo(hiloNuevo);
+	free(stackACopiar);
 }
 

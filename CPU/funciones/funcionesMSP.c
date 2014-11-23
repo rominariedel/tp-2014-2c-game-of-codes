@@ -26,41 +26,46 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
 
 	enviar_datos(socketMSP,paquete);
+
 	free(datos);
-	log_info(LOGCPU, "  Recibo Respuesta MSP  ");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+	log_info(LOGCPU, "  Recibo Respuesta MSP  ");
 
 	int status = procesarRespuesta(respuesta);
 
 	char* proximaInstruccion = calloc(4, sizeof(char));
+
 	if(status == 0){
-	memcpy(proximaInstruccion, respuesta -> datos, 4);
+		memcpy(proximaInstruccion, respuesta -> datos, 4);
 	}else{
-		memcpy(proximaInstruccion,&status, 1);
+		devolverTCBactual(ejecucion_erronea);
 	}
 
 	free(respuesta);
 
+	printf("\n ME ESTA MANDANDO BIEN LA INSTRUCCION PROXIMA!!!!!!!!!!!! \n");
+
 	return proximaInstruccion;
 }
 
-char* MSP_SolicitarParametros(int punteroInstruccion, int cantidadParametros){
+char* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PIDactual, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
-	memcpy(datos + sizeof(int) + sizeof(int), &cantidadParametros, sizeof(int));
+	memcpy(datos + sizeof(int) + sizeof(int), &tamanioParametros, sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
 	enviar_datos(socketMSP,paquete);
 	free(datos);
+	free(paquete);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
 
 	int status = procesarRespuesta(respuesta);
 
-	char* parametros = malloc(sizeof(cantidadParametros));
+	char* parametros = calloc(respuesta->tamanio, sizeof(char));
 	if(status == 0){
-		memcpy(parametros, respuesta -> datos, sizeof(cantidadParametros));
+		memcpy(parametros, respuesta -> datos, respuesta->tamanio);
 	}else{
-		memcpy(parametros,&status, 1);
+		devolverTCBactual(ejecucion_erronea);
 	}
 
 	free(respuesta);
@@ -127,9 +132,17 @@ void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 }
 
 int procesarRespuesta(t_datosAEnviar* respuesta){
+	log_info(LOGCPU, "Procesando respuesta MSP");
 	int estado;
 	errorOperacionesConMemoria = 0;
 	errorMemoria = 0;
+	estado = 0;
+	/*if(respuesta == NULL){
+		errorOperacionesConMemoria = -1;
+		errorMemoria = no_llego_respuesta;
+		estado = -1;
+		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
+	}else{*/
 	switch(respuesta->codigo_operacion){
 		case error_segmentationFault:
 			devolverTCBactual(error_segmentationFault);
@@ -145,13 +158,6 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 			estado = -1;
 			log_error(LOGCPU, "ERROR MSP: Memoria Llena");
 			break;
-		}
-	if(respuesta == NULL){
-		errorOperacionesConMemoria = -1;
-		errorMemoria = no_llego_respuesta;
-		estado = -1;
-		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
-	}
-	estado =0;
+		}//}
 	return estado;
 }

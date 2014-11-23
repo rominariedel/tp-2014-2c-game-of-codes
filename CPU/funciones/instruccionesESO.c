@@ -249,7 +249,7 @@ void CREA(){
 	que la diferencia entre cursor y base se mantenga igual) y luego invocar al servicio
 	correspondiente en el proceso Kernel con el TCB recién generado.*/
 
-
+	printf("ESTOY EN CREA");
 	KERNEL_CrearHilo(TCBactual, B);
 }
 

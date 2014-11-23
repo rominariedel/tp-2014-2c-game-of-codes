@@ -13,11 +13,11 @@ typedef struct {
 	int PID;
 	int TID;
 	int KM;
-	int baseSegmentoCodigo;
+	int M;
 	int tamanioSegmentoCodigo;
-	int punteroInstruccion;
-	int baseStack;
-	int cursorStack;
+	int P;
+	int X;
+	int S;
 	int registrosProgramacion[5];
 }t_TCB;
 
