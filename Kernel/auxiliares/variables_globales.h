@@ -47,4 +47,26 @@ int socket_gral;
 int descriptor_mas_alto_consola;
 int descriptor_mas_alto_cpu;
 
+//FUNCIONES DEL KERNEL.C
+
+void loader();
+void boot();
+void obtenerDatosConfig(char**);
+void boot();
+void escribir_memoria(TCB_struct *, int, int, void*);
+void obtenerDatosConfig(char**);
+void sacar_de_ejecucion(TCB_struct *);
+int solicitar_segmento(TCB_struct * , int);
+void iniciar_semaforos();
+void enviar_a_ejecucion(TCB_struct *);
+void dispatcher();
+void copiarRegistros(int registro1[5], int registro2[5]);
+void handshake_MSP(int socketMSP);
+void fijarse_joins(int tid);
+void matar_hijos(int PID);
+void matar_hijos_en_lista(int, t_list*);
+void matar_hijo_en_diccionario(int PID);
+void mandar_a_exit(TCB_struct*);
+
+
 #endif /* VARIABLES_GLOBALES_H_ */

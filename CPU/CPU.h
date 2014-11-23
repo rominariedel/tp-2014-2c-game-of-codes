@@ -116,7 +116,7 @@ enum mensajesKernelCodOperacion{
 	ejecucion_erronea = 12,
 	desconexion = 13,
 	interrupcion = 14,
-	error_al_interpretar_instruccion = 15,
+	error_al_interpretar_instruccion = 1010,
 	crear_hilo = 15,
 	planificar_hilo = 28,
 	join = 22,

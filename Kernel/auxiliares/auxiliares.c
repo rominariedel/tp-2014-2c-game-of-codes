@@ -106,10 +106,6 @@ TCB_struct * sacar_de_ready(int prioridad){
 
 void planificador() {
 
-	while(1){
-
-	}
-
 	fd_set copia_set;
 	while (1) {
 
@@ -142,7 +138,7 @@ void planificador() {
 				char * id_tipo;
 
 				sem_init(&mutex_entradaSalida, 0, 1);
-
+				printf("CODIGO OPERACION : %d", codigo_operacion);
 				switch (codigo_operacion) {
 
 				case finaliza_quantum:
@@ -168,6 +164,7 @@ void planificador() {
 					interrumpir(tcb, dirSysCall);
 					break;
 				case creacion_hilo:
+					printf("ME MANDO 15!!!!!!!\n");
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					crear_hilo(*tcb, n_descriptor);
 					break;
@@ -207,8 +204,12 @@ void planificador() {
 					memcpy(&id_recurso, datos->datos, sizeof(int));
 					realizar_desbloqueo(id_recurso);
 					break;
+				case 1010:
+					printf("SE MANDO 1010 !!!!!!!!!!!!!!\n");
+					break;
 
 				}
+				sem_post(&sem_CPU);
 				free(datos);
 			}
 			n_descriptor++;

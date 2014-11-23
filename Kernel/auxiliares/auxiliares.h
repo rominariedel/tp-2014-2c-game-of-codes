@@ -153,6 +153,7 @@ enum mensajes {
 	operacion_exitosa = 1, //Esto  me lo va a mandar si destruyo bien los segmentos y con todas las otras operaciones
 	error_memoriaLlena = -3,
 	error_segmentationFault = -2,
+	error_general = -1,
 
 	//-->CONSOLA
 	soy_consola = 18,
