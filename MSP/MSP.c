@@ -162,6 +162,7 @@ void interpretarComando(char* comando) {
 	else if (string_equals_ignore_case(operacion[0], "Escribir_Memoria")) {
 		log_debug(logger, "Interpretó el comando de escribir_memoria");
 		printf("Iniciando proceso de escritura de memoria...\n");
+		printf("Comparo tamaño: %d %d", atoi(parametros[3]),string_length(parametros[2]));
 		escribirMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
 				parametros[2], atoi(parametros[3]));
 	}
@@ -199,7 +200,6 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
-		tamanioMemoria = 256;
 		memoriaDisponible = tamanioMemoria;
 		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
@@ -302,7 +302,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 
 	list_add(proceso->segmentos, segmentoVacio);
 	log_debug(logger,
-			"Se agrega el segmento a la lista de segmentos del proceso");
+			"Se agrega el segmento a la lista de segmentos del proceso, tamanio: %d", list_size(proceso->segmentos));
 
 	log_info(logger,"Se creó exitósamente el segmento");
 	log_info(logger, "La dirección base del segmento creado es %d",
@@ -705,6 +705,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		log_debug(logger, "Encontró al proceso de PID: %d", proceso->PID);
 
 		T_SEGMENTO* seg = list_find(proceso->segmentos, (void*) segmentoPorSid);
+		log_debug(logger,"El tamanio de la lista de segmentos del proceso es: %d", list_size(proceso->segmentos));
 
 		if (seg != NULL ) {
 			log_debug(logger, "Encontró al segmento de SID: %d", seg->SID);
@@ -1089,7 +1090,7 @@ void iniciarConexiones() {
 	while (1) {
 
 		int socket_conectado = recibir_conexion(socket_general);
-		printf("Se recibio una conexion!\n");
+		printf("Se recibio una conexión!\n");
 
 		int modulo_conectado = -1;
 		t_datosAEnviar* datos = recibir_datos(socket_conectado);
@@ -1141,8 +1142,9 @@ void interpretarOperacion(int* socket) {
 			free(datos);
 
 			respuesta = crearSegmento(pid, tamanio);
+			log_debug(logger,"La respuesta seria: %d", respuesta);
 
-			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
+			paquete = crear_paquete(1, (void*) &respuesta, sizeof(int));
 
 			enviar_datos(*socket, paquete);
 
@@ -1158,7 +1160,7 @@ void interpretarOperacion(int* socket) {
 
 			respuesta = destruirSegmento(pid, baseSegmento);
 
-			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
+			paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
 			enviar_datos(*socket, paquete);
 
@@ -1170,15 +1172,15 @@ void interpretarOperacion(int* socket) {
 			log_info(logger,"Se solicitó leer memoria");
 
 			memcpy(&pid, datos->datos, sizeof(int));
-			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
-			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(uint32_t),
+			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
+			memcpy(&tamanio, datos->datos + sizeof(int) + sizeof(int),
 					sizeof(int));
 
 			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, baseSegmento);
 
 			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
-			paquete = crear_paquete(0, (void*) resultado, sizeof(uint32_t));
+			paquete = crear_paquete(0, (void*) resultado, sizeof(int));
 
 			enviar_datos(*socket, paquete);
 
@@ -1190,20 +1192,24 @@ void interpretarOperacion(int* socket) {
 			log_info(logger,"Se solicitó escribir en memoria");
 
 			memcpy(&pid, datos->datos, sizeof(int));
-			memcpy(&direccion, datos->datos + sizeof(int), sizeof(uint32_t));
-			memcpy(&bytesAEscribir,
-					datos->datos + sizeof(int) + sizeof(uint32_t),
-					sizeof(char*));
+			log_debug(logger,"El pid es: %d", pid);
+			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
+			log_debug(logger,"La direccion es: %d", direccion);
+			bytesAEscribir = malloc(datos->tamanio);
+			memcpy(bytesAEscribir,
+					datos->datos + sizeof(int) + sizeof(int),
+					datos->tamanio - (3 * sizeof(int)));
+			//log_debug(logger,"Los bytes a escribir son: %s", bytesAEscribir);
 			memcpy(&tamanio,
-					datos->datos + sizeof(int) + sizeof(uint32_t)
-							+ sizeof(char*), sizeof(int));
+					datos->datos + datos->tamanio - sizeof(int), sizeof(int));
+			log_debug(logger,"El tamanio es: %d", tamanio);
 
-			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, baseSegmento);
+			//log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, baseSegmento);
 
 			respuesta = escribirMemoria(pid, direccion, bytesAEscribir,
 					tamanio);
 
-			paquete = crear_paquete(0, (void*) respuesta, sizeof(uint32_t));
+			paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
 			enviar_datos(*socket, paquete);
 
