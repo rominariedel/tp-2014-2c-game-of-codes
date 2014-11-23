@@ -27,6 +27,7 @@ char* puerto;
 int cantidadSwap;
 char* sust_pags;
 char* rutaLog;
+char* rutaSwap;
 char* MSP_CONFIG;
 int tamanioPag = 256;
 int socket_general;
@@ -198,6 +199,7 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
+		tamanioMemoria = 256;
 		memoriaDisponible = tamanioMemoria;
 		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
@@ -222,7 +224,10 @@ void cargarArchivoConfiguracion(char** args) {
 		rutaLog = config_get_string_value(configuracion, "RUTA_LOG");
 		printf("Ruta del archivo logger =  %s \n", rutaLog);
 	}
-
+	if (config_has_property(configuracion, "RUTA_SWAP")) {
+		rutaSwap = config_get_string_value(configuracion, "RUTA_SWAP");
+		printf("Ruta de swapping =  %s \n", rutaSwap);
+	}
 	if (config_has_property(configuracion, "BACKLOG")) {
 		backlog = config_get_int_value(configuracion, "BACKLOG");
 		printf("Backlog =  %d \n", backlog);
@@ -855,13 +860,13 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 		log_debug(logger, "Entro porque no hay marcos libres");
 
 		sem_wait(&mutex_cantSwap);
-		if (cantidadSwap < tamanioPag) {
+		if (cantidadSwap > tamanioPag) {
 			log_debug(logger, "Hay cantidad de swap disponible");
 			marcoAsignado = seleccionarMarcoVictima();
 			log_debug(logger, "El marco asignado tiene id: %d",
 					marcoAsignado->marcoID);
 			if (swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID, marcoAsignado->pagina) < 0) {
-
+				log_debug(logger,"El swapOut dio error");
 				sem_post(&mutex_cantSwap);
 				sem_post(&mutex_marcosLlenos);
 				sem_post(&mutex_marcosVacios);
@@ -924,18 +929,18 @@ int tablaMarcos() {
 	int cantidadMarcos = list_size(marcos);
 	for (i = 0; cantidadMarcos > i; i++) {
 		T_MARCO* marco = list_get(marcos, i);
-		printf("\n Número de marco: %d     ", marco->marcoID);
+		printf("\nNúmero de marco: %d     ", marco->marcoID);
 		if (marco->empty) {
 			printf("Marco disponible \n");
 		} else {
-			printf("Marco ocupado por el proceso: %d", marco->PID);
+			printf("Marco ocupado por el proceso: %-4d", marco->PID);
 			printf("   ");
 			printf("Segmento: %-4d", marco->pagina->SID);
 			printf("   ");
-			printf("Pagina: %-4d", marco->pagina->paginaID);
+			printf("Página: %-4d \n", marco->pagina->paginaID);
 		}
 	}
-	printf("%s\n", string_repeat('-', 90));
+	printf("\n%s\n", string_repeat('-', 90));
 
 	sem_post(&mutex_marcosLlenos);
 	sem_post(&mutex_marcosVacios);
@@ -959,7 +964,7 @@ int tablaSegmentos() {
 		T_PROCESO* proceso = list_get(procesos, i);
 		int cantidadSegmentos = list_size(proceso->segmentos);
 
-		printf("\nPara el proceso de ID: %d", proceso->PID);
+		printf("\nPara el proceso de ID: %-d \n", proceso->PID);
 
 		if (cantidadSegmentos == 0) {
 			printf("%c", '\n');
@@ -978,7 +983,7 @@ int tablaSegmentos() {
 			printf("Dirección virtual base: %-d \n", (int) segmento->baseSegmento);
 		}
 
-		printf("\n %s \n", string_repeat('*', 90));
+		printf("\n%s\n", string_repeat('*', 90));
 	}
 
 	sem_post(&mutex_procesos);
@@ -1030,7 +1035,7 @@ int tablaPaginas(int PID) {
 					printf("No se encuentra en memoria principal \n");
 				}
 			}
-			printf("\n %s \n", string_repeat('*', 90));
+			printf("\n%s\n", string_repeat('*', 90));
 		}
 	} else {
 		log_error(logger, "El proceso de PID: %-d es inexistente \n", PID);
@@ -1194,14 +1199,14 @@ void interpretarOperacion(int* socket) {
 T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	char* filePath = obtenerFilePath(PID, seg->SID, pag->paginaID);
-	FILE* archivo = txt_open_for_append(filePath);
+	FILE* archivo = fopen(filePath,"r+b");
 
 	if (archivo != NULL ) {
-		fgets(pag->data, tamanioPag, archivo); //todo chequear
+		fread(pag->data, tamanioPag,1,archivo);
 		pag->swapped = false;
-		txt_close_file(archivo);
+		fclose(archivo);
 
-		remove(archivo);
+		remove(filePath);
 
 		sem_wait(&mutex_cantSwap);
 		cantidadSwap += tamanioPag;
@@ -1209,28 +1214,32 @@ T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	} else {
 		log_error(logger, "No existe el archivo de la pagina swappeada");
-		return NULL; //anita mira
+		return NULL;
 	}
 
 	return pag;
 }
 
 int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
+	log_debug(logger, "Entre a swapOut");
 
 	char* filePath = obtenerFilePath(PID, SID, pag->paginaID);
-	FILE* archivo = txt_open_for_append(filePath);
+	log_debug(logger, "El nombre del archivo es: %s", filePath);
+	FILE* archivo = fopen(filePath,"w+b");
 
 	if (archivo != NULL ) {
-		txt_write_in_file(archivo, pag->data);
-		txt_close_file(archivo);
+		log_debug(logger,"Abrio/Creo el archivo");
+		fwrite(pag->data,1,tamanioPag,archivo);
+		log_debug(logger,"Escribio en el archivo");
+		fclose(archivo);
+		log_debug(logger,"Cerro el archivo");
 
 		pag->swapped = true;
 		pag->marcoID = -1;
 		pag->data = NULL;
 
-		sem_wait(&mutex_cantSwap);
 		cantidadSwap -= tamanioPag;
-		sem_post(&mutex_cantSwap);
+		log_debug(logger,"La cantidad de swap ahora es: %d", cantidadSwap);
 
 	} else {
 		log_error(logger,
@@ -1242,12 +1251,15 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 }
 
 char* obtenerFilePath(int PID, int SID, int pagId) {
-	char* filePath = malloc(sizeof(int) * 3);
+	log_debug(logger,"Entre a obtenerFilePath");
+	char* filePath = string_new();
 
+	string_append(&filePath, rutaSwap);
 	string_append(&filePath, string_itoa(PID));
 	string_append(&filePath, string_itoa(SID));
 	string_append(&filePath, string_itoa(pagId));
 
+	log_debug(logger,"El filepath es: %s", filePath);
 	return filePath;
 }
 
