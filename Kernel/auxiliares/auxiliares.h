@@ -44,6 +44,8 @@ typedef struct consola {
 	int socket_consola;
 	int PID;
 	int cantidad_hilos;
+	int TID_padre;
+	bool termino_ejecucion;
 } struct_consola;
 
 typedef struct colas {
@@ -60,9 +62,11 @@ typedef struct bloqueado {
 	int id_recurso;
 	TCB_struct tcb;
 } struct_bloqueado;
+
 /*TIPOS DE BLOQUEADOS: manejo
  * INTERRUMPIDOS POR EJECUTAR SYSCALLS -> BLOCK.prioridad_1
  * ESPERANDO UN RECURSO -> dictionary >> key=recurso >> t_queue *
+ * ESPERANDO A OTRO HILO (EJECUTO UN JOIN) -> hilos_join
  * */
 
 
@@ -113,7 +117,7 @@ enum mensajes {
 
 	//Mensajes enviados
 
-	crear_segmento = 1,
+	crear_segmento = 32,
 	escribir_en_memoria = 2,
 	ejecucion_abortada = 3,
 	imprimir_en_pantalla = 4,
@@ -122,6 +126,9 @@ enum mensajes {
 	devolucion_cadena = 7,
 	terminar_conexion = 27,
 	soy_kernel = 29,
+	destruir_segmento = 30,
+	leer_memoria = 31, //Este todavía no se si tengo que usarlo
+
 	//Mensajes recibidos
 
 	//-->CPU
@@ -140,8 +147,9 @@ enum mensajes {
 	planificar_nuevo_hilo = 28,
 
 	//-->MSP
-	error_memoriaLlena = 16,
-	error_segmentationFault = 17,
+	operacion_exitosa = 1, //Esto  me lo va a mandar si destruyo bien los segmentos y con todas las otras operaciones
+	error_memoriaLlena = -3,
+	error_segmentationFault = -2,
 
 	//-->CONSOLA
 	soy_consola = 18,

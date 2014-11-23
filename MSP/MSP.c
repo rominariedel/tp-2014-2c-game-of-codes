@@ -46,13 +46,13 @@ pthread_t hiloEsperarConexiones;
 t_log* logger;
 
 //	Semáforos
-sem_t* mutex_MemoriaDisponible;
-sem_t* mutex_cantSwap;
-sem_t* mutex_contadorLRU;
-sem_t* mutex_procesos;
-sem_t* mutex_marcosLlenos;
-sem_t* mutex_marcosVacios;
-sem_t* mutex_paginasEnMemoria;
+sem_t mutex_MemoriaDisponible;
+sem_t mutex_cantSwap;
+sem_t mutex_contadorLRU;
+sem_t mutex_procesos;
+sem_t mutex_marcosLlenos;
+sem_t mutex_marcosVacios;
+sem_t mutex_paginasEnMemoria;
 
 int main(int cantArgs, char** args) {
 	printf("\n -------------  MSP  -------------\n");
@@ -82,6 +82,14 @@ int main(int cantArgs, char** args) {
 
 	pthread_join(hiloEsperarConexiones, NULL );
 
+	sem_destroy(&mutex_MemoriaDisponible);
+	sem_destroy(&mutex_cantSwap);
+	sem_destroy(&mutex_contadorLRU);
+	sem_destroy(&mutex_procesos);
+	sem_destroy(&mutex_marcosLlenos);
+	sem_destroy(&mutex_marcosVacios);
+	sem_destroy(&mutex_paginasEnMemoria);
+
 	exit(0);
 }
 
@@ -99,6 +107,7 @@ void inicializar(char** args) {
 	sem_init(&mutex_marcosLlenos, 0, 1);
 	sem_init(&mutex_marcosVacios, 0, 1);
 	sem_init(&mutex_paginasEnMemoria, 0, 1);
+
 }
 
 void inicializarConsola() {
@@ -129,7 +138,7 @@ void interpretarComando(char* comando) {
 	char** parametros = NULL;
 
 	if (operacion[1] != NULL ) {
-		parametros = string_split(operacion[1], " ");
+		parametros = string_split(operacion[1], ",");
 		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s",
 				parametros[0], parametros[1], parametros[2]);
 	}

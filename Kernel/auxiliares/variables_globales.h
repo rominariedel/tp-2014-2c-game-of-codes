@@ -16,6 +16,7 @@ t_list * EXEC;
 t_queue * SYS_CALL;
 t_queue * EXIT;
 t_dictionary * dic_bloqueados;
+t_list * hilos_join;
 
 TCB_struct * tcb_km;
 TCB_struct * tcb_ejecutandoSysCall;
@@ -25,7 +26,6 @@ fd_set consola_set;
 t_list * CPU_list;
 t_list * consola_list;
 t_config * configuracion;
-t_list * hilos_join;
 
 typedef struct {
 	int socket_CPU; //El Socket pertenece a la CPU que hizo la solicitud de entrada/salida
