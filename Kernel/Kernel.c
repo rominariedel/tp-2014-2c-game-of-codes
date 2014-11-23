@@ -61,6 +61,7 @@ void iniciar_semaforos() {
 	sem_init(&sem_CPU, 0, 0);
 	sem_init(&sem_READY, 0, 1);
 	sem_init(&sem_kmDisponible, 0, 0);
+	sem_init(&sem_exit, 0, 1);
 }
 
 void obtenerDatosConfig(char ** argv) {
@@ -399,6 +400,7 @@ void finalizo_quantum(TCB_struct* tcb) {
 }
 
 void sacar_de_ejecucion(TCB_struct* tcb) {
+
 	int PID = tcb->PID;
 	int TID = tcb->TID;
 	bool es_TCB(TCB_struct tcb_comparar) {
@@ -406,12 +408,13 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 	}
 	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*) es_TCB);
 	free(tcb_exec);
-	/*TODO: sacar de ejecucion, va a exit------
-	 *Fijarse si hay algun hilo esperando joins
-	 *Si es el padre hay que abortar los hilos (hay que fijarse si el tid es el mismo que tiene guardada la consola
-	 *asociada).
-	 *Si hay una asociada, hay que eliminar el nodo y fijarse si el tid llamador no esta esperando a otro hilo.
-	 *Si no está esperando a otro habria que consultar si va a exit o a ejecucion nuevamente.*/
+
+	 /* Fijarse si hay algun hilo esperando joins
+	 * Si es el padre hay que abortar los hilos (hay que fijarse si el tid es el mismo que tiene guardada la consola
+	 * asociada).
+	 * Si hay una asociada, hay que eliminar el nodo y fijarse si el tid llamador no esta esperando a otro hilo.
+	 * (Creo que no puede estar esperando a otro hilo, este caso no esta implementado)
+	 * Si no está esperando a otro habria que consultar si va a exit o a ejecucion nuevamente.*/
 
 	fijarse_joins(TID);
 	struct_consola * consola_asociada = obtener_consolaAsociada(PID);
@@ -421,8 +424,39 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 	}
 	queue_push(EXIT, tcb);
 
+	//TERMINAR LA CONEXION CON LA CONSOLA SI TERMINO LA EJECUCION DE TODOS LOS HILOS
+	consola_asociada->cantidad_hilos--;
+	if (consola_asociada->cantidad_hilos == 0) {
+		t_datosAEnviar * paquete = crear_paquete(terminar_conexion, NULL, 0);
+		enviar_datos(consola_asociada->socket_consola, paquete);
+		free(paquete);
+		close(consola_asociada->socket_consola);
+		free(consola_asociada);
+	}
+
+
 	sem_post(&sem_CPU);
 
+}
+
+void mandar_a_exit(TCB_struct * tcb){
+
+	sem_wait(&sem_exit);
+
+	//LIBERACION DE RECURSOS
+	int tamanio = 2* sizeof(int);
+	void * datos = malloc(tamanio);
+	memcpy(datos, &tcb->PID, sizeof(int));
+	memcpy(datos + sizeof(int), &tcb->X, sizeof(int));
+
+	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos, tamanio);
+	enviar_datos(socket_MSP, paquete);
+	free(datos);
+	free(paquete);
+
+	queue_push(EXIT, tcb);
+
+	sem_post(&sem_exit);
 }
 
 void matar_hijos(int PID) {
@@ -449,7 +483,7 @@ void matar_hijos_en_lista(int PID, t_list* lista) {
 	while (contador < cantidad) {
 		TCB_struct * tcb = list_remove_by_condition(lista,
 				(void*) tiene_mismo_pid);
-		queue_push(EXIT, tcb);
+		mandar_a_exit(tcb);
 		contador++;
 	}
 
@@ -478,30 +512,17 @@ void fijarse_joins(int tid) {
 }
 
 void finalizo_ejecucion(TCB_struct *tcb) {
-	sacar_de_ejecucion(tcb);
 
 	if(tcb->KM == 1){
 		queue_push(BLOCK.prioridad_0, tcb);
 		sem_post(&sem_kmDisponible);
 	}else{
-	queue_push(EXIT, tcb);
+	sacar_de_ejecucion(tcb);
 	}
 }
 
 void abortar(TCB_struct* tcb) {
 	sacar_de_ejecucion(tcb);
-	queue_push(EXIT, tcb);
-
-	struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
-	consola_asociada->cantidad_hilos--;
-	if (consola_asociada->cantidad_hilos == 0) {
-		//Si no quedan mas hilos de esa consola hay que terminar la conexion.
-		t_datosAEnviar * paquete = crear_paquete(terminar_conexion, NULL, 0);
-		enviar_datos(consola_asociada->socket_consola, paquete);
-		free(paquete);
-		close(consola_asociada->socket_consola);
-		free(consola_asociada);
-	}
 	//LOGUEAR que tuvo que abortar el hilo
 }
 

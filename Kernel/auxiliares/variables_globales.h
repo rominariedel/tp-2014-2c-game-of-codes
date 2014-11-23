@@ -18,7 +18,6 @@ t_queue * EXIT;
 t_dictionary * dic_bloqueados;
 t_list * hilos_join;
 
-//TCB_struct * tcb_km;
 TCB_struct * tcb_ejecutandoSysCall;
 fd_set clientes_set;
 fd_set CPU_set;

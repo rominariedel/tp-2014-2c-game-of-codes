@@ -82,6 +82,7 @@ sem_t sem_CPU;
 sem_t mutex_entradaSalida;
 sem_t sem_READY;
 sem_t sem_kmDisponible;
+sem_t sem_exit;
 
 /*       FUNCIONES        */
 
