@@ -63,24 +63,26 @@ int main(int cantArgs, char** args) {
 
 	int hilo_Consola = pthread_create(&hiloConsola, NULL,
 			(void*) inicializarConsola, NULL );
+
 	if (hilo_Consola == 0) {
 		log_info(logger,
 				"La Consola de MSP se inicializó correctamente \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginación: %d",
 				tamanioMemoria, tamanioPag);
-		pthread_join(hiloConsola, NULL );
-	} else
+	} else {
 		log_error(logger,
 				"Ha ocurrido un error en la inicialización de la Consola de MSP");
+	}
 
 	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL,
 			(void*) iniciarConexiones, NULL );
 	if (hilo_EsperarConexiones == 0) {
 		log_info(logger, "La espera de conexiones se incializó correctamente");
-		pthread_join(hilo_EsperarConexiones, NULL );
-	} else
+	} else {
 		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
+	}
 
 	pthread_join(hiloEsperarConexiones, NULL );
+	pthread_join(hiloConsola, NULL );
 
 	sem_destroy(&mutex_MemoriaDisponible);
 	sem_destroy(&mutex_cantSwap);
@@ -184,6 +186,10 @@ void interpretarComando(char* comando) {
 		log_debug(logger, "Interpretó el comando de listar_marcos");
 		tablaMarcos();
 	}
+
+	else {
+		log_debug(logger, "No existe esa operación");
+	}
 }
 
 void cargarArchivoConfiguracion(char** args) {
@@ -237,6 +243,8 @@ void crearMarcos() {
 		T_MARCO * marcoVacio = malloc(sizeof(T_MARCO));
 		marcoVacio->marcoID = i;
 		marcoVacio->empty = true;
+		marcoVacio->PID = -1;
+		marcoVacio->pagina = NULL;
 
 		//agrego el marcoVacio a la lista de marcosVacios
 		list_add(marcosVacios, marcoVacio);
@@ -356,7 +364,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 		T_PAGINA * paginaVacia = malloc(sizeof(T_PAGINA));
 		paginaVacia->paginaID = i;
 		log_debug(logger, "El id de la pag es: %d", paginaVacia->paginaID);
-		paginaVacia->swapped = 0;
+		paginaVacia->swapped = false;
 		paginaVacia->marcoID = -1;
 		log_debug(logger, "El id del marco para la pag es: %d",
 				paginaVacia->marcoID);
@@ -831,6 +839,16 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	if (pag->swapped) {
 		log_debug(logger, "Como la pag está swappeada, hago un Swap in");
 		pag = swapInPagina(PID, seg, pag);
+
+		if (pag == NULL){
+
+			sem_post(&mutex_cantSwap);
+			sem_post(&mutex_marcosLlenos);
+			sem_post(&mutex_marcosVacios);
+			sem_post(&mutex_paginasEnMemoria);
+
+			return error;
+		}
 	}
 
 	if (list_is_empty(marcosVacios)) {
@@ -842,8 +860,15 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 			marcoAsignado = seleccionarMarcoVictima();
 			log_debug(logger, "El marco asignado tiene id: %d",
 					marcoAsignado->marcoID);
-			swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID,
-					marcoAsignado->pagina);
+			if (swapOutPagina(marcoAsignado->PID, marcoAsignado->pagina->SID, marcoAsignado->pagina) < 0) {
+
+				sem_post(&mutex_cantSwap);
+				sem_post(&mutex_marcosLlenos);
+				sem_post(&mutex_marcosVacios);
+				sem_post(&mutex_paginasEnMemoria);
+				return error;
+			}
+
 		} else {
 			log_error(logger, "No hay sufiente espacio de swapping");
 			sem_post(&mutex_cantSwap);
@@ -1184,7 +1209,7 @@ T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 	} else {
 		log_error(logger, "No existe el archivo de la pagina swappeada");
-		return error;
+		return NULL; //anita mira
 	}
 
 	return pag;
@@ -1198,6 +1223,7 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 	if (archivo != NULL ) {
 		txt_write_in_file(archivo, pag->data);
 		txt_close_file(archivo);
+
 		pag->swapped = true;
 		pag->marcoID = -1;
 		pag->data = NULL;
@@ -1212,7 +1238,7 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 		return error; //todo chequear
 	}
 
-	return 0;
+	return operacion_exitosa;
 }
 
 char* obtenerFilePath(int PID, int SID, int pagId) {
