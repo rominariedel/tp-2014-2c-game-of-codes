@@ -124,12 +124,13 @@ void ingresar_cadena_menorA(int tamanio) {
 	while (recibido_not_success) {
 
 		char * cadena = malloc(tamanio);
-		printf("Ingrese una cadena con menos de %d caraceteres", tamanio);
+		printf("Ingrese una cadena con menos de %d caracteres\n", tamanio);
 		scanf("%s", cadena);
 		int largo_cadena = string_length(cadena);
 		if ((largo_cadena <= tamanio) && (largo_cadena > 0)) {
 			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, cadena,
 					largo_cadena);
+			printf("Se ingresaron datos de tamanio %d\n", largo_cadena);
 			enviar_datos(kernelSocket, datos);
 			recibido_not_success = 0;
 		} else {

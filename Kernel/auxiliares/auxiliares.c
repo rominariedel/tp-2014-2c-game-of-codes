@@ -129,6 +129,13 @@ void planificador() {
 			if (FD_ISSET(n_descriptor, &copia_set)) {
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
+
+				if(datos == NULL){
+					desconexion_cpu(n_descriptor);
+					FD_CLR(n_descriptor, &CPU_set);
+					break;
+				}
+
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
@@ -164,7 +171,6 @@ void planificador() {
 					interrumpir(tcb, dirSysCall);
 					break;
 				case creacion_hilo:
-					printf("ME MANDO 15!!!!!!!\n");
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					crear_hilo(*tcb, n_descriptor);
 					break;
@@ -174,9 +180,9 @@ void planificador() {
 					break;
 				case entrada_estandar:
 					id_tipo = malloc(datos->tamanio);
-					memcpy(&tamanio, &datos->tamanio, sizeof(int));
-					memcpy(&pid, datos->datos, sizeof(int));
-					memcpy(id_tipo, datos->datos + sizeof(int), datos->tamanio);
+					memcpy(&tamanio, datos->datos, sizeof(int));
+					memcpy(&pid, datos->datos + sizeof(int), sizeof(int));
+					memcpy(id_tipo, datos->datos + (2*sizeof(int)), datos->tamanio - (2 * sizeof(int)));
 					producir_entrada_estandar(pid, id_tipo, n_descriptor,
 							tamanio);
 
@@ -204,11 +210,7 @@ void planificador() {
 					memcpy(&id_recurso, datos->datos, sizeof(int));
 					realizar_desbloqueo(id_recurso);
 					break;
-				case 1010:
-					printf("SE MANDO 1010 !!!!!!!!!!!!!!\n");
-					break;
-
-				}
+			}
 				sem_post(&sem_CPU);
 				free(datos);
 			}
@@ -274,12 +276,16 @@ void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 	entrada->cadena = malloc(tamanio);
 	memcpy(&entrada->socket_CPU, &socket_CPU, sizeof(int));
 
+	void * buffer = malloc(1 + sizeof(int));
+	memcpy(buffer, id_tipo, 1);
+	memcpy(buffer + 1, &tamanio, sizeof(int));
 	//Enviando la solicitud a la consola para el ingreso de datos
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
-	t_datosAEnviar * datos_consola = crear_paquete(ingresar_cadena, id_tipo,
+	t_datosAEnviar * datos_consola = crear_paquete(ingresar_cadena, buffer,
 			tamanio);
 	enviar_datos(consola_asociada->socket_consola, datos_consola);
 	free(datos_consola);
+	free(buffer);
 
 }
 
@@ -287,7 +293,8 @@ void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 void devolver_entrada_aCPU(int tamanio_datos) {
 	struct_CPU * CPU_asociada = obtener_CPUAsociada(entrada->socket_CPU);
 	t_datosAEnviar * datos = crear_paquete(devolucion_cadena, entrada->cadena,
-			tamanio_datos);
+			tamanio_datos + 1);
+	printf("Devolviendo la cadena que es: %s y tiene largo %d\n", (char*)entrada->cadena, tamanio_datos);
 	enviar_datos(CPU_asociada->socket_CPU, datos);
 	free(datos);
 	free(entrada->cadena);

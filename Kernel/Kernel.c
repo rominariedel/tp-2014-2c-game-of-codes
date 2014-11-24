@@ -8,8 +8,6 @@
 #include "auxiliares/auxiliares.h"
 #include "auxiliares/variables_globales.h"
 
-#include <panel.h>
-#include <kernel.h>
 
 #define pid_KM_boot 0
 
@@ -62,7 +60,6 @@ void obtenerDatosConfig(char ** argv) {
 }
 
 void loader() {
-	printf("\nSE INICIO EL LOADER\n");
 	fd_set copia_set;
 	while (1) {
 		struct timeval * timeout = malloc(sizeof(struct timeval));
@@ -84,19 +81,15 @@ void loader() {
 			if (FD_ISSET(n_descriptor, &copia_set)) {
 				struct_consola * consola_conectada = obtener_consolaConectada(
 						n_descriptor);
-				printf("Tamaño de lista de consolas %d\n",
-						list_size(consola_list));
-				printf("Descriptor actual %d\n", n_descriptor);
 				if (consola_conectada == NULL ) {
-					printf("La consola no se creo correctamente o no existe\n");
-					exit(-1);
+					break;
 				}
-				printf("Se encontro una consola activa de PID %d\n",
-						consola_conectada->PID);
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
 				if (datos == NULL ) {
-					printf("Se desconecto la consola\n");
+					desconexion_consola(n_descriptor);
+					FD_CLR(n_descriptor, &consola_set);
+					break;
 				}
 				TCB_struct * nuevoTCB;
 

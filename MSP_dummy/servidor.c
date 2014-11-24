@@ -43,15 +43,14 @@ int main(void) {
 	}
 	log_info(logger, "Server conectado.", "INFO");
 
-	while (1) {
+	printf("Esperando conexiones\n");
 
-		printf("Esperando conexiones\n");
+	while (1) {
 
 		//Acepto una conexion
 		cliente = recibir_conexion(listener);
 		printf("Se conecto un cliente\n");
 		t_datosAEnviar * datos;
-		printf("Esperando mensaje\n");
 		datos = recibir_datos(cliente);
 		if (datos == NULL ) {
 			log_error(logger, "No se recibieron los datos correctamente.",
@@ -59,15 +58,12 @@ int main(void) {
 			exit(-1);
 		}
 
-		printf("Se recibio un mensaje\n");
 		//Recibo mensaje del cliente
 		switch (datos->codigo_operacion) {
 		case soy_kernel:
 			kernel_sock = cliente;
-			printf("Creando hilo para el kernel\n");
 			pthread_create(&hilo_kernel, NULL, (void*) conectado_a_Kernel,
 					NULL );
-			printf("Creado hilo para el kernel\n");
 			break;
 		case soy_cpu:
 			cpu_sock = cliente;
@@ -85,14 +81,14 @@ int main(void) {
 void conectado_a_Kernel() {
 	t_datosAEnviar * datos;
 	while (1) {
-		printf("Esperando mensaje\n");
 		datos = recibir_datos(kernel_sock);
 		if (datos == NULL ) {
 			log_error(logger, "No se recibieron los datos correctamente.",
 					"ERROR");
 			exit(-1);
 		}
-		printf("Se recibio un mensaje\n");
+		printf("\nSolicitud del socket %d: ", kernel_sock);
+
 		//Recibo mensaje del cliente
 		if (1) {
 			switch (datos->codigo_operacion) {
@@ -121,17 +117,16 @@ void conectado_a_Kernel() {
 void conectado_a_cpu() {
 	t_datosAEnviar * datos;
 	while (1) {
-		printf("Esperando mensaje\n");
 		datos = recibir_datos(cpu_sock);
 		if (datos == NULL ) {
 			log_error(logger, "No se recibieron los datos correctamente.",
 					"ERROR");
 			exit(-1);
 		}
-		printf("Se recibio un mensaje\n");
 		//Recibo mensaje del cliente
 		int aux = 4;
 		t_datosAEnviar * paquete;
+		printf("\nSolicitud del socket %d: ", cpu_sock);
 		if (1) {
 			switch (datos->codigo_operacion) {
 			case crearNuevoSegmento:
@@ -170,7 +165,6 @@ void conectado_a_cpu() {
 				char* par = "A5";
 				void* dat = malloc(2);
 				printf("parametros %s", par);
-			//	printf("datos a enviar %s", dat);
 				memcpy(dat, par,2);
 				paquete = crear_paquete(0,dat,2);
 				enviar_datos(cpu_sock, paquete);
