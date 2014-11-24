@@ -19,8 +19,6 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <commons/collections/dictionary.h>
-#include <panel.h>
-#include <kernel.h>
 
 /*          ESTRUCTURAS          */
 

@@ -7,6 +7,8 @@
 
 #include "auxiliares/auxiliares.h"
 #include "auxiliares/variables_globales.h"
+#include "ansisop-panel/panel.h"
+#include "ansisop-panel/kernel.h"
 
 
 #define pid_KM_boot 0

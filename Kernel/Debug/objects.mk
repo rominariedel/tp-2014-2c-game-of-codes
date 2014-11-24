@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lcspecs -lansisop-panel -lpthread -lSockets -lcommons
+LIBS := -lcspecs -lpthread -lSockets -lcommons
 

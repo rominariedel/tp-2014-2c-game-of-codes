@@ -9,6 +9,8 @@ RM := rm
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include auxiliares/subdir.mk
+-include ansisop-panel/collections/subdir.mk
+-include ansisop-panel/subdir.mk
 -include subdir.mk
 -include objects.mk
 
