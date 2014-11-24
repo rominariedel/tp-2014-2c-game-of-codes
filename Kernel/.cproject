@@ -36,6 +36,7 @@
 								</option>
 								<option id="gnu.c.link.option.libs.393657901" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="cspecs"/>
+									<listOptionValue builtIn="false" value="ansisop-panel"/>
 									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="Sockets"/>
 									<listOptionValue builtIn="false" value="commons"/>

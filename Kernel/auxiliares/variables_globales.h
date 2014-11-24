@@ -10,11 +10,11 @@
 
 #include "auxiliares.h"
 
-t_colas_prioridades READY;
-t_lista_prioridades BLOCK;
-t_list * EXEC;
+t_colas_prioridades ready;
+t_lista_prioridades block;
+t_list * exec;
 t_queue * SYS_CALL;
-t_queue * EXIT;
+t_queue * e_exit;
 t_dictionary * dic_bloqueados;
 t_list * hilos_join;
 

@@ -1,5 +1,4 @@
-auxiliares/auxiliares.d: ../auxiliares/auxiliares.c \
- ../auxiliares/variables_globales.h ../auxiliares/auxiliares.h \
+Kernel.d: ../Kernel.c ../auxiliares/auxiliares.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/config.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/node.h \
@@ -8,9 +7,8 @@ auxiliares/auxiliares.d: ../auxiliares/auxiliares.c \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/list.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/list.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/string.h \
- /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h
-
-../auxiliares/variables_globales.h:
+ /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h \
+ ../auxiliares/variables_globales.h ../auxiliares/auxiliares.h
 
 ../auxiliares/auxiliares.h:
 
@@ -31,3 +29,7 @@ auxiliares/auxiliares.d: ../auxiliares/auxiliares.c \
 /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/string.h:
 
 /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h:
+
+../auxiliares/variables_globales.h:
+
+../auxiliares/auxiliares.h:

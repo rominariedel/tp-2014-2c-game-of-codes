@@ -37,16 +37,16 @@ int obtener_PID() {
 }
 
 void crear_colas() {
-	EXIT = queue_create();
+	e_exit = queue_create();
 
-	READY.prioridad_0 = queue_create();
-	READY.prioridad_1 = queue_create();
-	BLOCK.prioridad_0 = queue_create();
+	ready.prioridad_0 = queue_create();
+	ready.prioridad_1 = queue_create();
+	block.prioridad_0 = queue_create();
 
 	SYS_CALL = queue_create();
 
-	BLOCK.prioridad_1 = list_create();
-	EXEC = list_create();
+	block.prioridad_1 = list_create();
+	exec = list_create();
 	CPU_list = list_create();
 	consola_list = list_create();
 	hilos_join = list_create();
@@ -55,21 +55,21 @@ void crear_colas() {
 }
 
 void free_listas() {
-	queue_destroy(EXIT);
+	queue_destroy(e_exit);
 
-	queue_destroy(READY.prioridad_0);
-	queue_destroy(READY.prioridad_1);
+	queue_destroy(ready.prioridad_0);
+	queue_destroy(ready.prioridad_1);
 	queue_destroy(SYS_CALL);
-	queue_destroy(BLOCK.prioridad_0);
-	list_destroy_and_destroy_elements(BLOCK.prioridad_1, &free);
-	list_destroy_and_destroy_elements(EXEC, &free);
+	queue_destroy(block.prioridad_0);
+	list_destroy_and_destroy_elements(block.prioridad_1, &free);
+	list_destroy_and_destroy_elements(exec, &free);
 	list_destroy_and_destroy_elements(CPU_list, &free);
 	list_destroy_and_destroy_elements(consola_list, &free);
 
 }
 
 void mover_a_exit(TCB_struct * tcb) {
-	queue_push(EXIT, tcb);
+	queue_push(e_exit, tcb); //TODO: esta funcion se esta usando???!
 }
 
 bool CPU_esta_libre(struct_CPU * cpu) {
@@ -80,10 +80,10 @@ void meter_en_ready(int prioridad, TCB_struct * tcb){
 	sem_wait(&sem_READY);
 	switch(prioridad){
 	case 0:
-		queue_push(READY.prioridad_0, tcb);
+		queue_push(ready.prioridad_0, tcb);
 		break;
 	case 1:
-		queue_push(READY.prioridad_1, tcb);
+		queue_push(ready.prioridad_1, tcb);
 		break;
 	}
 	sem_post(&sem_READY);
@@ -94,10 +94,10 @@ TCB_struct * sacar_de_ready(int prioridad){
 	TCB_struct * tcb = NULL;
 	switch(prioridad){
 	case 0:
-		tcb = queue_pop(READY.prioridad_0);
+		tcb = queue_pop(ready.prioridad_0);
 		break;
 	case 1:
-		tcb = queue_pop(READY.prioridad_1);
+		tcb = queue_pop(ready.prioridad_1);
 		break;
 	}
 	sem_post(&sem_READY);
@@ -244,7 +244,7 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 	bool tiene_mismo_tid(struct_bloqueado * estructura) {
 		return estructura->tcb.TID == TID;
 	}
-	return list_find(BLOCK.prioridad_1, (void*) tiene_mismo_tid);
+	return list_find(block.prioridad_1, (void*) tiene_mismo_tid);
 }
 
 void producir_salida_estandar(int pid, char* cadena) {
@@ -336,7 +336,7 @@ void realizar_desbloqueo(int id_recurso){
 int chequear_proceso_abortado(TCB_struct * tcb){
 	struct_consola * consola = obtener_consolaAsociada(tcb->PID);
 	if(consola->termino_ejecucion){
-		queue_push(EXIT, tcb);
+		queue_push(e_exit, tcb);
 		return -1;
 	}
 	return 0;

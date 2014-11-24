@@ -11,9 +11,9 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <commons/config.h>
-#include <commons/collections/list.h>
 #include <sockets.h>
 #include <commons/collections/queue.h>
+#include <commons/collections/list.h>
 #include <sys/select.h>
 #include <commons/string.h>
 #include <pthread.h>

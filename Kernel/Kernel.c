@@ -8,6 +8,9 @@
 #include "auxiliares/auxiliares.h"
 #include "auxiliares/variables_globales.h"
 
+#include <panel.h>
+#include <kernel.h>
+
 #define pid_KM_boot 0
 
 /*VARIABLES GLOBALES*/
@@ -53,6 +56,9 @@ void obtenerDatosConfig(char ** argv) {
 	QUANTUM = config_get_int_value(configuracion, "QUANTUM");
 	SYSCALLS = config_get_string_value(configuracion, "SYSCALLS");
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
+	char * PANEL = config_get_string_value(configuracion, "PANEL");
+	printf("LA RUTA PARA EL PANEL ES %s\n", PANEL);
+	inicializar_panel(1, PANEL);
 }
 
 void loader() {
@@ -89,7 +95,7 @@ void loader() {
 						consola_conectada->PID);
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
-				if(datos == NULL){
+				if (datos == NULL ) {
 					printf("Se desconecto la consola\n");
 				}
 				TCB_struct * nuevoTCB;
@@ -106,13 +112,13 @@ void loader() {
 
 					int segmento_codigo = solicitar_segmento(nuevoTCB,
 							datos->codigo_operacion);
-					if(segmento_codigo <0){
+					if (segmento_codigo < 0) {
 						exit(0);
 					}
 
 					int segmento_stack = solicitar_segmento(nuevoTCB,
 							TAMANIO_STACK);
-					if(segmento_stack<0){
+					if (segmento_stack < 0) {
 						exit(-1);
 					}
 
@@ -179,22 +185,20 @@ void boot() {
 	}
 
 	handshake_MSP(socket_MSP);
-	printf("\n Solicitando segmento para las syscalls de tamanio %d\n",
-			(int) tamanio_codigo_syscalls);
-	printf("\n Solicitando segmento para el stack del tcb km\n");
+	printf("\n Solicitando segmentos principales en la MSP\n");
 
 	TCB_struct * tcb_km = malloc(sizeof(TCB_struct));
 	tcb_km->KM = 1;
 
 	/*int base_segmento_codigo = solicitar_segmento(tcb_km, 8);
-	escribir_memoria(tcb_km, base_segmento_codigo, 8, "holahola");
-	int base_segmento_stack = solicitar_segmento(tcb_km, 4);
+	 escribir_memoria(tcb_km, base_segmento_codigo, 8, "holahola");
+	 int base_segmento_stack = solicitar_segmento(tcb_km, 4);
 	 */
 
 	int base_segmento_codigo = solicitar_segmento(tcb_km,
 			tamanio_codigo_syscalls);
-	if(base_segmento_codigo <0 ){
-		printf("Error al solicitar segmento para las syscalls");
+	if (base_segmento_codigo < 0) {
+		printf("Error al solicitar segmento de codigo para las syscalls");
 		exit(-1);
 	}
 	escribir_memoria(tcb_km, base_segmento_codigo,
@@ -202,7 +206,7 @@ void boot() {
 	free(syscalls);
 
 	int base_segmento_stack = solicitar_segmento(tcb_km, TAMANIO_STACK);
-	if(base_segmento_stack < 0){
+	if (base_segmento_stack < 0) {
 		printf("Error al solicitar segmento de stack para las syscalls");
 		exit(-1);
 	}
@@ -221,9 +225,7 @@ void boot() {
 	tcb_km->registrosProgramacion[3] = 0;
 	tcb_km->registrosProgramacion[4] = 0;
 
-	printf("Bloqueando TCB KM\n");
-
-	queue_push(BLOCK.prioridad_0, (void *) tcb_km);
+	queue_push(block.prioridad_0, (void *) tcb_km);
 	sem_post(&sem_kmDisponible);
 
 	printf("Esperando conexiones...\n");
@@ -239,27 +241,21 @@ void boot() {
 	while (1) {
 
 		int socket_conectado = recibir_conexion(socket_gral);
-		printf("Se recibio una conexion!\n");
 		int modulo_conectado = -1;
 		t_datosAEnviar * datos = recibir_datos(socket_conectado);
 		modulo_conectado = datos->codigo_operacion;
 
 		if (modulo_conectado == soy_consola) {
-			printf("Se conecto una consola\n");
+			conexion_consola(socket_conectado);
 			FD_SET(socket_conectado, &consola_set);
 			struct_consola * consola_conectada = malloc(sizeof(struct_consola));
 			int pid = obtener_PID();
-			printf("Se va a agregar una consola de PID: %d y socket: %d\n", pid,
-					socket_conectado);
 			consola_conectada->PID = pid;
 			consola_conectada->socket_consola = socket_conectado;
 			consola_conectada->cantidad_hilos = 0;
 			list_add(consola_list, consola_conectada);
-			printf("Se agrego una consola de PID: %d\n",
-					consola_conectada->PID);
 			if (descriptor_mas_alto_consola == 0) {
 				descriptor_mas_alto_consola = socket_conectado;
-				printf("Es la primera consola que se conecta \n");
 				pthread_create(&thread_loader, NULL, (void*) &loader, NULL );
 			}
 			if (descriptor_mas_alto_consola < socket_conectado) {
@@ -267,7 +263,7 @@ void boot() {
 			}
 
 		} else if (modulo_conectado == soy_CPU) {
-			printf("Se conecto una CPU\n");
+			conexion_cpu(socket_conectado);
 			FD_SET(socket_conectado, &CPU_set);
 			struct_CPU* cpu_conectada = malloc(sizeof(struct_CPU));
 			cpu_conectada->PID = obtener_PID();
@@ -277,7 +273,6 @@ void boot() {
 
 			sem_post(&sem_CPU);
 			if (descriptor_mas_alto_cpu == 0) {
-				printf("Es la primera CPU que se conecta\n");
 				descriptor_mas_alto_cpu = socket_conectado;
 				pthread_create(&thread_planificador, NULL,
 						(void*) &planificador, NULL );
@@ -298,7 +293,7 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	struct_bloqueado tcb_bloqueado;
 	tcb_bloqueado.id_recurso = dirSyscall;
 	tcb_bloqueado.tcb = *tcb;
-	list_add(BLOCK.prioridad_1, &tcb_bloqueado);
+	list_add(block.prioridad_1, &tcb_bloqueado);
 	sem_post(&sem_procesoListo);
 }
 
@@ -358,7 +353,7 @@ int solicitar_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
-	if(respuesta == NULL){
+	if (respuesta == NULL ) {
 		printf("no se recibio una respuesta\n");
 	}
 	int * dir_base = malloc(sizeof(int));
@@ -424,7 +419,7 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 	bool es_TCB(TCB_struct tcb_comparar) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
-	TCB_struct * tcb_exec = list_remove_by_condition(EXEC, (void*) es_TCB);
+	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
 	free(tcb_exec);
 
 	/* Fijarse si hay algun hilo esperando joins
@@ -440,7 +435,7 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		consola_asociada->termino_ejecucion = true;
 		matar_hijos(PID);
 	}
-	queue_push(EXIT, tcb);
+	queue_push(e_exit, tcb);
 
 	//TERMINAR LA CONEXION CON LA CONSOLA SI TERMINO LA EJECUCION DE TODOS LOS HILOS
 	consola_asociada->cantidad_hilos--;
@@ -471,14 +466,14 @@ void mandar_a_exit(TCB_struct * tcb) {
 	free(datos);
 	free(paquete);
 
-	queue_push(EXIT, tcb);
+	queue_push(e_exit, tcb);
 
 	sem_post(&sem_exit);
 }
 
 void matar_hijos(int PID) {
-	matar_hijos_en_lista(PID, READY.prioridad_1->elements);
-	matar_hijos_en_lista(PID, BLOCK.prioridad_1);
+	matar_hijos_en_lista(PID, ready.prioridad_1->elements);
+	matar_hijos_en_lista(PID, block.prioridad_1);
 	matar_hijos_en_lista(PID, SYS_CALL->elements);
 	matar_hijos_en_lista(PID, hilos_join);
 	matar_hijo_en_diccionario(PID);
@@ -531,7 +526,7 @@ void fijarse_joins(int tid) {
 void finalizo_ejecucion(TCB_struct *tcb) {
 
 	if (tcb->KM == 1) {
-		queue_push(BLOCK.prioridad_0, tcb);
+		queue_push(block.prioridad_0, tcb);
 		sem_post(&sem_kmDisponible);
 	} else {
 		sacar_de_ejecucion(tcb);
@@ -553,7 +548,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 		printf("FALLO. NO SE ENCONTRO CPU\n");
 		exit(-1);
 	}
-	list_add(EXEC, tcb);
+	list_add(exec, tcb);
 	printf("\n\nQUANTUM: %d\n", QUANTUM);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
@@ -576,7 +571,7 @@ void dispatcher() {
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
 			sem_wait(&sem_kmDisponible);
-			TCB_struct * tcb_km = queue_pop(BLOCK.prioridad_0);
+			TCB_struct * tcb_km = queue_pop(block.prioridad_0);
 			copiarRegistros(tcb_km->registrosProgramacion,
 					tcb_ejecutandoSysCall->registrosProgramacion);
 			tcb_km->PID = tcb_ejecutandoSysCall->PID;
@@ -587,7 +582,7 @@ void dispatcher() {
 
 		} else {
 			TCB_struct * tcb;
-			if (!queue_is_empty(READY.prioridad_0)) {
+			if (!queue_is_empty(ready.prioridad_0)) {
 				tcb = sacar_de_ready(0);
 			} else {
 				tcb = sacar_de_ready(1);
