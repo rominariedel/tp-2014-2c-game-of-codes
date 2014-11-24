@@ -125,6 +125,7 @@ void inicializarConsola() {
 
 		if (string_equals_ignore_case(comando, "Cerrar")) {
 			log_debug(logger, "Se pidió Cerrar Consola");
+			free(comando);
 			seguimiento = 0;
 		} else {
 			interpretarComando(comando);
@@ -172,8 +173,10 @@ void interpretarComando(char* comando) {
 	else if (string_equals_ignore_case(operacion[0], "Leer_Memoria")) {
 		log_debug(logger, "Interpretó el comando de leer_memoria");
 		printf("Solicitando memoria...\n");
-		solicitarMemoria(atoi(parametros[0]), atoi(parametros[1]),
+		char* respuesta = solicitarMemoria(atoi(parametros[0]), atoi(parametros[1]),
 				atoi(parametros[2]));
+		printf("%s", respuesta);
+		free(respuesta);
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Tabla_De_Paginas")) {
@@ -270,7 +273,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	}
 
 	sem_wait(&mutex_MemoriaDisponible);
-	if (memoriaDisponible < tamanio) {
+	if ((memoriaDisponible + cantidadSwap) < tamanio) {
 		log_error(logger,
 				"La memoria disponible no es suficiente para el tamanio del segmento");
 		sem_post(&mutex_MemoriaDisponible);
@@ -492,11 +495,24 @@ static void destruirPag(T_PAGINA* pagina) {
 		list_add(marcosVacios, marco);
 		sem_post(&mutex_marcosVacios);
 	}
-
 	sem_post(&mutex_marcosLlenos);
+
+	if (pagina->swapped){
+		char* filePath = obtenerFilePath(pagina->PID, pagina->SID, pagina->paginaID);
+
+		if (remove(filePath) == 0) {
+
+			sem_wait(&mutex_cantSwap);
+			cantidadSwap += tamanioPag;
+			sem_post(&mutex_cantSwap);
+
+		} else {
+			log_error(logger, "No existe el archivo de la pagina swappeada");
+		}
+	}
+
 	free(pagina->data);
 	free(pagina);
-
 }
 
 //Para el espacio de direcciones del proceso PID, devuelve hasta tamanio bytes
@@ -743,6 +759,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 						+ direccionLogica.desplazamiento) > seg->tamanio) {
 					log_error(logger, "Segmentation Fault: Dirección Invalida");
 					sem_post(&mutex_procesos);
+					free(aux);
 					return error_segmentation_fault;
 
 					if (((tamanioPag * (pag->paginaID)
@@ -752,6 +769,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 						log_error(logger,
 								"Segmentation Fault: Se excedieron los limites del segmento");
 						sem_post(&mutex_procesos);
+						free(aux);
 						return error_segmentation_fault;
 					}
 
@@ -765,6 +783,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 						log_error(logger,
 								"No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
 						sem_post(&mutex_procesos);
+						free(aux);
 						return resultado;
 					}
 				}
@@ -798,6 +817,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 								log_error(logger,
 										"No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
 								sem_post(&mutex_procesos);
+								free(aux);
 								return resultado;
 							}
 						}
@@ -824,6 +844,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 								log_error(logger,
 										"No se ha podido escribir memoria ya que no se pudo asignar un marco a la página");
 								sem_post(&mutex_procesos);
+								free(aux);
 								return resultado;
 							}
 						}
@@ -837,12 +858,14 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 				log_error(logger,
 						"No se ha podido escribir en memoria porque la página es inexistente");
 				sem_post(&mutex_procesos);
+				free(aux);
 				return error;
 			}
 		} else {
 			log_error(logger,
 					"No se ha podido escribir en memoria porque el segmento es inexistente");
 			sem_post(&mutex_procesos);
+			free(aux);
 			return error;
 		}
 	} else {
@@ -850,29 +873,24 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 				"No se ha podido escribir en memoria porque el proceso de PID: %d es inexistente",
 				PID);
 		sem_post(&mutex_procesos);
+		free(aux);
 		return error;
 	}
 
 	sem_post(&mutex_procesos);
 	log_info(logger, "Se ha escrito en memoria exitósamente");
+
+	free(aux);
 	return operacion_exitosa;
 }
 
 void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir) {
 	log_debug(logger,"Entre a escriboMemoria");
-	//int i;
+
 	memcpy(pag->data + inicio,bytesAEscribir, final - inicio);
 	log_debug(logger,"%s", pag->data+(100));
 	log_debug(logger,"%s", pag->data+(210));
-	//for (i = inicio; final > i; i++) {
-		//log_debug(logger,"Entro al for para escribir");
-		//pag->data[i] = *string_substring_until(bytesAEscribir, 1);
-		//bytesAEscribir = string_substring_from(bytesAEscribir, 1);
-		//log_debug(logger,"%s", pag->data);
 
-	//}
-
-	log_debug(logger,"sale del for");
 	sem_wait(&mutex_contadorLRU);
 	pag->bitReferencia = 1;
 	pag->contadorLRU = contadorLRU;
@@ -1234,6 +1252,8 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
+			free(resultado);
+
 			break;
 
 		case escribir_memoria:
@@ -1243,6 +1263,7 @@ void interpretarOperacion(int* socket) {
 			log_debug(logger,"El pid es: %d", pid);
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
 			log_debug(logger,"La direccion es: %d", direccion);
+
 			bytesAEscribir = malloc(datos->tamanio - sizeof(int)*3);
 			log_debug(logger,"tamanio - sizeof(int) %d",datos->tamanio - sizeof(int)*3 );
 			memcpy(bytesAEscribir,
@@ -1250,6 +1271,7 @@ void interpretarOperacion(int* socket) {
 					datos->tamanio - (3 * sizeof(int)));
 			log_debug(logger,"bytes a escribir %s", bytesAEscribir);
 			log_debug(logger,"Los bytes a escribir son: %d", string_length(bytesAEscribir+300));
+
 			memcpy(&tamanio,
 					datos->datos + datos->tamanio - sizeof(int), sizeof(int));
 			log_debug(logger,"El tamanio es: %d", tamanio);
