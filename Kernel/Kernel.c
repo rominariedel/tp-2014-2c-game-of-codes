@@ -99,9 +99,10 @@ void loader() {
 					nuevoTCB->PID = consola_conectada->PID;
 					nuevoTCB->TID = obtener_TID();
 					consola_conectada->TID_padre = nuevoTCB->TID;
-
+					printf("ESTOY SOLICITANDO SEGMENTO \n");
 					int segmento_codigo = solicitar_segmento(nuevoTCB,
 							datos->codigo_operacion);
+					printf("ME MANDO UNA BASE %d\n", segmento_codigo);
 					if (segmento_codigo < 0) {
 						exit(0);
 					}

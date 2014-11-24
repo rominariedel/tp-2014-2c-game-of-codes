@@ -149,38 +149,39 @@ void planificador() {
 
 				sem_init(&mutex_entradaSalida, 0, 1);
 				printf("CODIGO OPERACION : %d\n", codigo_operacion);
+
 				switch (codigo_operacion) {
 
-				case finaliza_quantum:
+				case finaliza_quantum: //SE LIBERA
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					finalizo_quantum(tcb);
+					liberar_cpu(n_descriptor);
 					break;
-				case finaliza_ejecucion:
+				case finaliza_ejecucion: //SE LIBERA
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					finalizo_ejecucion(tcb);
+					liberar_cpu(n_descriptor);
 					break;
-				case ejecucion_erronea:
+				case ejecucion_erronea: //SE LIBERA
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					abortar(tcb);
+					liberar_cpu(n_descriptor);
 					break;
-				case desconexion:
-					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					abortar(tcb);
-					break;
-				case interrupcion:
+				case interrupcion: //SE LIBERA
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&dirSysCall, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
 					interrumpir(tcb, dirSysCall);
+					liberar_cpu(n_descriptor);
 					break;
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					crear_hilo(*tcb, n_descriptor);
-					break;
+					break; //NO SE LIBERA
 				case planificar_nuevo_hilo: //Aca llega el TCB listo para planificar con su stack inicializado
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					planificar_hilo_creado(tcb);
-					break;
+					break; //NO SE LIBERA
 				case entrada_estandar:
 					id_tipo = malloc(datos->tamanio);
 					memcpy(&tamanio, datos->datos, sizeof(int));
@@ -188,8 +189,7 @@ void planificador() {
 					memcpy(id_tipo, datos->datos + (2*sizeof(int)), datos->tamanio - (2 * sizeof(int)));
 					producir_entrada_estandar(pid, id_tipo, n_descriptor,
 							tamanio);
-					liberar_cpu(n_descriptor);
-
+					//NO SE LIBERA
 					break;
 				case salida_estandar:
 					cadena = malloc(datos->tamanio - sizeof(int));
@@ -198,12 +198,14 @@ void planificador() {
 							datos->tamanio - sizeof(int));
 					producir_salida_estandar(pid, cadena);
 					liberar_cpu(n_descriptor);
+					//NO SE LIBERA
 					break;
 				case join:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
 					realizar_join(tcb, tid_a_esperar);
+					//NO SE LIBERA
 					break;
 				case bloquear:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
@@ -211,12 +213,12 @@ void planificador() {
 							sizeof(int));
 					realizar_bloqueo(tcb, id_recurso);
 					liberar_cpu(n_descriptor);
+					//NO SE LIBERA
 					break;
 				case despertar:
-					printf("SE SOLICITO UN DESBLOQUEO");
 					memcpy(&id_recurso, datos->datos, sizeof(int));
 					realizar_desbloqueo(id_recurso);
-					printf("SE REALIZO UN DESBLOQUEO\n");
+					//NO SE LIBERA
 					break;
 			}
 				free(datos);
