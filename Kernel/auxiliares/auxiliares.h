@@ -19,6 +19,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <commons/collections/dictionary.h>
+#include "../ansisop-panel/panel.h"
+#include "../ansisop-panel/kernel.h"
 
 /*          ESTRUCTURAS          */
 
