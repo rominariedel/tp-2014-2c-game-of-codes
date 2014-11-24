@@ -202,8 +202,8 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
-		//memoriaDisponible = tamanioMemoria;
-		memoriaDisponible = 100;
+		memoriaDisponible = tamanioMemoria;
+		//memoriaDisponible = 100;
 		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
 
@@ -1155,6 +1155,7 @@ void iniciarConexiones() {
 		else if (modulo_conectado == soy_kernel) {
 			printf("Se conecto el Kernel\n");
 			log_info(logger,"Se concectó el Kernel");
+
 			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion,
 					&socket_conectado);
 		}
@@ -1166,17 +1167,18 @@ void iniciarConexiones() {
 }
 
 void interpretarOperacion(int* socket) {
+	t_datosAEnviar* datos;
+	int pid;
+	int tamanio;
+	char* bytesAEscribir;
+	uint32_t baseSegmento;
+	uint32_t direccion;
+	uint32_t respuesta;
+	t_datosAEnviar* paquete;
 
 	while (1) { //todo va con while?????
-		t_datosAEnviar* datos;
+
 		datos = recibir_datos(*socket);
-		int pid;
-		int tamanio;
-		char* bytesAEscribir;
-		uint32_t baseSegmento;
-		uint32_t direccion;
-		uint32_t respuesta;
-		t_datosAEnviar* paquete;
 
 		switch (datos->codigo_operacion) {
 
@@ -1187,8 +1189,6 @@ void interpretarOperacion(int* socket) {
 			memcpy(&tamanio, datos->datos + sizeof(int), sizeof(int));
 
 			log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, tamanio);
-
-			free(datos);
 
 			respuesta = crearSegmento(pid, tamanio);
 			log_debug(logger,"La respuesta seria: %d", respuesta);
@@ -1213,8 +1213,6 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
-			free(datos);
-
 			break;
 
 		case solicitar_memoria:
@@ -1235,8 +1233,6 @@ void interpretarOperacion(int* socket) {
 			paquete = crear_paquete(0, (void*) resultado, sizeof(int));
 
 			enviar_datos(*socket, paquete);
-
-			free(datos);
 
 			break;
 
@@ -1268,10 +1264,10 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
-			free(datos);
+			free(bytesAEscribir);
 			break;
 		}
-
+		free(datos->datos);
 		free(datos);
 	}
 }
