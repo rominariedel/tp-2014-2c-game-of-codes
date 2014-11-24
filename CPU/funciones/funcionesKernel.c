@@ -125,7 +125,7 @@ void KERNEL_BloquearTCB(t_TCB* TCB, int recursoABloquear){
 void KERNEL_WakePrograma(int recurso){
 	char * datos = malloc(sizeof(t_TCB));
 	memcpy(datos, &recurso, sizeof(int));
-	t_datosAEnviar* paquete = crear_paquete(bloquear, (void*) datos, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(despertar, (void*) datos, sizeof(int));
 	enviar_datos(socketKernel, paquete);
 	free(datos);
 	free(paquete);

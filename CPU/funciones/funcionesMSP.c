@@ -25,24 +25,32 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	memcpy(datos + sizeof(int) + sizeof(int), &tamanio , sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
 
+	printf("1 \n");
+
 	enviar_datos(socketMSP,paquete);
-
+	printf("2 \n");
 	free(datos);
+	printf("3 \n");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
+	printf("4 \n");
 	log_info(LOGCPU, "  Recibo Respuesta MSP  ");
-
+	printf("5 \n");
 	int status = procesarRespuesta(respuesta);
-
+	printf("6 \n");
 	char* proximaInstruccion = calloc(4, sizeof(char));
-
+	printf("7 \n");
 	if(status == 0){
+		printf("8 \n");
 		memcpy(proximaInstruccion, respuesta -> datos, 4);
 	}else{
-		devolverTCBactual(ejecucion_erronea);
+		if(status <0){
+			abortar(ejecucion_erronea);
+			printf("9 \n");
+		}
 	}
-
+	printf("10 \n");
 	free(respuesta);
-
+	printf("11 \n");
 	printf("\n ME ESTA MANDANDO BIEN LA INSTRUCCION PROXIMA!!!!!!!!!!!! \n");
 
 	return proximaInstruccion;
@@ -137,12 +145,14 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 	errorOperacionesConMemoria = 0;
 	errorMemoria = 0;
 	estado = 0;
-	/*if(respuesta == NULL){
+	if(respuesta == NULL){
 		errorOperacionesConMemoria = -1;
 		errorMemoria = no_llego_respuesta;
 		estado = -1;
 		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
-	}else{*/
+		return estado;
+	}else{
+	if(respuesta->codigo_operacion < 0){
 	switch(respuesta->codigo_operacion){
 		case error_segmentationFault:
 			devolverTCBactual(error_segmentationFault);
@@ -158,6 +168,12 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 			estado = -1;
 			log_error(LOGCPU, "ERROR MSP: Memoria Llena");
 			break;
-		}//}
+	}
+		estado = -1;
+		errorMemoria = -5; //POR DECIR ALGUN NRO NEGATIVO
+		log_error(LOGCPU, "ERROR MSP: Me devolvio algo negativo, no es ni Segmentation Fault, ni Memoria Llena");
+		return estado;
+	}}
+
 	return estado;
 }
