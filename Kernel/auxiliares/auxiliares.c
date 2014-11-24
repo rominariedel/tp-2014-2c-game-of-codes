@@ -68,10 +68,6 @@ void free_listas() {
 
 }
 
-void mover_a_exit(TCB_struct * tcb) {
-	queue_push(e_exit, tcb); //TODO: esta funcion se esta usando???!
-}
-
 bool CPU_esta_libre(struct_CPU * cpu) {
 	return (cpu->bit_estado == 0);
 }
@@ -87,6 +83,7 @@ void meter_en_ready(int prioridad, TCB_struct * tcb){
 		break;
 	}
 	sem_post(&sem_READY);
+	sem_post(&sem_procesoListo);
 }
 
 TCB_struct * sacar_de_ready(int prioridad){
@@ -102,6 +99,12 @@ TCB_struct * sacar_de_ready(int prioridad){
 	}
 	sem_post(&sem_READY);
 	return tcb;
+}
+
+void liberar_cpu(int socket){
+	struct_CPU * cpu = obtener_CPUAsociada(socket);
+	cpu->bit_estado = libre;
+	sem_post(&sem_CPU); //TODO: PREGUNTAR SI CON TODOS LOS SERVICIOS EXPUESTOS LA CPU SE LIBERA
 }
 
 void planificador() {
@@ -145,7 +148,7 @@ void planificador() {
 				char * id_tipo;
 
 				sem_init(&mutex_entradaSalida, 0, 1);
-				printf("CODIGO OPERACION : %d", codigo_operacion);
+				printf("CODIGO OPERACION : %d\n", codigo_operacion);
 				switch (codigo_operacion) {
 
 				case finaliza_quantum:
@@ -185,6 +188,7 @@ void planificador() {
 					memcpy(id_tipo, datos->datos + (2*sizeof(int)), datos->tamanio - (2 * sizeof(int)));
 					producir_entrada_estandar(pid, id_tipo, n_descriptor,
 							tamanio);
+					liberar_cpu(n_descriptor);
 
 					break;
 				case salida_estandar:
@@ -193,6 +197,7 @@ void planificador() {
 					memcpy(cadena, datos->datos + sizeof(int),
 							datos->tamanio - sizeof(int));
 					producir_salida_estandar(pid, cadena);
+					liberar_cpu(n_descriptor);
 					break;
 				case join:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
@@ -205,14 +210,17 @@ void planificador() {
 					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
 					realizar_bloqueo(tcb, id_recurso);
+					liberar_cpu(n_descriptor);
 					break;
 				case despertar:
+					printf("SE SOLICITO UN DESBLOQUEO");
 					memcpy(&id_recurso, datos->datos, sizeof(int));
 					realizar_desbloqueo(id_recurso);
+					printf("SE REALIZO UN DESBLOQUEO\n");
 					break;
 			}
-				sem_post(&sem_CPU);
 				free(datos);
+				//TODO: SACAR EL PROCESO DE EXEC
 			}
 			n_descriptor++;
 		}
@@ -257,8 +265,6 @@ void producir_salida_estandar(int pid, char* cadena) {
 	datos->datos = (void*) cadena;
 
 	enviar_datos(consola_asociada->socket_consola, datos);
-
-	//TODO: chequear que se enviaron los datos
 
 	free(datos);
 }
@@ -323,6 +329,7 @@ void realizar_bloqueo(TCB_struct * tcb, int id_recurso){
 		t_queue * nuevo_bloqueado = queue_create();
 		queue_push(nuevo_bloqueado, tcb);
 		dictionary_put(dic_bloqueados, recurso, nuevo_bloqueado);
+		printf("SE AGREGO UN NUEVO RECURSO A BLOQUEAR %d\n", id_recurso);
 	}
 }
 

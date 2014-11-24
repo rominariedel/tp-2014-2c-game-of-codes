@@ -64,7 +64,7 @@ void copiarRegistros(int registro1[5], int registro2[5]);
 void handshake_MSP(int socketMSP);
 void fijarse_joins(int tid);
 void matar_hijos(int PID);
-void matar_hijos_en_lista(int, t_list*);
+void matar_hijos_en_lista(int, t_list*, bool);
 void matar_hijo_en_diccionario(int PID);
 void mandar_a_exit(TCB_struct*);
 

@@ -117,6 +117,7 @@ void planificar_hilo_creado(TCB_struct *);
 void realizar_bloqueo(TCB_struct *, int);
 void realizar_desbloqueo(int);
 int chequear_proceso_abortado(TCB_struct *);
+struct_CPU * obtener_CPUAsociada(int socket_cpu);
 
 enum mensajes {
 
@@ -162,5 +163,10 @@ enum mensajes {
 	codigo_consola = 25,
 	se_produjo_entrada = 26,
 };
+
+enum bit_de_estado {
+	libre = 0, ocupado = 1,
+};
+
 
 #endif /* AUXILIARES_H_ */

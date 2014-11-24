@@ -13,9 +13,6 @@
 
 /*VARIABLES GLOBALES*/
 
-enum bit_de_estado {
-	libre = 0, ocupado = 1,
-};
 
 int main(int argc, char ** argv) {
 
@@ -88,7 +85,7 @@ void loader() {
 				datos = recibir_datos(n_descriptor);
 				if (datos == NULL ) {
 					desconexion_consola(n_descriptor);
-					FD_CLR(n_descriptor, &consola_set);
+					FD_CLR(n_descriptor, &consola_set); //TODO: COMPLETAR EL CASO DE QUE SE DESCONECTE LA CONSOLA
 					break;
 				}
 				TCB_struct * nuevoTCB;
@@ -132,7 +129,6 @@ void loader() {
 					printf("\nSe inicializo el TCB PADRE\n");
 					meter_en_ready(1, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
-					sem_post(&sem_procesoListo);
 					break;
 
 				case se_produjo_entrada:
@@ -465,27 +461,30 @@ void mandar_a_exit(TCB_struct * tcb) {
 }
 
 void matar_hijos(int PID) {
-	matar_hijos_en_lista(PID, ready.prioridad_1->elements);
-	matar_hijos_en_lista(PID, block.prioridad_1);
-	matar_hijos_en_lista(PID, SYS_CALL->elements);
-	matar_hijos_en_lista(PID, hilos_join);
+	matar_hijos_en_lista(PID, ready.prioridad_1->elements, true);
+	matar_hijos_en_lista(PID, block.prioridad_1, false);
+	matar_hijos_en_lista(PID, SYS_CALL->elements, false);
+	matar_hijos_en_lista(PID, hilos_join, false);
 	matar_hijo_en_diccionario(PID);
 }
 
 void matar_hijo_en_diccionario(int PID) {
 	void matar_hijo(t_queue * bloqueado_por_recurso) {
-		matar_hijos_en_lista(PID, bloqueado_por_recurso->elements);
+		matar_hijos_en_lista(PID, bloqueado_por_recurso->elements, false);
 	}
 	dictionary_iterator(dic_bloqueados, (void*) matar_hijo);
 }
 
-void matar_hijos_en_lista(int PID, t_list* lista) {
+void matar_hijos_en_lista(int PID, t_list* lista, bool es_ready) {
 	bool tiene_mismo_pid(TCB_struct * tcb) {
 		return tcb->PID == PID;
 	}
 	int cantidad = list_count_satisfying(lista, (void*) tiene_mismo_pid);
 	int contador = 0;
 	while (contador < cantidad) {
+		if(es_ready){
+			sem_wait(&sem_procesoListo);
+		}
 		TCB_struct * tcb = list_remove_by_condition(lista,
 				(void*) tiene_mismo_pid);
 		mandar_a_exit(tcb);
@@ -536,6 +535,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	printf(
 			"\nEsperando la activacion de una CPU para enviar a ejecutar un hilo. \n");
 	sem_wait(&sem_CPU);
+	printf("Se activó una CPU!");
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	if (cpu == NULL ) {
 		printf("FALLO. NO SE ENCONTRO CPU\n");
@@ -543,6 +543,10 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	}
 	list_add(exec, tcb);
 	printf("\n\nQUANTUM: %d\n", QUANTUM);
+	if(tcb == NULL){
+		printf("EL TCB ES NULO!!!\n");
+		exit(-1);
+	}
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
@@ -550,6 +554,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	t_datosAEnviar * paquete = crear_paquete(ejecutar, mensaje,
 			sizeof(TCB_struct) + sizeof(int));
 	enviar_datos(cpu->socket_CPU, paquete);
+	cpu->bit_estado = ocupado;
 }
 
 /*El dispatcher se encarga tanto de las llamadas al sistema como de los procesos que estan en la cola de ready*/
