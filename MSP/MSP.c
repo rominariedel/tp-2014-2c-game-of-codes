@@ -202,7 +202,8 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
-		memoriaDisponible = tamanioMemoria;
+		//memoriaDisponible = tamanioMemoria;
+		memoriaDisponible = 100;
 		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
 
