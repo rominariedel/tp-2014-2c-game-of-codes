@@ -37,15 +37,16 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	printf("5 \n");
 	int status = procesarRespuesta(respuesta);
 	printf("6 \n");
-	char* proximaInstruccion = calloc(4, sizeof(char));
+	char* proximaInstruccion = malloc(4 /*, sizeof(char)*/);  //cambiar a calloc TODO
 	printf("7 \n");
+	printf("status = %d", status);
 	if(status == 0){
 		printf("8 \n");
 		memcpy(proximaInstruccion, respuesta -> datos, 4);
 	}else{
 		if(status <0){
 			abortar(ejecucion_erronea);
-			printf("9 \n");
+			printf("\n 9 \n");
 		}
 	}
 	printf("10 \n");
@@ -57,27 +58,42 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 }
 
 char* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){
+	printf("solicitar parametros 1 \n");
 	char * datos = malloc(3 * sizeof (int));
+	printf("solicitar parametros 2 \n");
 	memcpy(datos, &PIDactual, sizeof(int));
+	printf("solicitar parametros 3 \n");
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
+	printf("solicitar parametros 4 \n");
 	memcpy(datos + sizeof(int) + sizeof(int), &tamanioParametros, sizeof(int));
+	printf("solicitar parametros 5 \n");
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
+	printf("solicitar parametros 6 \n");
 	enviar_datos(socketMSP,paquete);
+	printf("solicitar parametros 7 \n");
 	free(datos);
+	printf("solicitar parametros 8 \n");
 	free(paquete);
+	printf("solicitar parametros 9 \n");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
-
+	printf("solicitar parametros 10 \n");
 	int status = procesarRespuesta(respuesta);
-
-	char* parametros = calloc(respuesta->tamanio, sizeof(char));
+	printf("solicitar parametros 11 \n");
+	printf("solicitar parametros status: %d \n", status);
+	printf("--------------------------------------------------------tamanio RESPUESTA : %d", respuesta->tamanio);
+	char* parametros = malloc(respuesta->tamanio/*, sizeof(char)*/); //TODO: cambiar a calloc
+	printf("solicitar parametros 12 \n");
 	if(status == 0){
+		printf("solicitar parametros 13 \n");
 		memcpy(parametros, respuesta -> datos, respuesta->tamanio);
 	}else{
-		devolverTCBactual(ejecucion_erronea);
+		printf("solicitar parametros 14 \n");
+		abortar(ejecucion_erronea);
 	}
-
+	printf("solicitar parametros 15 \n");
 	free(respuesta);
-
+	printf("solicitar parametros 16 \n");
+	printf("parametros %s", parametros);
 	return parametros;
 
 }
@@ -98,7 +114,7 @@ int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 	if(status == 0){
 		memcpy(dir_base, respuesta -> datos, sizeof(int));
 	}else{
-		memcpy(dir_base,&status, 1);
+		abortar(ejecucion_erronea);
 	}
 
 	free(respuesta);
@@ -145,32 +161,34 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 	errorOperacionesConMemoria = 0;
 	errorMemoria = 0;
 	estado = 0;
+
 	if(respuesta == NULL){
-		errorOperacionesConMemoria = -1;
-		errorMemoria = no_llego_respuesta;
+		//errorOperacionesConMemoria = -1;
+		//errorMemoria = no_llego_respuesta;
 		estado = -1;
 		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
+		abortar(ejecucion_erronea);
 		return estado;
 	}else{
 	if(respuesta->codigo_operacion < 0){
+		log_info(LOGCPU, "PROCESAR RESPUESTA : %d", respuesta->codigo_operacion);
+		printf("PROCESAR RESPUESTA: %d", respuesta->codigo_operacion);
 	switch(respuesta->codigo_operacion){
 		case error_segmentationFault:
-			devolverTCBactual(error_segmentationFault);
-			errorOperacionesConMemoria = -1;
-			errorMemoria = error_segmentationFault;
+			//errorOperacionesConMemoria = -1;
+			//errorMemoria = error_segmentationFault;
 			estado = -1;
 			log_error(LOGCPU, "ERROR MSP: Segmentation Fault");
+			abortar(ejecucion_erronea);
 			break;
 		case error_memoriaLlena:
-			devolverTCBactual(error_memoriaLlena);
-			errorOperacionesConMemoria = -1;
-			errorMemoria = error_memoriaLlena;
+			//errorOperacionesConMemoria = -1;
+			//errorMemoria = error_memoriaLlena;
 			estado = -1;
 			log_error(LOGCPU, "ERROR MSP: Memoria Llena");
+			abortar(ejecucion_erronea);
 			break;
 	}
-		estado = -1;
-		errorMemoria = -5; //POR DECIR ALGUN NRO NEGATIVO
 		log_error(LOGCPU, "ERROR MSP: Me devolvio algo negativo, no es ni Segmentation Fault, ni Memoria Llena");
 		return estado;
 	}}

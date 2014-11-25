@@ -70,6 +70,7 @@ int RETARDO;
 t_log* LOGCPU;
 
 int finalizarEjecucion;
+int ejecutoInterrupcion;
 
 //int errorOperacionesConMemoria;
 //int errorMemoria;

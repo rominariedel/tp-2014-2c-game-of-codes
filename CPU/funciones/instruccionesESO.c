@@ -116,9 +116,12 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 }
 
 void INTE(tparam_inte* parametrosInte){
-	punteroInstruccionActual += 8;
-	XXXX();
+	//abortar(interrupcion);
+	printf("PARAMETROS INTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE: %d", parametrosInte->direccion);
 	KERNEL_ejecutarRutinaKernel(interrupcion ,parametrosInte->direccion);
+	ejecutoInterrupcion = 1;
+	finalizarEjecucion = -1;
+
 
 	/*
 	cuando el proceso CPU notifique al Kernel que un hilo desea ejecutar una llamada al

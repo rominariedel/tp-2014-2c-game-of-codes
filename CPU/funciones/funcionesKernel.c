@@ -24,11 +24,14 @@ void KERNEL_ejecutarRutinaKernel(int codOperacion, int direccion){
 
 int KERNEL_IngreseNumeroPorConsola(int PID){
 	//codOperacion = solicitarNumero
-	char codigo = 'N';
-	char * datos = malloc(sizeof (char));
+	int codigo = atoi("N");
+	char * datos = malloc(sizeof(int) * 3);
+	int tamanio = 4;
+	memcpy(datos, &tamanio, sizeof(int));
+	memcpy(datos + sizeof(int)*2, &PIDactual, sizeof(int));
+	memcpy(datos + sizeof(int)*3, &codigo, sizeof(int));
+	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(int) * 3);
 
-	memcpy(datos, &codigo, sizeof(char));
-	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(char));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	t_datosAEnviar* respuesta = recibir_datos(socketKernel);
@@ -41,10 +44,12 @@ int KERNEL_IngreseNumeroPorConsola(int PID){
 
 t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 	//codOperacion = solicitarCadena
-	char codigo = 'C';
+	int codigo = atoi("C");
 	char * datos = malloc(sizeof(char) + sizeof (int));
-	memcpy(datos, &codigo, sizeof(char));
-	memcpy(datos + sizeof(char), &tamanioMaxCadena, sizeof(int));
+	memcpy(datos, &tamanioMaxCadena, sizeof(int));
+	memcpy(datos + sizeof(int),&PIDactual, sizeof(int));
+	memcpy(datos + (2*sizeof(int)), &codigo, sizeof(int));
+
 	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(int) + sizeof(char));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
@@ -53,11 +58,11 @@ t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 }
 
 void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
-	char codigo = 'N';
-	char * datos = malloc(sizeof (int) + sizeof(char));
-	memcpy(datos, &codigo, sizeof(char));
-	memcpy(datos + sizeof(char), &nro, sizeof(int));
-	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos, sizeof(int) + sizeof(char));
+	char * toia = string_itoa(nro);
+	char * datos = malloc(sizeof (int) + string_length(toia));
+	memcpy(datos, &PIDactual, sizeof(int));
+	memcpy(datos + sizeof(int), toia, string_length(toia));
+	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(toia) + sizeof(int));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	free(paquete);
@@ -65,11 +70,10 @@ void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
 
 
 void KERNEL_MostrarCadenaPorConsola(int PID, char* cadena){
-	char codigo = 'C';
-	char * datos = malloc(string_length(cadena) + sizeof(char));
-	memcpy(datos, &codigo, sizeof(char));
-	memcpy(datos + sizeof(char), &cadena, string_length(cadena));
-	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos, string_length(cadena) + sizeof(char));
+	char * datos = malloc(sizeof (int) + string_length(cadena));
+	memcpy(datos, &PIDactual, sizeof(int));
+	memcpy(datos + sizeof(int), cadena, string_length(cadena));
+	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(cadena) + sizeof(int));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	free(paquete);
