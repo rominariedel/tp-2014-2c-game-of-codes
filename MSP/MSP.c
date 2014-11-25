@@ -530,7 +530,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
 
-	char* memoriaSolicitada = malloc(sizeof(char) * tamanio);
+	char* memoriaSolicitada = malloc((sizeof(char) * tamanio)+1);
 	int tamanioLeido;
 
 	bool procesoPorPid(T_PROCESO* proceso) {
@@ -615,6 +615,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 					tamanio = tamanio - (tamanioPag - inicio);
 					tamanioLeido = (tamanioPag - inicio);
+					memoriaSolicitada[tamanioLeido]='\0';
 
 					log_debug(logger, "La memoria leida es %s",
 							memoriaSolicitada);
@@ -640,6 +641,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 
 						tamanioLeido += tamanioPag;
 						tamanio = tamanio - tamanioPag;
+						memoriaSolicitada[tamanioLeido]='\0';
 
 						pag = list_find(seg->paginas, (void*) paginaSiguiente);
 						contadorPagina++;
@@ -660,12 +662,15 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 						}
 						memcpy(memoriaSolicitada + tamanioLeido, pag->data, tamanio);
 						leoMemoria(pag);
+						tamanioLeido = tamanioLeido + tamanio;
+						memoriaSolicitada[tamanioLeido]='\0';
 					}
 				} else {
 					log_debug(logger, "El tamanio es menor que el tamanioPag");
 					log_debug(logger, "Lee memoria directamente");
 					memcpy(memoriaSolicitada, pag->data + inicio, final - inicio);
 					leoMemoria(pag);
+					memoriaSolicitada[final-inicio]='\0';
 				}
 
 			} else {
@@ -717,8 +722,13 @@ void leoMemoria(T_PAGINA* pag) {
 uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		int tamanio) {
 	log_debug(logger, "Entro a la funcion escribirMemoria");
+	log_debug(logger,"parametros %d %d %d", PID, direccion, tamanio);
+	if(bytesAEscribir == NULL){
+		log_debug(logger,"es null");
+	}
+
 	bytesAEscribir[tamanio] = '\0';
-	log_debug(logger, "Tamaño de los bytes a escribir %d", string_length(bytesAEscribir));
+	//log_debug(logger, "Tamaño de los bytes a escribir %d", string_length(bytesAEscribir));
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
 	log_debug(logger, "Sid %d", direccionLogica.SID);
 	log_debug(logger, "desplazamiento %d", direccionLogica.desplazamiento);
@@ -891,6 +901,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	log_info(logger, "Se ha escrito en memoria exitósamente");
 
 	free(aux);
+
 	return operacion_exitosa;
 }
 
@@ -1272,9 +1283,6 @@ void interpretarOperacion(int* socket) {
 
 			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
-			if (resultado == NULL){
-				//todo.
-			}
 			paquete = crear_paquete(0, (void*) resultado, sizeof(int));
 
 			enviar_datos(*socket, paquete);
@@ -1288,23 +1296,24 @@ void interpretarOperacion(int* socket) {
 
 			memcpy(&pid, datos->datos, sizeof(int));
 			log_debug(logger,"El pid es: %d", pid);
+
 			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
 			log_debug(logger,"La direccion es: %d", direccion);
 
-			bytesAEscribir = malloc(datos->tamanio - sizeof(int)*3);
+			bytesAEscribir = malloc((datos->tamanio - sizeof(int)*3)+1);
 			log_debug(logger,"tamanio - sizeof(int) %d",datos->tamanio - sizeof(int)*3 );
 			memcpy(bytesAEscribir,
 					datos->datos + sizeof(int) + sizeof(int),
 					datos->tamanio - (3 * sizeof(int)));
+
 			log_debug(logger,"bytes a escribir %s", bytesAEscribir);
-			log_debug(logger,"Los bytes a escribir son: %d", string_length(bytesAEscribir+300));
 
 			memcpy(&tamanio,
 					datos->datos + datos->tamanio - sizeof(int), sizeof(int));
 			log_debug(logger,"El tamanio es: %d", tamanio);
 			bytesAEscribir[tamanio] = '\0';
 
-			//log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, baseSegmento);
+			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, tamanio);
 
 			respuesta = escribirMemoria(pid, direccion, bytesAEscribir,
 					tamanio);
