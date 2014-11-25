@@ -40,8 +40,8 @@ endif
 all: MSP
 
 dependents:
-	-cd /home/utnso/workspace/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
-	-cd /home/utnso/workspace/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) all
+	-cd /home/utnso/workspace/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) clean all
+	-cd /home/utnso/workspace/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) clean all
 
 # Tool invocations
 MSP: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so /home/utnso/workspace/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so

@@ -20,7 +20,7 @@ enum mensajes {
 	escribir_memoria = 2,
 
 	operacion_exitosa = 1,
-	error = -1,
+	error_general = -1,
 	error_segmentation_fault = -2,
 	error_memoria_llena = -3,
 };
