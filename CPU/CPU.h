@@ -92,6 +92,7 @@ int* devolverRegistro(char registro);
 int interpretarYEjecutarInstruccion(char* instruccion);
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
 char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
+void abortar(int codOperacion);
 
 
 enum operaciones{
