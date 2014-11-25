@@ -13,6 +13,10 @@
 
 void KERNEL_ejecutarRutinaKernel(int codOperacion, int direccion){
 	char* datos = malloc(sizeof(t_TCB) + sizeof(int));
+	log_info(LOGCPU, "\n ESTOY EN INTERRUPCION \n");
+	log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
+	punteroInstruccionActual += 8;
+	log_info(LOGCPU, "Puntero Instruccion actual: %d", punteroInstruccionActual);
 	actualizarTCB();
 	memcpy(datos, TCBactual,sizeof(t_TCB));
 	memcpy(datos + sizeof(t_TCB), &direccion, sizeof(int));
@@ -28,8 +32,8 @@ int KERNEL_IngreseNumeroPorConsola(int PID){
 	char * datos = malloc(sizeof(int) * 3);
 	int tamanio = 4;
 	memcpy(datos, &tamanio, sizeof(int));
-	memcpy(datos + sizeof(int)*2, &PIDactual, sizeof(int));
-	memcpy(datos + sizeof(int)*3, &codigo, sizeof(int));
+	memcpy(datos + sizeof(int), &PIDactual, sizeof(int));
+	memcpy(datos + sizeof(int)*2, &codigo, sizeof(int));
 	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(int) * 3);
 
 	enviar_datos(socketKernel,paquete);
@@ -45,12 +49,12 @@ int KERNEL_IngreseNumeroPorConsola(int PID){
 t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 	//codOperacion = solicitarCadena
 	int codigo = atoi("C");
-	char * datos = malloc(sizeof(char) + sizeof (int));
+	char * datos = malloc(3* sizeof (int));
 	memcpy(datos, &tamanioMaxCadena, sizeof(int));
 	memcpy(datos + sizeof(int),&PIDactual, sizeof(int));
 	memcpy(datos + (2*sizeof(int)), &codigo, sizeof(int));
 
-	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(int) + sizeof(char));
+	t_datosAEnviar* paquete = crear_paquete(entrada_estandar, (void*) datos, sizeof(int) * 3);
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	t_datosAEnviar* respuesta = recibir_datos(socketKernel);

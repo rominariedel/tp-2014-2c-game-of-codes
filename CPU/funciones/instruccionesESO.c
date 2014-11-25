@@ -177,7 +177,6 @@ void TAKE(tparam_take* parametrosTake){
 
 void XXXX(){
 	//Finaliza la ejecucion
-	devolverTCBactual(finaliza_ejecucion);
 	finalizarEjecucion = -1;
 
 }

@@ -17,7 +17,7 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 }
 
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
-	int tamanio = 4;
+	int tamanio = 5;
 	log_info(LOGCPU, "  Envio paquete a MSP  ");
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
@@ -25,74 +25,50 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	memcpy(datos + sizeof(int) + sizeof(int), &tamanio , sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
 
-	printf("1 \n");
-
 	enviar_datos(socketMSP,paquete);
-	printf("2 \n");
 	free(datos);
-	printf("3 \n");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
-	printf("4 \n");
+
 	log_info(LOGCPU, "  Recibo Respuesta MSP  ");
-	printf("5 \n");
 	int status = procesarRespuesta(respuesta);
-	printf("6 \n");
-	char* proximaInstruccion = malloc(4 /*, sizeof(char)*/);  //cambiar a calloc TODO
-	printf("7 \n");
+
+	char* proximaInstruccion = malloc(5 /*, sizeof(char)*/);  //cambiar a calloc TODO
+	proximaInstruccion[4] = '\0';
+
 	printf("status = %d", status);
 	if(status == 0){
-		printf("8 \n");
 		memcpy(proximaInstruccion, respuesta -> datos, 4);
-	}else{
-		if(status <0){
-			abortar(ejecucion_erronea);
-			printf("\n 9 \n");
-		}
 	}
-	printf("10 \n");
+
+
 	free(respuesta);
-	printf("11 \n");
-	printf("\n ME ESTA MANDANDO BIEN LA INSTRUCCION PROXIMA!!!!!!!!!!!! \n");
+	printf("\n ME ESTA MANDANDO BIEN LA INSTRUCCION PROXIMA!! \n");
 
 	return proximaInstruccion;
 }
 
-char* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){
-	printf("solicitar parametros 1 \n");
+char* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){1
+	int tamanio = tamanioParametros + 1;
 	char * datos = malloc(3 * sizeof (int));
-	printf("solicitar parametros 2 \n");
 	memcpy(datos, &PIDactual, sizeof(int));
-	printf("solicitar parametros 3 \n");
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
-	printf("solicitar parametros 4 \n");
-	memcpy(datos + sizeof(int) + sizeof(int), &tamanioParametros, sizeof(int));
-	printf("solicitar parametros 5 \n");
+	memcpy(datos + sizeof(int) + sizeof(int), &tamanio, sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
-	printf("solicitar parametros 6 \n");
 	enviar_datos(socketMSP,paquete);
-	printf("solicitar parametros 7 \n");
 	free(datos);
-	printf("solicitar parametros 8 \n");
 	free(paquete);
-	printf("solicitar parametros 9 \n");
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
-	printf("solicitar parametros 10 \n");
 	int status = procesarRespuesta(respuesta);
-	printf("solicitar parametros 11 \n");
+
 	printf("solicitar parametros status: %d \n", status);
 	printf("--------------------------------------------------------tamanio RESPUESTA : %d", respuesta->tamanio);
 	char* parametros = malloc(respuesta->tamanio/*, sizeof(char)*/); //TODO: cambiar a calloc
-	printf("solicitar parametros 12 \n");
 	if(status == 0){
-		printf("solicitar parametros 13 \n");
 		memcpy(parametros, respuesta -> datos, respuesta->tamanio);
 	}else{
-		printf("solicitar parametros 14 \n");
 		abortar(ejecucion_erronea);
 	}
-	printf("solicitar parametros 15 \n");
 	free(respuesta);
-	printf("solicitar parametros 16 \n");
 	printf("parametros %s", parametros);
 	return parametros;
 
