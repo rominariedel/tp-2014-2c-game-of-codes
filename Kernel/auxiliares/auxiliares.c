@@ -102,9 +102,10 @@ TCB_struct * sacar_de_ready(int prioridad){
 }
 
 void liberar_cpu(int socket){
+	//TODO: SACAR EL PROCESO DE EXEC
 	struct_CPU * cpu = obtener_CPUAsociada(socket);
 	cpu->bit_estado = libre;
-	sem_post(&sem_CPU); //TODO: PREGUNTAR SI CON TODOS LOS SERVICIOS EXPUESTOS LA CPU SE LIBERA
+	sem_post(&sem_CPU);
 }
 
 void planificador() {
@@ -152,44 +153,45 @@ void planificador() {
 
 				switch (codigo_operacion) {
 
-				case finaliza_quantum: //SE LIBERA
+				case finaliza_quantum:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					liberar_cpu(n_descriptor);
 					finalizo_quantum(tcb);
-					liberar_cpu(n_descriptor);
 					break;
-				case finaliza_ejecucion: //SE LIBERA
+				case finaliza_ejecucion:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					liberar_cpu(n_descriptor);
 					finalizo_ejecucion(tcb);
-					liberar_cpu(n_descriptor);
 					break;
-				case ejecucion_erronea: //SE LIBERA
+				case ejecucion_erronea:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					abortar(tcb);
 					liberar_cpu(n_descriptor);
+					abortar(tcb);
 					break;
-				case interrupcion: //SE LIBERA
+				case interrupcion:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&dirSysCall, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					interrumpir(tcb, dirSysCall);
 					liberar_cpu(n_descriptor);
+					printf("LLEGO LA DIRECCIONNANANANANANANANANANA: %d\n", dirSysCall);
+					interrumpir(tcb, dirSysCall);
 					break;
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					crear_hilo(*tcb, n_descriptor);
-					break; //NO SE LIBERA
+					break;
 				case planificar_nuevo_hilo: //Aca llega el TCB listo para planificar con su stack inicializado
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					planificar_hilo_creado(tcb);
-					break; //NO SE LIBERA
+					break;
 				case entrada_estandar:
-					id_tipo = malloc(datos->tamanio);
+					id_tipo = malloc(sizeof(int));
 					memcpy(&tamanio, datos->datos, sizeof(int));
 					memcpy(&pid, datos->datos + sizeof(int), sizeof(int));
-					memcpy(id_tipo, datos->datos + (2*sizeof(int)), datos->tamanio - (2 * sizeof(int)));
+					memcpy(id_tipo, datos->datos + (2*sizeof(int)), sizeof(int));
 					producir_entrada_estandar(pid, id_tipo, n_descriptor,
 							tamanio);
-					//NO SE LIBERA
+
 					break;
 				case salida_estandar:
 					cadena = malloc(datos->tamanio - sizeof(int));
@@ -197,32 +199,31 @@ void planificador() {
 					memcpy(cadena, datos->datos + sizeof(int),
 							datos->tamanio - sizeof(int));
 					producir_salida_estandar(pid, cadena);
-					liberar_cpu(n_descriptor);
-					//NO SE LIBERA
+
 					break;
 				case join:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
 					realizar_join(tcb, tid_a_esperar);
-					//NO SE LIBERA
+
 					break;
 				case bloquear:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					realizar_bloqueo(tcb, id_recurso);
 					liberar_cpu(n_descriptor);
-					//NO SE LIBERA
+					realizar_bloqueo(tcb, id_recurso);
+
 					break;
 				case despertar:
 					memcpy(&id_recurso, datos->datos, sizeof(int));
 					realizar_desbloqueo(id_recurso);
-					//NO SE LIBERA
+
 					break;
 			}
 				free(datos);
-				//TODO: SACAR EL PROCESO DE EXEC
+
 			}
 			n_descriptor++;
 		}
@@ -261,13 +262,10 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 
 void producir_salida_estandar(int pid, char* cadena) {
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
-	t_datosAEnviar * datos = malloc(sizeof(t_datosAEnviar));
-	datos->codigo_operacion = imprimir_en_pantalla;
-	datos->tamanio = string_length(cadena);
-	datos->datos = (void*) cadena;
+	t_datosAEnviar * datos = crear_paquete(imprimir_en_pantalla, cadena, string_length(cadena));
 
 	enviar_datos(consola_asociada->socket_consola, datos);
-
+	free(datos->datos);
 	free(datos);
 }
 
@@ -352,8 +350,29 @@ void realizar_desbloqueo(int id_recurso){
 int chequear_proceso_abortado(TCB_struct * tcb){
 	struct_consola * consola = obtener_consolaAsociada(tcb->PID);
 	if(consola->termino_ejecucion){
-		queue_push(e_exit, tcb);
+		mandar_a_exit(tcb);
 		return -1;
 	}
 	return 0;
 }
+
+void mandar_a_exit(TCB_struct * tcb) {
+
+	sem_wait(&sem_exit);
+
+	//LIBERACION DE RECURSOS
+	int tamanio = 2 * sizeof(int);
+	void * datos = malloc(tamanio);
+	memcpy(datos, &tcb->PID, sizeof(int));
+	memcpy(datos + sizeof(int), &tcb->X, sizeof(int));
+
+	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos, tamanio);
+	enviar_datos(socket_MSP, paquete);
+	free(datos);
+	free(paquete);
+
+	queue_push(e_exit, tcb);
+
+	sem_post(&sem_exit);
+}
+
