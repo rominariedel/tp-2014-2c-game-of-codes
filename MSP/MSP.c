@@ -145,14 +145,15 @@ void interpretarComando(char* comando) {
 
 	log_debug(logger,"%s", operacion[1]);
 	if (operacion[1] != NULL) {
+		log_debug(logger,"tiene parametros");
 		parametros = string_split(operacion[1], ",");
-		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s, %s",
-				parametros[0], parametros[1], parametros[3], parametros[2]);
 	}
 
 	if (string_equals_ignore_case(operacion[0], "Crear_Segmento")) {
 		log_debug(logger, "Interpretó el comando de crear_segmento");
 		printf("Creando segmento...\n");
+		log_debug(logger, "Los parámetros para la operación son: %s, %s",
+						parametros[0], parametros[1]);
 		uint32_t baseSeg = crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
 		printf("%d", baseSeg);
 	}
@@ -160,12 +161,16 @@ void interpretarComando(char* comando) {
 	else if (string_equals_ignore_case(operacion[0], "Destruir_Segmento")) {
 		log_debug(logger, "Interpretó el comando de destruir_segmento");
 		printf("Destruyendo segmento...\n");
+		log_debug(logger, "Los parámetros para la operación son: %s, %s",
+						parametros[0], parametros[1]);
 		destruirSegmento(atoi(parametros[0]), (uint32_t) atoi(parametros[1]));
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Escribir_Memoria")) {
 		log_debug(logger, "Interpretó el comando de escribir_memoria");
 		printf("Iniciando proceso de escritura de memoria...\n");
+		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s, %s",
+						parametros[0], parametros[1], parametros[2], parametros[3]);
 		log_debug(logger,"se va a intentar escribir: %s", parametros[2]);
 		escribirMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
 				parametros[2], atoi(parametros[3]));
@@ -174,6 +179,8 @@ void interpretarComando(char* comando) {
 	else if (string_equals_ignore_case(operacion[0], "Leer_Memoria")) {
 		log_debug(logger, "Interpretó el comando de leer_memoria");
 		printf("Solicitando memoria...\n");
+		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s",
+						parametros[0], parametros[1], parametros[2]);
 		char* respuesta = solicitarMemoria(atoi(parametros[0]), atoi(parametros[1]),
 				atoi(parametros[2]));
 		printf("%s", respuesta);
@@ -182,6 +189,8 @@ void interpretarComando(char* comando) {
 
 	else if (string_equals_ignore_case(operacion[0], "Tabla_De_Paginas")) {
 		log_debug(logger, "Interpretó el comando de tabla_de_paginas");
+		log_debug(logger, "Los parámetros para la operación son: %s",
+						parametros[0]);
 		tablaPaginas(atoi(parametros[0]));
 	}
 
@@ -206,7 +215,7 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
-		tamanioMemoria = 512;
+		//tamanioMemoria = 512;
 		memoriaDisponible = tamanioMemoria;
 		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
@@ -1063,6 +1072,10 @@ int tablaSegmentos() {
 	int i;
 	int j;
 
+	if(cantidadProcesos == 0){
+		printf("\nNo hay procesos, por lo que no existen segmentos\n");
+	}
+
 	for (i = 0; cantidadProcesos > i; i++) {
 		T_PROCESO* proceso = list_get(procesos, i);
 		int cantidadSegmentos = list_size(proceso->segmentos);
@@ -1250,6 +1263,8 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
+			printf("\0");
+
 			break;
 
 		case destruir_segmento:
@@ -1265,6 +1280,8 @@ void interpretarOperacion(int* socket) {
 			paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
 			enviar_datos(*socket, paquete);
+
+			printf("\0");
 
 			break;
 
@@ -1288,6 +1305,8 @@ void interpretarOperacion(int* socket) {
 			enviar_datos(*socket, paquete);
 
 			free(resultado);
+
+			printf("\0");
 
 			break;
 
@@ -1321,6 +1340,8 @@ void interpretarOperacion(int* socket) {
 			paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
 			enviar_datos(*socket, paquete);
+
+			printf("\0");
 
 			free(bytesAEscribir);
 			break;
@@ -1423,6 +1444,7 @@ T_MARCO* seleccionarMarcoVictima() {
 		log_debug(logger,"el algoritmo a implementar es clock");
 		marcoVictima = algoritmoClock();
 	} else if (strcmp(sust_pags, "LRU") == 0) {
+		log_debug(logger,"el algoritmo a implementar es lru");
 		marcoVictima = algoritmoLRU();
 	}
 
@@ -1431,6 +1453,7 @@ T_MARCO* seleccionarMarcoVictima() {
 }
 
 T_MARCO* algoritmoLRU() {
+	log_debug(logger,"Entre a la funcion LRU");
 	T_MARCO* marcoVictima;
 
 	int marcoId;
