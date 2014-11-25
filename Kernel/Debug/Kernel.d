@@ -1,5 +1,4 @@
-auxiliares/auxiliares.d: ../auxiliares/auxiliares.c \
- ../auxiliares/variables_globales.h ../auxiliares/auxiliares.h \
+Kernel.d: ../Kernel.c ../auxiliares/auxiliares.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/config.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/dictionary.h \
  /home/utnso/git/tp-2014-2c-game-of-codes/commons/commons/collections/node.h \
@@ -12,9 +11,8 @@ auxiliares/auxiliares.d: ../auxiliares/auxiliares.c \
  ../auxiliares/../ansisop-panel/panel.h \
  ../auxiliares/../ansisop-panel/collections/list.h \
  ../auxiliares/../ansisop-panel/kernel.h \
- ../auxiliares/../ansisop-panel/panel.h
-
-../auxiliares/variables_globales.h:
+ ../auxiliares/../ansisop-panel/panel.h \
+ ../auxiliares/variables_globales.h ../auxiliares/auxiliares.h
 
 ../auxiliares/auxiliares.h:
 
@@ -43,3 +41,7 @@ auxiliares/auxiliares.d: ../auxiliares/auxiliares.c \
 ../auxiliares/../ansisop-panel/kernel.h:
 
 ../auxiliares/../ansisop-panel/panel.h:
+
+../auxiliares/variables_globales.h:
+
+../auxiliares/auxiliares.h:

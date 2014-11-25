@@ -79,7 +79,9 @@ void meter_en_ready(int prioridad, TCB_struct * tcb){
 		queue_push(ready.prioridad_0, tcb);
 		break;
 	case 1:
+		printf("Se puso un elemento en la cola de ready prioridad 1!!!");
 		queue_push(ready.prioridad_1, tcb);
+		printf("cantidad elementos ready %d\n",queue_size(ready.prioridad_1));
 		break;
 	}
 	sem_post(&sem_READY);
@@ -87,6 +89,7 @@ void meter_en_ready(int prioridad, TCB_struct * tcb){
 }
 
 TCB_struct * sacar_de_ready(int prioridad){
+	printf("SE SOLICITO SACAR UN ELEMENTO DE READY!!!!\n");
 	sem_wait(&sem_READY);
 	TCB_struct * tcb = NULL;
 	switch(prioridad){
@@ -95,6 +98,7 @@ TCB_struct * sacar_de_ready(int prioridad){
 		break;
 	case 1:
 		tcb = queue_pop(ready.prioridad_1);
+		printf("Se saco un elemento prioridad 1 :(\n");
 		break;
 	}
 	sem_post(&sem_READY);
@@ -365,7 +369,7 @@ void mandar_a_exit(TCB_struct * tcb) {
 	void * datos = malloc(tamanio);
 	memcpy(datos, &tcb->PID, sizeof(int));
 	memcpy(datos + sizeof(int), &tcb->X, sizeof(int));
-
+	printf("Se va a solicitar destruir otro segmento \n");
 	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos, tamanio);
 	enviar_datos(socket_MSP, paquete);
 	free(datos);

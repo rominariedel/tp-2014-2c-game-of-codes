@@ -58,7 +58,7 @@ void obtenerDatosConfig(char**);
 void sacar_de_ejecucion(TCB_struct *);
 int solicitar_segmento(TCB_struct * , int);
 void iniciar_semaforos();
-void enviar_a_ejecucion(TCB_struct *);
+void enviar_a_ejecucion(TCB_struct *, bool);
 void dispatcher();
 void copiarRegistros(int registro1[5], int registro2[5]);
 void handshake_MSP(int socketMSP);

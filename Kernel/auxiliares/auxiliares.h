@@ -48,6 +48,7 @@ typedef struct consola {
 	int cantidad_hilos;
 	int TID_padre;
 	bool termino_ejecucion;
+	int X;
 } struct_consola;
 
 typedef struct colas {
