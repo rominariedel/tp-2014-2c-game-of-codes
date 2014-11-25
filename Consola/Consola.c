@@ -92,8 +92,10 @@ int main(int argc, char ** argv) {
 			break;
 		case terminar_conexion:
 			free(paquete);
-			return EXIT_FAILURE;
-			break;
+			printf("SE TERMINO LA CONEXION! \n");
+			void * datos = crear_paquete(0, NULL, 0);
+			enviar_datos(kernelSocket,datos);
+			return EXIT_SUCCESS;
 		}
 		free(paquete);
 	}
