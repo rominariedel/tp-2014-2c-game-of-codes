@@ -52,7 +52,6 @@ void obtenerDatosConfig(char ** argv) {
 	SYSCALLS = config_get_string_value(configuracion, "SYSCALLS");
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 	char * PANEL = config_get_string_value(configuracion, "PANEL");
-	printf("LA RUTA PARA EL PANEL ES %s\n", PANEL);
 	inicializar_panel(1, PANEL);
 }
 
@@ -101,7 +100,7 @@ void loader() {
 					consola_conectada->TID_padre = nuevoTCB->TID;
 					printf("ESTOY SOLICITANDO SEGMENTO \n");
 					int segmento_codigo = solicitar_segmento(nuevoTCB,
-							datos->codigo_operacion);
+							datos->tamanio);
 					printf("ME MANDO UNA BASE %d\n", segmento_codigo);
 					if (segmento_codigo < 0) {
 						exit(0);
@@ -280,10 +279,10 @@ void boot() {
 
 void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	queue_push(SYS_CALL, tcb);
-	struct_bloqueado tcb_bloqueado;
-	tcb_bloqueado.id_recurso = dirSyscall;
-	tcb_bloqueado.tcb = *tcb;
-	list_add(block.prioridad_1, &tcb_bloqueado);
+	struct_bloqueado * tcb_bloqueado = malloc(sizeof(struct_bloqueado));
+	tcb_bloqueado->id_recurso = dirSyscall;
+	tcb_bloqueado->tcb = *tcb;
+	list_add(block.prioridad_1, tcb_bloqueado);
 	sem_post(&sem_procesoListo);
 }
 
@@ -392,13 +391,18 @@ void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 }
 
 void finalizo_quantum(TCB_struct* tcb) {
-	sacar_de_ejecucion(tcb);
+
+	bool es_TCB(TCB_struct tcb_comparar) {
+		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
+	}
 	if (chequear_proceso_abortado(tcb) < 0) {
 		//EL PADRE DE ESE PROCESO TERMINO
 		exit(0);
 	}
+	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
+	free(tcb_exec);
+	printf("Se saco el tcb de la cola de ejecucion\n");
 	meter_en_ready(1, tcb);
-	sem_post(&sem_procesoListo);
 
 }
 
@@ -441,25 +445,6 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 
 }
 
-void mandar_a_exit(TCB_struct * tcb) {
-
-	sem_wait(&sem_exit);
-
-	//LIBERACION DE RECURSOS
-	int tamanio = 2 * sizeof(int);
-	void * datos = malloc(tamanio);
-	memcpy(datos, &tcb->PID, sizeof(int));
-	memcpy(datos + sizeof(int), &tcb->X, sizeof(int));
-
-	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos, tamanio);
-	enviar_datos(socket_MSP, paquete);
-	free(datos);
-	free(paquete);
-
-	queue_push(e_exit, tcb);
-
-	sem_post(&sem_exit);
-}
 
 void matar_hijos(int PID) {
 	matar_hijos_en_lista(PID, ready.prioridad_1->elements, true);
@@ -520,7 +505,16 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 
 	if (tcb->KM == 1) {
 		queue_push(block.prioridad_0, tcb);
+		struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
+				tcb->TID);
+		tcb_bloqueado->tcb.registrosProgramacion[0] = tcb->registrosProgramacion[0];
+		tcb_bloqueado->tcb.registrosProgramacion[1] = tcb->registrosProgramacion[1];
+		tcb_bloqueado->tcb.registrosProgramacion[2] = tcb->registrosProgramacion[2];
+		tcb_bloqueado->tcb.registrosProgramacion[3] = tcb->registrosProgramacion[3];
+		tcb_bloqueado->tcb.registrosProgramacion[4] = tcb->registrosProgramacion[4];
+
 		sem_post(&sem_kmDisponible);
+		meter_en_ready(1, &tcb_bloqueado->tcb);
 	} else {
 		sacar_de_ejecucion(tcb);
 	}
@@ -565,7 +559,7 @@ void dispatcher() {
 		sem_wait(&sem_procesoListo);
 		printf("\nSe detectó un nuevo proceso!\n");
 		if (!queue_is_empty(SYS_CALL)) {
-			tcb_ejecutandoSysCall = (TCB_struct*) queue_peek(SYS_CALL);
+			tcb_ejecutandoSysCall = (TCB_struct*) queue_pop(SYS_CALL);
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
@@ -574,9 +568,10 @@ void dispatcher() {
 			copiarRegistros(tcb_km->registrosProgramacion,
 					tcb_ejecutandoSysCall->registrosProgramacion);
 			tcb_km->PID = tcb_ejecutandoSysCall->PID;
-
+			tcb_km->TID = tcb_ejecutandoSysCall->TID;
 			tcb_km->P = tcb_bloqueado->id_recurso;
-
+			printf("COPIO EL PUNTERO DE INSTRUCCION: %d\n", tcb_bloqueado->id_recurso);
+			free(tcb_ejecutandoSysCall);
 			enviar_a_ejecucion(tcb_km);
 
 		} else {

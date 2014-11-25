@@ -66,7 +66,7 @@ typedef struct bloqueado {
 } struct_bloqueado;
 
 /*TIPOS DE BLOQUEADOS: manejo
- * INTERRUMPIDOS POR EJECUTAR SYSCALLS -> BLOCK.prioridad_1
+ * INTERRUMPIDOS POR EJECUTAR SYSCALLS -> BLOCK.prioridad_1 && SYSCALLS
  * ESPERANDO UN RECURSO -> dictionary >> key=recurso >> t_queue *
  * ESPERANDO A OTRO HILO (EJECUTO UN JOIN) -> hilos_join
  * */
@@ -118,6 +118,7 @@ void realizar_bloqueo(TCB_struct *, int);
 void realizar_desbloqueo(int);
 int chequear_proceso_abortado(TCB_struct *);
 struct_CPU * obtener_CPUAsociada(int socket_cpu);
+void mandar_a_exit(TCB_struct*);
 
 enum mensajes {
 
