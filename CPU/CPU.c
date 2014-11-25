@@ -153,13 +153,12 @@ int main(int cantArgs, char** args){
 
 			printf("\n -------------------------MAIN 11 \n " );
 
-/*
 			log_info(LOGCPU, "  Registro A : %d  ", A);
 			log_info(LOGCPU, "  Registro B : %d  ", B);
 			log_info(LOGCPU, "  Registro C : %d  ", C);
 			log_info(LOGCPU, "  Registro D : %d  ", D);
 			log_info(LOGCPU, "  Registro E : %d  ", E);
-*/
+
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 
 			actualizarRegistrosTCB();
@@ -652,7 +651,10 @@ int* devolverRegistro(char registro){
 	return 0;
 }
 
-
+void abortar(int codigoOperacion){
+	devolverTCBactual(codigoOperacion);
+	finalizarEjecucion = -1;
+}
 
 
 
