@@ -570,6 +570,11 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					sem_post(&mutex_procesos);
 					return (char*) error_segmentation_fault;
 				}
+				log_debug(logger, "tamanioPag * pag.pagID = %d",(tamanioPag * (pag->paginaID)));
+				log_debug(logger, "Dire.desplazamiento = %d",(direccionLogica.desplazamiento));
+				log_debug(logger, "tamanio que se suma al desplazamiento = %d",(tamanio));
+				log_debug(logger, "Tamano de este segmento = %d",(seg->tamanio));
+
 				if ((tamanioPag * (pag->paginaID)
 						+ direccionLogica.desplazamiento + tamanio)
 						> seg->tamanio) {
@@ -1265,6 +1270,9 @@ void interpretarOperacion(int* socket) {
 
 			char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
+			if (resultado == NULL){
+				//todo.
+			}
 			paquete = crear_paquete(0, (void*) resultado, sizeof(int));
 
 			enviar_datos(*socket, paquete);
