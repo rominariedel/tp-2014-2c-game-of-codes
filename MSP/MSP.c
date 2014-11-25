@@ -153,7 +153,8 @@ void interpretarComando(char* comando) {
 	if (string_equals_ignore_case(operacion[0], "Crear_Segmento")) {
 		log_debug(logger, "Interpretó el comando de crear_segmento");
 		printf("Creando segmento...\n");
-		crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
+		uint32_t baseSeg = crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
+		printf("%d", baseSeg);
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Destruir_Segmento")) {
@@ -165,7 +166,7 @@ void interpretarComando(char* comando) {
 	else if (string_equals_ignore_case(operacion[0], "Escribir_Memoria")) {
 		log_debug(logger, "Interpretó el comando de escribir_memoria");
 		printf("Iniciando proceso de escritura de memoria...\n");
-		printf("Comparo tamaño: %d %d", atoi(parametros[3]),string_length(parametros[2]));
+		log_debug(logger,"se va a intentar escribir: %s", parametros[2]);
 		escribirMemoria(atoi(parametros[0]), (uint32_t) atoi(parametros[1]),
 				parametros[2], atoi(parametros[3]));
 	}
@@ -205,8 +206,8 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
+		tamanioMemoria = 1024;
 		memoriaDisponible = tamanioMemoria;
-		//memoriaDisponible = 100;
 		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
 	}
 
@@ -385,7 +386,12 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 		paginaVacia->contadorLRU = 0;
 		paginaVacia->bitReferencia = 0;
 
-		paginaVacia->data = calloc(256, sizeof(char));
+		//paginaVacia->data = calloc(256, sizeof(char));
+		paginaVacia->data = malloc(tamanioPag);
+		int i;
+		for(i=0; i < tamanioPag; i++) {
+			paginaVacia->data[i] = '\0';
+		}
 
 		//agrego la pagina a la lista de paginas
 		list_add(paginas, paginaVacia);
@@ -596,7 +602,10 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 				if (final > tamanioPag) {
 					log_debug(logger, "El final es mayor que el tamanioPag");
 
-					memcpy(memoriaSolicitada, pag->data + inicio, tamanioPag - inicio);
+					log_debug(logger,"Va a copiar %d bytes", (tamanioPag - inicio));
+					memcpy(memoriaSolicitada, (pag->data + inicio), (tamanioPag - inicio));
+					log_debug(logger,"tamanio memoriaSolicitada: %d", string_length(memoriaSolicitada));
+
 					leoMemoria(pag); //aviso que lei para que settea atributos de algoritmos a las paginas
 
 					tamanio = tamanio - (tamanioPag - inicio);
@@ -678,11 +687,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	log_info(logger, "El contenido de la página solicitada es: %s",
 			memoriaSolicitada);
 
-
-	FILE* archivo = txt_open_for_append("config.txt");
-	txt_write_in_file(archivo,memoriaSolicitada);
-	return memoriaSolicitada; //Este return es provisorio, capaz memoriaSolicitada haya que usarlo como variable global
-	//return memoriaSolicitada; //Esto debería devolver un int, qué se hace con memoriaSolicitada?
+	return memoriaSolicitada;
 }
 
 void leoMemoria(T_PAGINA* pag) {
@@ -707,6 +712,7 @@ void leoMemoria(T_PAGINA* pag) {
 uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		int tamanio) {
 	log_debug(logger, "Entro a la funcion escribirMemoria");
+	bytesAEscribir[tamanio] = '\0';
 	log_debug(logger, "Tamaño de los bytes a escribir %d", string_length(bytesAEscribir));
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
 	log_debug(logger, "Sid %d", direccionLogica.SID);
@@ -715,7 +721,6 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
 	log_debug(logger, "El contador de página es: %d", contadorPagina);
-
 	char* aux = malloc(tamanio);
 
 	bool procesoPorPid(T_PROCESO* proceso) {
@@ -790,17 +795,18 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 				int inicio = direccionLogica.desplazamiento;
 				log_debug(logger,"El inicio para escribir es: %d", inicio);
-				int final = direccionLogica.desplazamiento + tamanio;
+				int final = (direccionLogica.desplazamiento + tamanio);
 				log_debug(logger,"El final para escribir es: %d",final);
 
 				if (final > tamanioPag) {
-					log_debug(logger,"EL final es mayor que el tamanioPag");
+					log_debug(logger,"El final es mayor que el tamanioPag");
 					escriboMemoria(pag, inicio, tamanioPag, bytesAEscribir);
 
 					tamanio = tamanio - (tamanioPag - inicio);
 					memcpy(aux,bytesAEscribir + (tamanioPag-inicio), tamanio);
+					log_debug(logger, "tamanioPag - inicio: %d", (tamanioPag - inicio));
+					log_debug(logger, "tamanio a escribir_ %d", tamanio);
 					memcpy(bytesAEscribir, aux, tamanio);
-					bytesAEscribir[tamanio]= '\0';
 
 					log_debug(logger,"Quedan escribir: %d bytes", tamanio);
 
@@ -827,7 +833,6 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 						tamanio = tamanio - tamanioPag;
 						memcpy(aux,bytesAEscribir + (tamanioPag), tamanio);
 						memcpy(bytesAEscribir, aux, tamanio);
-						bytesAEscribir[tamanio]= '\0';
 
 						log_debug(logger,"El tamanio a escribir es %d bytes", tamanio);
 
@@ -887,10 +892,21 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 void escriboMemoria(T_PAGINA* pag, int inicio, int final, char* bytesAEscribir) {
 	log_debug(logger,"Entre a escriboMemoria");
 
-	memcpy(pag->data + inicio,bytesAEscribir, final - inicio);
-	log_debug(logger,"%s", pag->data+(100));
-	log_debug(logger,"%s", pag->data+(210));
+	//log_debug(logger,"Primer byte de bytesAEscribir: %s", bytesAEscribir[0]);
+	//log_debug(logger,"256 byte bytesAEscribir: %s", bytesAEscribir[256]);
+	//log_debug(logger,"Ultimo byte de bytesAEscribir: %s", bytesAEscribir[278]);
 
+	int i;
+	int j = 0;
+	for(i = inicio; i<final;i++){
+		pag->data[i] = bytesAEscribir[j];
+		//log_debug(logger,"Escribo Caracter %c en Posicion %d", bytesAEscribir[j], j);
+		j++;
+	}
+
+	//memcpy((pag->data + inicio),bytesAEscribir, (final - inicio)); //TODO
+	log_debug(logger,"tamanio pag.data %d", string_length(pag->data));
+	log_debug(logger,"Se escribio: %s", pag->data);
 	sem_wait(&mutex_contadorLRU);
 	pag->bitReferencia = 1;
 	pag->contadorLRU = contadorLRU;
@@ -1038,6 +1054,7 @@ int tablaSegmentos() {
 		if (cantidadSegmentos == 0) {
 			printf("%c", '\n');
 			log_info(logger, "El proceso no tiene segmentos");
+			printf("El proceso no tiene segmentos");
 			sem_post(&mutex_procesos);
 			return operacion_exitosa;
 		}
