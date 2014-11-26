@@ -1,0 +1,13 @@
+#CORRER DESPUES DE SUDO SU
+
+cd ../so-commons-library/src
+make all
+make install
+
+cd ../../tp-2014-2c-game-of-codes/Sockets
+cp sockets.h /usr/include
+cd Debug
+make all
+cp libSockets.so /usr/lib
+
+cd ../../

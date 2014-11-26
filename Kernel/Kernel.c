@@ -458,7 +458,7 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 	}
 	mandar_a_exit(tcb);
 
-	if (consola_asociada->cantidad_hilos == 1) {
+	if (consola_asociada->cantidad_hilos == 0) {
 
 		int tamanio = 2 * sizeof(int);
 		void * datos = malloc(tamanio);
