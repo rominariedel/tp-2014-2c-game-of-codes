@@ -63,17 +63,17 @@ void liberar_recursos(struct_consola * consola_conectada) {
 		printf("Entre acaaaaa!\n");
 		matar_hijos(consola_conectada->PID);
 	}
-	if (consola_conectada->cantidad_hilos < 1) {
+	if (consola_conectada->cantidad_hilos == 0) {
 
 		int tamanio = 2 * sizeof(int);
 		void * datos = malloc(tamanio);
 		memcpy(datos, &consola_conectada->PID, sizeof(int));
-		memcpy(datos + sizeof(int), &consola_conectada->X, sizeof(int));
+		memcpy(datos + sizeof(int), &consola_conectada->M, sizeof(int));
 		t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos,
 				tamanio);
 		printf(
 				"Se va a solicitar que se destruya el codigo base %d proceso %d tamanio %d\n",
-				consola_conectada->X, consola_conectada->PID, tamanio);
+				consola_conectada->M, consola_conectada->PID, tamanio);
 		enviar_datos(socket_MSP, paquete);
 		printf("SE HA SOLICITADO!!!\n");
 		free(datos);
@@ -134,7 +134,7 @@ void loader() {
 					if (segmento_codigo < 0) {
 						exit(0);
 					}
-					consola_conectada->X = segmento_codigo;
+					consola_conectada->M = segmento_codigo;
 					int segmento_stack = solicitar_segmento(nuevoTCB,
 							TAMANIO_STACK);
 					if (segmento_stack < 0) {
@@ -463,12 +463,12 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		int tamanio = 2 * sizeof(int);
 		void * datos = malloc(tamanio);
 		memcpy(datos, &consola_asociada->PID, sizeof(int));
-		memcpy(datos + sizeof(int), &consola_asociada->X, sizeof(int));
+		memcpy(datos + sizeof(int), &consola_asociada->M, sizeof(int));
 		t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos,
 				tamanio);
 		printf(
 				"Se va a solicitar que se destruya el codigo base %d proceso %d tamanio %d\n",
-				consola_asociada->X, consola_asociada->PID, tamanio);
+				consola_asociada->M, consola_asociada->PID, tamanio);
 		enviar_datos(socket_MSP, paquete);
 		printf("SE HA SOLICITADO!!!\n");
 		free(datos);
@@ -483,7 +483,7 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		printf("DESCONECTE LA CONSOLA ASOCIADA\n");
 	}else if(waitear && !(consola_asociada->cantidad_hilos < 1)){
 
-	sem_post(&sem_CPU);
+		sem_post(&sem_CPU);
 	}
 
 
