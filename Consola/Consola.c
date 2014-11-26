@@ -18,6 +18,7 @@ enum mensajes {
 	codigo_consola = 25,
 	se_produjo_entrada = 26,
 	terminar_conexion = 27,
+	se_desconecto_cpu = 45,
 };
 
 char * extraer_data(char * path);
@@ -75,6 +76,7 @@ int main(int argc, char ** argv) {
 			printf("FALLO al recibir datos \n");
 			return EXIT_FAILURE;
 		}
+		void * datos;
 		char * datos_a_imprimir;
 		char* solicitud_ingreso;
 		switch (paquete->codigo_operacion) {
@@ -93,8 +95,15 @@ int main(int argc, char ** argv) {
 		case terminar_conexion:
 			free(paquete);
 			printf("SE TERMINO LA CONEXION! \n");
-			void * datos = crear_paquete(0, NULL, 0);
+			datos = crear_paquete(0, NULL, 0);
 			enviar_datos(kernelSocket,datos);
+			free(datos);
+			return EXIT_SUCCESS;
+		case se_desconecto_cpu:
+			printf("EXCEPCION: Se produjo una desconexión de la cpu que estaba ejecutando el proceso. Abortando.\n");
+			datos = crear_paquete(0, NULL, 0);
+			enviar_datos(kernelSocket,datos);
+			free(datos);
 			return EXIT_SUCCESS;
 		}
 		free(paquete);

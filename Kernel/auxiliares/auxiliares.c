@@ -106,10 +106,69 @@ TCB_struct * sacar_de_ready(int prioridad){
 }
 
 void liberar_cpu(int socket){
-	//TODO: SACAR EL PROCESO DE EXEC
 	struct_CPU * cpu = obtener_CPUAsociada(socket);
 	cpu->bit_estado = libre;
+
+	bool tiene_mismo_tid(TCB_struct * tcb){
+		return tcb->TID == cpu->TID;
+	}
+
+	list_remove_by_condition(exec, (void*)tiene_mismo_tid);
+	cpu->PID = -1;
+
 	sem_post(&sem_CPU);
+}
+
+TCB_struct * obtener_tcbEnEjecucion(int TID){
+	bool tiene_mismo_tid(TCB_struct * tcb){
+		return tcb->TID == TID;
+	}
+	return list_remove_by_condition(exec, (void*)tiene_mismo_tid);
+}
+
+
+void abortar(TCB_struct* tcb) {
+	sacar_de_ejecucion(tcb);
+	//LOGUEAR que tuvo que abortar el hilo
+}
+
+void desconecto_cpu(int socket){
+	//sem_wait(&sem_CPU); //TODO: ARREGLAR LA SINCRO ACA
+	struct_CPU * cpu = obtener_CPUAsociada(socket);
+	if(cpu == NULL){
+		printf("No se encontro la CPU\n");
+		exit(-1);
+	}
+	if(cpu->PID >= 0){
+
+		struct_consola * consola = obtener_consolaAsociada(cpu->PID);
+		TCB_struct * tcb = obtener_tcbEnEjecucion(cpu->TID);
+
+		if(tcb->KM){
+			void abortar_procesos(struct_consola * consola){
+				t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL, 0);
+				enviar_datos(consola->socket_consola, datos);
+				free(datos);
+			}
+			list_iterate(consola_list, (void*)abortar_procesos);
+		}else{
+			t_datosAEnviar * datos = crear_paquete(se_desconecto_cpu, NULL, 0);
+			enviar_datos(consola->socket_consola, datos);
+			free(datos);
+
+		}
+		struct_bloqueado * bloqueado = malloc(sizeof(struct_bloqueado));
+		bloqueado->tcb = *tcb;
+		bloqueado->id_recurso = -1;
+		list_add(block.prioridad_1, bloqueado);
+
+
+
+		//TODO: NOTIFICAR CONSOLA
+		//ABORTAR LA EJECUCION
+		//CONTEMPLAR SI ESTA EJECUTANDO TCB KM
+	}
+	free(cpu);
 }
 
 void planificador() {
@@ -140,6 +199,7 @@ void planificador() {
 
 				if(datos == NULL){
 					desconexion_cpu(n_descriptor);
+					desconecto_cpu(n_descriptor);
 					FD_CLR(n_descriptor, &CPU_set);
 					break;
 				}
@@ -374,6 +434,16 @@ void mandar_a_exit(TCB_struct * tcb) {
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
 	free(paquete);
+
+	struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
+
+	if(consola_asociada == NULL){
+		printf("LA CONSOLA ES NULA!!! Se solicito de PID %d y el tamaño de la lista es %d\n", tcb->PID, list_size(consola_list));
+		exit(-1);
+	}
+
+	consola_asociada->cantidad_hilos--;
+
 
 	queue_push(e_exit, tcb);
 
