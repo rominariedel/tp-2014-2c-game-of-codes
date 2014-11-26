@@ -467,7 +467,7 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 			log_error(logger,
 					"El segmento no ha sido destruido porque es inexistente");
 			sem_post(&mutex_procesos);
-			return error_general;
+			return operacion_exitosa;
 		}
 	} else {
 		log_error(logger,
@@ -478,6 +478,7 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 	}
 
 	sem_post(&mutex_procesos);
+
 	log_info(logger, "El segmento ha sido detruido exitósamente");
 	return operacion_exitosa;
 }
@@ -1244,7 +1245,7 @@ void interpretarOperacion(int* socket) {
 	uint32_t respuesta;
 	t_datosAEnviar* paquete;
 
-	while (1) { //todo va con while?????
+	while (1) {
 
 		datos = recibir_datos(*socket);
 
