@@ -11,6 +11,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include "stdint.h"
 #include <stdlib.h>
 #include <commons/string.h>
 #include <commons/log.h>
@@ -71,6 +72,7 @@ t_log* LOGCPU;
 
 int finalizarEjecucion;
 int ejecutoInterrupcion;
+int aumentoPuntero;
 
 //int errorOperacionesConMemoria;
 //int errorMemoria;
@@ -116,7 +118,7 @@ enum mensajesMSP{
 enum mensajesKernelCodOperacion{
 	finaliza_quantum = 10,
 	finaliza_ejecucion = 11,
-	ejecucion_erronea = 12,
+	ejecucion_erronea = -12,
 	desconexion = 13,
 	interrupcion = 14,
 	error_al_interpretar_instruccion = 1010,

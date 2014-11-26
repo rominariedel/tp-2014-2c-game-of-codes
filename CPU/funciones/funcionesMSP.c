@@ -8,7 +8,6 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &direccionALeer, cantidad);
 	t_datosAEnviar * paquete = crear_paquete(codOperacion, (void*) datos, sizeof(int) + cantidad);
-
 	enviar_datos(socketMSP,paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
@@ -17,14 +16,13 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 }
 
 char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
-	int tamanio = 5;
+	int tamanio = 4;
 	log_info(LOGCPU, "  Envio paquete a MSP  ");
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int));
 	memcpy(datos + sizeof(int) + sizeof(int), &tamanio , sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));
-
 	enviar_datos(socketMSP,paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
@@ -47,8 +45,9 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	return proximaInstruccion;
 }
 
-char* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){1
-	int tamanio = tamanioParametros + 1;
+t_datosAEnviar* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){
+	int tamanio = 0;
+	tamanio = tamanioParametros;
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PIDactual, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
@@ -58,20 +57,14 @@ char* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){1
 	free(datos);
 	free(paquete);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
-	int status = procesarRespuesta(respuesta);
+	return respuesta;
+}
 
-	printf("solicitar parametros status: %d \n", status);
-	printf("--------------------------------------------------------tamanio RESPUESTA : %d", respuesta->tamanio);
-	char* parametros = malloc(respuesta->tamanio/*, sizeof(char)*/); //TODO: cambiar a calloc
-	if(status == 0){
-		memcpy(parametros, respuesta -> datos, respuesta->tamanio);
-	}else{
-		abortar(ejecucion_erronea);
-	}
-	free(respuesta);
-	printf("parametros %s", parametros);
+char* procesarParametros(t_datosAEnviar * respuesta){
+	char* parametros = calloc(respuesta->tamanio + 1, sizeof(char));
+	log_info(LOGCPU, "Llegaron bien los parametros");
+	memcpy(parametros, respuesta -> datos, respuesta->tamanio);
 	return parametros;
-
 }
 
 int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
@@ -139,11 +132,8 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 	estado = 0;
 
 	if(respuesta == NULL){
-		//errorOperacionesConMemoria = -1;
-		//errorMemoria = no_llego_respuesta;
-		estado = -1;
+		estado = ejecucion_erronea;
 		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
-		abortar(ejecucion_erronea);
 		return estado;
 	}else{
 	if(respuesta->codigo_operacion < 0){
@@ -151,18 +141,12 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 		printf("PROCESAR RESPUESTA: %d", respuesta->codigo_operacion);
 	switch(respuesta->codigo_operacion){
 		case error_segmentationFault:
-			//errorOperacionesConMemoria = -1;
-			//errorMemoria = error_segmentationFault;
-			estado = -1;
+			estado = error_segmentationFault;
 			log_error(LOGCPU, "ERROR MSP: Segmentation Fault");
-			abortar(ejecucion_erronea);
 			break;
 		case error_memoriaLlena:
-			//errorOperacionesConMemoria = -1;
-			//errorMemoria = error_memoriaLlena;
-			estado = -1;
+			estado = error_memoriaLlena;
 			log_error(LOGCPU, "ERROR MSP: Memoria Llena");
-			abortar(ejecucion_erronea);
 			break;
 	}
 		log_error(LOGCPU, "ERROR MSP: Me devolvio algo negativo, no es ni Segmentation Fault, ni Memoria Llena");
@@ -171,3 +155,14 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 
 	return estado;
 }
+
+
+
+
+
+
+
+
+
+
+

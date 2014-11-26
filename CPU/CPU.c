@@ -112,7 +112,7 @@ int main(int cantArgs, char** args){
 
 
 		int quantumActual = 0;
-		printf("\n quantum a ejecutar para PID: %d es: %d \n",PIDactual, quantum);
+		printf("\n Quantum a ejecutar para PID: %d es: %d \n",PIDactual, quantum);
 		log_info(LOGCPU, "Quantum a ejecutar para PID : %d es: %d",PIDactual, quantum);
 
 
@@ -120,21 +120,18 @@ int main(int cantArgs, char** args){
 
 		ejecutoInterrupcion = 0;
 		finalizarEjecucion = 1;
-		//printf("\n -------------------------MAIN 4 \n " );
+		aumentoPuntero = 1;
 		while((quantumActual<quantum || KMactual==1 ) && finalizarEjecucion) //TODO: sacar los comentarios
 		{
 			log_info(LOGCPU, "\n \n \n -------------QUANTUM ACTUAL: %d-------------\n \n \n", quantumActual);
-			//printf("\n -------------------------MAIN 5 ------------------------------------- \n " );
-			log_info(LOGCPU, "quantum = %d ",quantumActual);
-			printf("\n %d \n", quantumActual);
+			printf("\n -------------------------- %d ------------------------------------------------- \n", quantumActual);
+
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
-
-			//printf("\n -------------------------MAIN 6 \n " );
-
 			log_info(LOGCPU, " Solicito a MSP proximaInstruccionAEJecutar ");
 
 			char* proximaInstruccionAEjecutar = calloc(4, sizeof(char));
 			if(KMactual == 1){
+				log_info(LOGCPU, "Estoy en modo Kernel, leo el archivo de SYSCALL");
 				proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(0, punteroInstruccionActual);
 				log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
 			}else{
@@ -142,37 +139,25 @@ int main(int cantArgs, char** args){
 				log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
 			}
 
-			//printf("\n -------------------------MAIN 7 \n " );
-/*
-			if(errorOperacionesConMemoria == -1){
-				//printf("\n -------------------------MAIN 7 ERROR MEMORIA \n " );
-				devolverTCBactual(ejecucion_erronea);
-				break;
-			}
-*/
-			//printf("\n -------------------------MAIN 8 \n " );
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda.
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
 			usleep(RETARDO);
 
-			//printf("\n -------------------------MAIN 9 \n " );
-
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion");
 			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
-
-			//printf("\n -------------------------MAIN 10 \n " );
-			//si hubo algun error con las operaciones con memoria tengo que terminar la ejecucion!!
-
-			if(errorOperacionesConMemoria == -1){
-
-				//printf("\n -------------------------MAIN 11 ERROR MEMORIA OPERACIOOOOOOOON \n " );
-				devolverTCBactual(ejecucion_erronea);
+			if(respuesta < 0){
+				abortar(respuesta);
 				break;
-			}
+			}else{
+				if(aumentoPuntero){
+					log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
+					log_info(LOGCPU, "Incrementar los 4 + respuesta : %d", respuesta);
+					punteroInstruccionActual += (respuesta + 4);
+					log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
+				}}
 
-			//printf("\n -------------------------MAIN 11 \n " );
-
+			//Muestro como quedan los registros.
 			log_info(LOGCPU, "  Registro A : %d  ", A);
 			log_info(LOGCPU, "  Registro B : %d  ", B);
 			log_info(LOGCPU, "  Registro C : %d  ", C);
@@ -183,75 +168,23 @@ int main(int cantArgs, char** args){
 
 			actualizarRegistrosTCB();
 
-			// 5. Incrementa el Puntero de Instrucción.
-
-			//printf("\n -------------------------MAIN 12 \n " );
-			printf(" \n\n\n\n\n RESPUESTA: %d", respuesta);
-			if(respuesta ==-1){
-				log_info(LOGCPU, "\n \n \n -------------NO SE ENCONTRO O NO TIENE PERMISOS!-------------\n \n \n");
-
-				//printf("\n -------------------------MAIN 13 ERROR RESPUESTA \n " );
-				log_error(LOGCPU, "No se encontro la instruccion o no tiene los permisos necesarios");
-				printf("\n No se encontro la instruccion o no tiene los permisos necesarios\n");
-
-				log_info(LOGCPU, "Devolver TCB %d al Kernel", PIDactual);
-				log_error(LOGCPU, "Error al interpretar instruccion");
-				printf("DEVOLVER TCB PORQUE: ejecucion erronea 1");
-				devolverTCBactual(ejecucion_erronea);
-				//printf("\n -------------------------MAIN 14 ERROR RESPUESTA \n " );
-				break;
-			}else{
-				//printf("\n -------------------------MAIN 13 BIEN \n " );
-				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
-				log_info(LOGCPU, "Incrementar los 4 + respuesta : %d", respuesta);
-				punteroInstruccionActual += (respuesta + 4) ;
-				//printf("\n -------------------------MAIN 14 BIEN \n " );
-			}
-				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
-
-			//printf("\n -------------------------MAIN 15 \n " );
-
-
-			if(finalizarEjecucion == -1){
-
-				//printf("\n -------------------------MAIN 15 ERROR, FINALIZAR EJECUCION \n " );
-				log_info(LOGCPU, "finalizo EJECUCION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				printf("DEVOLVER TCB PORQUE: finaliza ejecucion == -1 \n");
-				if(!ejecutoInterrupcion){
-					printf("DEVOLVER TCB PORQUE: INTERRUPCION == 1\n");
-					devolverTCBactual(finaliza_ejecucion);
-				}else{
-					ejecutoInterrupcion = 0;
-				}
-				break;
-			}
-
-			//printf("\n -------------------------MAIN 16 \n " );
-			// 5.b Incrementar quantum
+			// 5. Incrementar quantum
 			quantumActual++;
 			log_info(LOGCPU, "Ejecutando %d de %d quantum", quantumActual, quantum);
 			printf("\n Ejecutando %d de %d quantum \n", quantumActual, quantum);
-			//printf("\n -------------------------MAIN 17 \n " );
 
 		if(quantumActual == quantum && KMactual == 0){
 
-			//printf("\n -------------------------MAIN 18   TERMINO QUANTUUUUUUUUUUUUUMMM \n " );
 			// 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			//proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			//tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
 			log_info(LOGCPU, "Se completo el quantum! %d == %d", quantumActual, quantum);
-			log_info(LOGCPU, "Devuelvo TCB %d al Kernel", PIDactual);
-			log_info(LOGCPU, "SE TERMINO EL QUANTUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM");
 			devolverTCBactual(finaliza_quantum);
 			limpiarRegistros();
 			actualizarTCB();
 		}
-		//printf("\n -------------------------MAIN 19 NO ME ENTRO AL QUANTUM == QUANTUM ACTUAL \n " );
 	  }
-		//printf("\n -------------------------MAIN 20 SALIO DEL WHILE QUANTUM \n " );
 	}
-	//printf("\n -------------------------MAIN 21  SALIO DEL WHILE 1 \n " );
-
 	return 0;
 }
 
@@ -443,20 +376,29 @@ void limpiarRegistros(){
 
 int interpretarYEjecutarInstruccion(char* instruccion){
 	printf("\n INSTRUCCION A EJECUTAR: %s \n", instruccion);
-	//printf("\n INSTRUCCION A EJECUTAR: %d \n", instruccion);
-	log_info(LOGCPU, "\n INSTRUCCION A EJECUTAR: %d \n", instruccion);
+	log_info(LOGCPU, "\n INSTRUCCION A EJECUTAR: %s \n", instruccion);
+
 	if(0 == strcmp(instruccion,"LOAD")){
-		printf("ME METI EN LOAD\n");
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+		return status;
+		}else{
+			char* parametros = procesarParametros(t_datosAEnviar* respuesta);
+			free(respuesta);
+			tparam_load* parametrosLoad = (tparam_load*) parametros;
+			log_info(LOGCPU, "LOAD(%c,%d)",parametrosLoad->reg1, parametrosLoad->num);
+			LOAD(parametrosLoad);
+			return sizeof(tparam_load);
+		}
+	}
+/*	if(0 == strcmp(instruccion,"LOAD")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
-		tparam_load* parametrosLoad;
-		parametrosLoad->num = 0;
-		parametrosLoad->reg1 = 'K';
-		parametrosLoad = (tparam_load*) respuesta;
-		log_info(LOGCPU,parametrosLoad->num);
+		tparam_load* parametrosLoad = (tparam_load*) respuesta;
 		log_info(LOGCPU, "LOAD(%c,%d)",parametrosLoad->reg1, parametrosLoad->num);
 		LOAD(parametrosLoad);
 	return sizeof(tparam_load);
-	}
+	}*//*
 	if(0 == strcmp(instruccion,"GETM")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
 		tparam_getm * parametros = (tparam_getm*)respuesta;
@@ -567,6 +509,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 	if(0 == strcmp(instruccion,"PUSH")){
 		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
 		tparam_push* parametros = (tparam_push *) respuesta;
+		log_info(LOGCPU, "parametros PUSH numero : %d", parametros->numero);
+		log_info(LOGCPU, "parametros PUSH registro : %c", parametros->registro);
 		log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 		PUSH(parametros);
 	return sizeof(tparam_push); }
@@ -588,7 +532,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"MALC")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar MALC()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1; }}
+			return -12; }}
 	if(0 == strcmp(instruccion,"FREE") && KMactual == 1){
 		log_info(LOGCPU,"FREE()");
 		FREE();
@@ -596,7 +540,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"FREE")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar FREE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}}
+			return -12;}}
 	if(0 == strcmp(instruccion,"INNN") && KMactual == 1){
 		log_info(LOGCPU,"INNN()");
 		INNN();
@@ -604,7 +548,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"INNN")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar INNN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}}
+			return -12;}}
 	if(0 == strcmp(instruccion,"OUTN") && KMactual == 1){
 		log_info(LOGCPU,"OUTN()");
 		OUTN();
@@ -612,7 +556,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"OUTN")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar OUTN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}}
+			return -12;}}
 	if(0 == strcmp(instruccion,"CREA\0")&& KMactual == 1){
 		printf("\n---------------CREA()------------------\n");
 		log_info(LOGCPU,"CREA()");
@@ -621,7 +565,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"CREA")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar CREA()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}}
+			return -12;}}
 	if(0 == strcmp(instruccion,"JOIN") && KMactual == 1){
 		printf("\n---------------JOIN()------------------\n");
 		log_info(LOGCPU,"JOIN()");
@@ -630,7 +574,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"JOIN")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar JOIN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}}
+			return -12;}}
 	if(0 == strcmp(instruccion,"BLOK") && KMactual == 1){
 		log_info(LOGCPU,"BLOK()");
 		BLOK();
@@ -638,7 +582,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"BLOK")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar BLOK()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}}
+			return -12;}}
 	if(0 == strcmp(instruccion,"WAKE") && KMactual == 1){
 		log_info(LOGCPU,"WAKE()");
 		WAKE();
@@ -646,10 +590,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"WAKE")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar WAKE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -1;}}
-
-	printf("NO ENCONTRO UN KKKKRAJO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-	return -1;
+			return -12;}} */
+	return -12;
 
 }
 

@@ -26,8 +26,16 @@ void SETM(tparam_setm* parametrosSetm){
 
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
+	printf("GETM 1 \n");
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)), sizeof(int), solicitarMemoria);
+	if(respuesta == NULL){
+		printf("\n --------------------------------RESPUESTA NULL------------------------------------- \n");
+		exit(0);
+	}
+	printf("GETM 2 \n");
+	printf("GETM 2   PARAMETRO REG 2 = %p",respuesta->datos );
 	memcpy((devolverRegistro(parametrosGetm->reg1)), respuesta->datos, respuesta->tamanio);
+	printf("GETM 3 \n");
 }
 
 void MOVR(tparam_movr* parametrosMovr){ //Copia el valor del segundo registro hacia el primero
@@ -94,6 +102,8 @@ void CLEQ(tparam_cleq* parametrosCleq){
 void GOTO(tparam_goto* parametrosGoto){
 	//Altera el flujo de ejecución para ejecutar la instrucción apuntada por el registro. El valor es el desplazamiento desde el inicio del programa.
 	punteroInstruccionActual = *devolverRegistro(parametrosGoto->reg1);
+	aumentoPuntero = -1;
+	printf("aumentoPuntero = %d", aumentoPuntero);
 }
 
 
