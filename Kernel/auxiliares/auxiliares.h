@@ -40,6 +40,7 @@ typedef struct cpu {
 	int socket_CPU;
 	int bit_estado;
 	int PID;
+	int TID;
 } struct_CPU;
 
 typedef struct consola {
@@ -48,6 +49,7 @@ typedef struct consola {
 	int cantidad_hilos;
 	int TID_padre;
 	bool termino_ejecucion;
+	int X;
 } struct_consola;
 
 typedef struct colas {
@@ -135,7 +137,7 @@ enum mensajes {
 	soy_kernel = 29,
 	destruir_segmento = 30,
 	leer_memoria = 31, //Este todavía no se si tengo que usarlo
-
+	se_desconecto_cpu = 45,
 	//Mensajes recibidos
 
 	//-->CPU

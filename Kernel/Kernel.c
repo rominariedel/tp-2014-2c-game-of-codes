@@ -8,11 +8,9 @@
 #include "auxiliares/auxiliares.h"
 #include "auxiliares/variables_globales.h"
 
-
 #define pid_KM_boot 0
 
 /*VARIABLES GLOBALES*/
-
 
 int main(int argc, char ** argv) {
 
@@ -55,6 +53,35 @@ void obtenerDatosConfig(char ** argv) {
 	inicializar_panel(1, PANEL);
 }
 
+void liberar_recursos(struct_consola * consola_conectada) {
+
+	//SI LA CONSOLA TIENE HILOS PLANIFICANDOSE O EJECUTANDOSE Y SE DESCONECTA, ABORTAN Y SE ELIMINAN SUS
+	//SEGMENTOS DE STACK
+	consola_conectada->termino_ejecucion = true;
+	if (consola_conectada->cantidad_hilos > 0) {
+		printf("Entre acaaaaa!\n");
+		matar_hijos(consola_conectada->PID);
+	}
+	if (consola_conectada->cantidad_hilos == 0) {
+
+		int tamanio = 2 * sizeof(int);
+		void * datos = malloc(tamanio);
+		memcpy(datos, &consola_conectada->PID, sizeof(int));
+		memcpy(datos + sizeof(int), &consola_conectada->X, sizeof(int));
+		t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos,
+				tamanio);
+		printf(
+				"Se va a solicitar que se destruya el codigo base %d proceso %d tamanio %d\n",
+				consola_conectada->X, consola_conectada->PID, tamanio);
+		enviar_datos(socket_MSP, paquete);
+		printf("SE HA SOLICITADO!!!\n");
+		free(datos);
+		free(paquete->datos);
+		free(paquete);
+	}
+
+}
+
 void loader() {
 	fd_set copia_set;
 	while (1) {
@@ -82,9 +109,10 @@ void loader() {
 				}
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
-				if (datos == NULL ) {
+				if (datos == NULL || datos->codigo_operacion == 0) {
 					desconexion_consola(n_descriptor);
-					FD_CLR(n_descriptor, &consola_set); //TODO: COMPLETAR EL CASO DE QUE SE DESCONECTE LA CONSOLA
+					liberar_recursos(consola_conectada);
+					FD_CLR(n_descriptor, &consola_set);
 					break;
 				}
 				TCB_struct * nuevoTCB;
@@ -105,7 +133,7 @@ void loader() {
 					if (segmento_codigo < 0) {
 						exit(0);
 					}
-
+					consola_conectada->X = segmento_codigo;
 					int segmento_stack = solicitar_segmento(nuevoTCB,
 							TAMANIO_STACK);
 					if (segmento_stack < 0) {
@@ -178,11 +206,6 @@ void boot() {
 
 	TCB_struct * tcb_km = malloc(sizeof(TCB_struct));
 	tcb_km->KM = 1;
-
-	/*int base_segmento_codigo = solicitar_segmento(tcb_km, 8);
-	 escribir_memoria(tcb_km, base_segmento_codigo, 8, "holahola");
-	 int base_segmento_stack = solicitar_segmento(tcb_km, 4);
-	 */
 
 	int base_segmento_codigo = solicitar_segmento(tcb_km,
 			tamanio_codigo_syscalls);
@@ -395,13 +418,13 @@ void finalizo_quantum(TCB_struct* tcb) {
 	bool es_TCB(TCB_struct tcb_comparar) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
+	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
+	free(tcb_exec);
+	printf("Se saco el tcb de la cola de ejecucion\n");
 	if (chequear_proceso_abortado(tcb) < 0) {
 		//EL PADRE DE ESE PROCESO TERMINO
 		exit(0);
 	}
-	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
-	free(tcb_exec);
-	printf("Se saco el tcb de la cola de ejecucion\n");
 	meter_en_ready(1, tcb);
 
 }
@@ -429,51 +452,94 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		consola_asociada->termino_ejecucion = true;
 		matar_hijos(PID);
 	}
-	queue_push(e_exit, tcb);
+	mandar_a_exit(tcb);
 
-	//TERMINAR LA CONEXION CON LA CONSOLA SI TERMINO LA EJECUCION DE TODOS LOS HILOS
-	consola_asociada->cantidad_hilos--;
 	if (consola_asociada->cantidad_hilos == 0) {
-		t_datosAEnviar * paquete = crear_paquete(terminar_conexion, NULL, 0);
-		enviar_datos(consola_asociada->socket_consola, paquete);
+
+		int tamanio = 2 * sizeof(int);
+		void * datos = malloc(tamanio);
+		memcpy(datos, &consola_asociada->PID, sizeof(int));
+		memcpy(datos + sizeof(int), &consola_asociada->X, sizeof(int));
+		t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos,
+				tamanio);
+		printf(
+				"Se va a solicitar que se destruya el codigo base %d proceso %d tamanio %d\n",
+				consola_asociada->X, consola_asociada->PID, tamanio);
+		enviar_datos(socket_MSP, paquete);
+		printf("SE HA SOLICITADO!!!\n");
+		free(datos);
+		free(paquete->datos);
 		free(paquete);
-		close(consola_asociada->socket_consola);
-		free(consola_asociada);
+
+		paquete = crear_paquete(terminar_conexion, NULL, 0);
+		if (enviar_datos(consola_asociada->socket_consola, paquete) < 0) {
+
+		}
+		free(paquete);
+		printf("DESCONECTE LA CONSOLA ASOCIADA\n");
 	}
 
 	sem_post(&sem_CPU);
 
 }
 
-
 void matar_hijos(int PID) {
-	matar_hijos_en_lista(PID, ready.prioridad_1->elements, true);
-	matar_hijos_en_lista(PID, block.prioridad_1, false);
-	matar_hijos_en_lista(PID, SYS_CALL->elements, false);
-	matar_hijos_en_lista(PID, hilos_join, false);
+	printf("cantidad elementos ready %d\n", queue_size(ready.prioridad_1));
+	matar_hijos_en_lista(PID, ready.prioridad_1->elements, true, false);
+	matar_hijos_en_lista(PID, block.prioridad_1, false, true);
+	matar_hijos_en_lista(PID, SYS_CALL->elements, false, false);
+	matar_hijos_en_lista(PID, hilos_join, false, false);
 	matar_hijo_en_diccionario(PID);
 }
 
 void matar_hijo_en_diccionario(int PID) {
 	void matar_hijo(t_queue * bloqueado_por_recurso) {
-		matar_hijos_en_lista(PID, bloqueado_por_recurso->elements, false);
+		matar_hijos_en_lista(PID, bloqueado_por_recurso->elements, false,
+				false);
 	}
 	dictionary_iterator(dic_bloqueados, (void*) matar_hijo);
 }
 
-void matar_hijos_en_lista(int PID, t_list* lista, bool es_ready) {
+void matar_hijos_en_lista(int PID, t_list* lista, bool es_ready,
+		bool es_bloqueado) {
+	int cantidad = 0;
+	printf("1\n");
 	bool tiene_mismo_pid(TCB_struct * tcb) {
+		printf("PID DEL ELEMENTO %d\n", tcb->PID);
 		return tcb->PID == PID;
 	}
-	int cantidad = list_count_satisfying(lista, (void*) tiene_mismo_pid);
+	bool tiene_mismo_pid_block(struct_bloqueado * block) {
+		return block->tcb.PID == PID;
+	}
+	if (!es_bloqueado) {
+		cantidad = list_count_satisfying(lista, (void*) tiene_mismo_pid);
+	} else {
+		cantidad = list_count_satisfying(lista, (void*) tiene_mismo_pid_block);
+	}
+	printf(
+			"Cantidad de hijos que hay en la lista: %d\n Cantidad de elementos en la lista: %d\n",
+			cantidad, list_size(lista));
+	printf("PID A ELIMINAR %d\n", PID);
+	printf("2\n");
 	int contador = 0;
 	while (contador < cantidad) {
-		if(es_ready){
+		if (es_ready) {
+			printf("3\n");
 			sem_wait(&sem_procesoListo);
 		}
-		TCB_struct * tcb = list_remove_by_condition(lista,
-				(void*) tiene_mismo_pid);
+		printf("4\n");
+		TCB_struct * tcb;
+		struct_bloqueado * block;
+		if (!es_bloqueado) {
+			tcb = list_remove_by_condition(lista, (void*) tiene_mismo_pid);
+		} else {
+			block = list_remove_by_condition(lista,
+					(void*) tiene_mismo_pid_block);
+			tcb = &block->tcb;
+			printf("QUEDO UN PID: %d\n", tcb->PID);
+		}
 		mandar_a_exit(tcb);
+
 		contador++;
 	}
 
@@ -505,13 +571,17 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 
 	if (tcb->KM == 1) {
 		queue_push(block.prioridad_0, tcb);
-		struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
-				tcb->TID);
-		tcb_bloqueado->tcb.registrosProgramacion[0] = tcb->registrosProgramacion[0];
-		tcb_bloqueado->tcb.registrosProgramacion[1] = tcb->registrosProgramacion[1];
-		tcb_bloqueado->tcb.registrosProgramacion[2] = tcb->registrosProgramacion[2];
-		tcb_bloqueado->tcb.registrosProgramacion[3] = tcb->registrosProgramacion[3];
-		tcb_bloqueado->tcb.registrosProgramacion[4] = tcb->registrosProgramacion[4];
+		struct_bloqueado * tcb_bloqueado = obtener_bloqueado(tcb->TID);
+		tcb_bloqueado->tcb.registrosProgramacion[0] =
+				tcb->registrosProgramacion[0];
+		tcb_bloqueado->tcb.registrosProgramacion[1] =
+				tcb->registrosProgramacion[1];
+		tcb_bloqueado->tcb.registrosProgramacion[2] =
+				tcb->registrosProgramacion[2];
+		tcb_bloqueado->tcb.registrosProgramacion[3] =
+				tcb->registrosProgramacion[3];
+		tcb_bloqueado->tcb.registrosProgramacion[4] =
+				tcb->registrosProgramacion[4];
 
 		sem_post(&sem_kmDisponible);
 		meter_en_ready(1, &tcb_bloqueado->tcb);
@@ -520,28 +590,28 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 	}
 }
 
-void abortar(TCB_struct* tcb) {
-	sacar_de_ejecucion(tcb);
-	//LOGUEAR que tuvo que abortar el hilo
-}
-
-void enviar_a_ejecucion(TCB_struct * tcb) {
+void enviar_a_ejecucion(TCB_struct * tcb, bool waiteado) {
 
 	printf(
 			"\nEsperando la activacion de una CPU para enviar a ejecutar un hilo. \n");
-	sem_wait(&sem_CPU);
+
+	if (!waiteado) {
+		sem_wait(&sem_CPU);
+	}
 	printf("Se activó una CPU!");
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	if (cpu == NULL ) {
 		printf("FALLO. NO SE ENCONTRO CPU\n");
 		exit(-1);
 	}
-	list_add(exec, tcb);
-	printf("\n\nQUANTUM: %d\n", QUANTUM);
-	if(tcb == NULL){
+	cpu->PID = tcb->PID;
+	cpu->TID = tcb->TID;
+
+	if (tcb == NULL ) {
 		printf("EL TCB ES NULO!!!\n");
 		exit(-1);
 	}
+	list_add(exec, tcb);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
@@ -556,8 +626,9 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 void dispatcher() {
 
 	while (1) {
-		sem_wait(&sem_procesoListo);
 		printf("\nSe detectó un nuevo proceso!\n");
+		sem_wait(&sem_CPU);
+		sem_wait(&sem_procesoListo);
 		if (!queue_is_empty(SYS_CALL)) {
 			tcb_ejecutandoSysCall = (TCB_struct*) queue_pop(SYS_CALL);
 
@@ -567,21 +638,24 @@ void dispatcher() {
 			TCB_struct * tcb_km = queue_pop(block.prioridad_0);
 			copiarRegistros(tcb_km->registrosProgramacion,
 					tcb_ejecutandoSysCall->registrosProgramacion);
+
 			tcb_km->PID = tcb_ejecutandoSysCall->PID;
 			tcb_km->TID = tcb_ejecutandoSysCall->TID;
 			tcb_km->P = tcb_bloqueado->id_recurso;
-			printf("COPIO EL PUNTERO DE INSTRUCCION: %d\n", tcb_bloqueado->id_recurso);
+			printf("COPIO EL PUNTERO DE INSTRUCCION: %d\n",
+					tcb_bloqueado->id_recurso);
 			free(tcb_ejecutandoSysCall);
-			enviar_a_ejecucion(tcb_km);
+			enviar_a_ejecucion(tcb_km, true);
 
 		} else {
 			TCB_struct * tcb;
+
 			if (!queue_is_empty(ready.prioridad_0)) {
 				tcb = sacar_de_ready(0);
 			} else {
 				tcb = sacar_de_ready(1);
 			}
-			enviar_a_ejecucion(tcb);
+			enviar_a_ejecucion(tcb, true);
 		}
 	}
 

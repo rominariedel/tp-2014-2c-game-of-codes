@@ -7,7 +7,7 @@
 #define MAXCONEXIONES 10
 
 enum mensajes {
-	reservar_segmento = 1,
+	reservar_segmento = 32,
 	escribir_en_memoria = 2,
 	soy_kernel = 29,
 	soy_cpu = 19,
@@ -87,7 +87,7 @@ void conectado_a_Kernel() {
 					"ERROR");
 			exit(-1);
 		}
-		printf("\nSolicitud del socket %d: ", kernel_sock);
+		printf("\nSolicitud del socket %d: , codOp: %d\n", kernel_sock, datos->codigo_operacion);
 
 		//Recibo mensaje del cliente
 		if (1) {
@@ -99,7 +99,11 @@ void conectado_a_Kernel() {
 				printf("ESCRIBIR EN MEMORIA\n");
 				break;
 
+			case destruirSegmento:
+				printf("DESTRUIR SEGMENTO \n");
+				break;
 			}
+
 
 			//Envio como respuesta una direccion 4
 			free(datos);
