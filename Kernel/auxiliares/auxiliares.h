@@ -121,6 +121,7 @@ void realizar_desbloqueo(int);
 int chequear_proceso_abortado(TCB_struct *);
 struct_CPU * obtener_CPUAsociada(int socket_cpu);
 void mandar_a_exit(TCB_struct*);
+TCB_struct * obtener_tcbEjecutando(int TID);
 
 enum mensajes {
 
@@ -143,7 +144,7 @@ enum mensajes {
 	//-->CPU
 	finaliza_quantum = 10,
 	finaliza_ejecucion = 11,
-	ejecucion_erronea = 12,
+	ejecucion_erronea = -12,
 	desconexion = 13,
 	interrupcion = 14,
 	creacion_hilo = 15,

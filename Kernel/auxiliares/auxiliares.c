@@ -26,9 +26,8 @@ char * extraer_syscalls(char * PATH) {
 }
 
 int obtener_TID() {
-	int aux = TID;
-	aux++;
-	return aux;
+	TID += 1;
+	return TID;
 }
 
 int obtener_PID() {
@@ -72,103 +71,106 @@ bool CPU_esta_libre(struct_CPU * cpu) {
 	return (cpu->bit_estado == 0);
 }
 
-void meter_en_ready(int prioridad, TCB_struct * tcb){
+void meter_en_ready(int prioridad, TCB_struct * tcb) {
 	sem_wait(&sem_READY);
-	switch(prioridad){
+	printf("READY ");
+	switch (prioridad) {
 	case 0:
 		queue_push(ready.prioridad_0, tcb);
+		hilos(ready.prioridad_0->elements);
 		break;
 	case 1:
-		printf("Se puso un elemento en la cola de ready prioridad 1!!!");
 		queue_push(ready.prioridad_1, tcb);
-		printf("cantidad elementos ready %d\n",queue_size(ready.prioridad_1));
+		hilos(ready.prioridad_1->elements);
 		break;
 	}
+
 	sem_post(&sem_READY);
+	sem_post(&sem_procesoListo);
 	sem_post(&sem_procesoListo);
 }
 
-TCB_struct * sacar_de_ready(int prioridad){
-	printf("SE SOLICITO SACAR UN ELEMENTO DE READY!!!!\n");
+TCB_struct * sacar_de_ready(int prioridad) {
 	sem_wait(&sem_READY);
 	TCB_struct * tcb = NULL;
-	switch(prioridad){
+	printf("READY ");
+	switch (prioridad) {
 	case 0:
 		tcb = queue_pop(ready.prioridad_0);
+		hilos(ready.prioridad_0->elements);
 		break;
 	case 1:
 		tcb = queue_pop(ready.prioridad_1);
-		printf("Se saco un elemento prioridad 1 :(\n");
+		hilos(ready.prioridad_1->elements);
 		break;
 	}
 	sem_post(&sem_READY);
 	return tcb;
 }
 
-void liberar_cpu(int socket){
+void liberar_cpu(int socket) {
 	struct_CPU * cpu = obtener_CPUAsociada(socket);
 	cpu->bit_estado = libre;
 
-	bool tiene_mismo_tid(TCB_struct * tcb){
+	bool tiene_mismo_tid(TCB_struct * tcb) {
 		return tcb->TID == cpu->TID;
 	}
 
-	list_remove_by_condition(exec, (void*)tiene_mismo_tid);
+	list_remove_and_destroy_by_condition(exec, (void*) tiene_mismo_tid, free);
+
+	printf("EXEC ");
+	hilos(exec);
 	cpu->PID = -1;
 
 	sem_post(&sem_CPU);
 }
 
-TCB_struct * obtener_tcbEnEjecucion(int TID){
-	bool tiene_mismo_tid(TCB_struct * tcb){
-		return tcb->TID == TID;
-	}
-	return list_remove_by_condition(exec, (void*)tiene_mismo_tid);
-}
-
-
 void abortar(TCB_struct* tcb) {
-	sacar_de_ejecucion(tcb);
+	sacar_de_ejecucion(tcb, true);
 	//LOGUEAR que tuvo que abortar el hilo
 }
 
-void desconecto_cpu(int socket){
-	//sem_wait(&sem_CPU); //TODO: ARREGLAR LA SINCRO ACA
+void desconecto_cpu(int socket) {
 	struct_CPU * cpu = obtener_CPUAsociada(socket);
-	if(cpu == NULL){
+	if (cpu == NULL ) {
 		printf("No se encontro la CPU\n");
 		exit(-1);
 	}
-	if(cpu->PID >= 0){
+	bool tiene_mismo_socket(struct_CPU *estructura) {
+		return estructura->socket_CPU == socket;
+	}
+	if (cpu->PID >= 0) {
+		printf("LA CPU ESTABA EJECUTANDO UN PROCESO\n");
 
 		struct_consola * consola = obtener_consolaAsociada(cpu->PID);
-		TCB_struct * tcb = obtener_tcbEnEjecucion(cpu->TID);
-
-		if(tcb->KM){
-			void abortar_procesos(struct_consola * consola){
-				t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL, 0);
+		TCB_struct * tcb = obtener_tcbEjecutando(cpu->TID);
+		if (consola->termino_ejecucion) {
+			sacar_de_ejecucion(tcb, false);
+		} else {
+			if (tcb->KM) {
+				void abortar_procesos(struct_consola * consola) {
+					t_datosAEnviar * datos = crear_paquete(terminar_conexion,
+							NULL, 0);
+					enviar_datos(consola->socket_consola, datos);
+					free(datos);
+				}
+				list_iterate(consola_list, (void*) abortar_procesos);
+			} else {
+				t_datosAEnviar * datos = crear_paquete(se_desconecto_cpu, NULL,
+						0);
 				enviar_datos(consola->socket_consola, datos);
 				free(datos);
+
 			}
-			list_iterate(consola_list, (void*)abortar_procesos);
-		}else{
-			t_datosAEnviar * datos = crear_paquete(se_desconecto_cpu, NULL, 0);
-			enviar_datos(consola->socket_consola, datos);
-			free(datos);
-
+			struct_bloqueado * bloqueado = malloc(sizeof(struct_bloqueado));
+			bloqueado->tcb = *tcb;
+			bloqueado->id_recurso = -1;
+			list_add(block.prioridad_1, bloqueado);
 		}
-		struct_bloqueado * bloqueado = malloc(sizeof(struct_bloqueado));
-		bloqueado->tcb = *tcb;
-		bloqueado->id_recurso = -1;
-		list_add(block.prioridad_1, bloqueado);
-
-
-
-		//TODO: NOTIFICAR CONSOLA
-		//ABORTAR LA EJECUCION
-		//CONTEMPLAR SI ESTA EJECUTANDO TCB KM
+	} else {
+		sem_wait(&sem_CPU);
 	}
-	free(cpu);
+	list_remove_and_destroy_by_condition(CPU_list,(void*) tiene_mismo_socket, free);
 }
 
 void planificador() {
@@ -182,7 +184,7 @@ void planificador() {
 
 		copia_set = CPU_set;
 		int i = select(descriptor_mas_alto_cpu + 1, &copia_set, NULL, NULL,
-				NULL );
+				timeout );
 
 		if (i == -1) {
 			//error
@@ -197,7 +199,7 @@ void planificador() {
 				t_datosAEnviar * datos;
 				datos = recibir_datos(n_descriptor);
 
-				if(datos == NULL){
+				if (datos == NULL ) {
 					desconexion_cpu(n_descriptor);
 					desconecto_cpu(n_descriptor);
 					FD_CLR(n_descriptor, &CPU_set);
@@ -207,41 +209,43 @@ void planificador() {
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
-				int dirSysCall, tamanio, pid, tid_a_esperar,
-						id_recurso;
+				int dirSysCall, tamanio, pid, tid_a_esperar, id_recurso;
 				char * cadena;
 				char * id_tipo;
 
-				sem_init(&mutex_entradaSalida, 0, 1);
+
 				printf("CODIGO OPERACION : %d\n", codigo_operacion);
 
 				switch (codigo_operacion) {
 
 				case finaliza_quantum:
-					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					liberar_cpu(n_descriptor);
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					finalizo_quantum(tcb);
 					break;
 				case finaliza_ejecucion:
-					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					liberar_cpu(n_descriptor);
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					finalizo_ejecucion(tcb);
 					break;
 				case ejecucion_erronea:
-					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					liberar_cpu(n_descriptor);
+					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					abortar(tcb);
 					break;
 				case interrupcion:
+					liberar_cpu(n_descriptor);
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&dirSysCall, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					liberar_cpu(n_descriptor);
-					printf("LLEGO LA DIRECCIONNANANANANANANANANANA: %d\n", dirSysCall);
+					instruccion_protegida("Interrupcion", (t_hilo*) tcb);
+					printf("LLEGO LA DIRECCIONNANANANANANANANANANA: %d\n",
+							dirSysCall);
 					interrumpir(tcb, dirSysCall);
 					break;
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
+					instruccion_protegida("Crear_Hilo", (t_hilo*) tcb);
 					crear_hilo(*tcb, n_descriptor);
 					break;
 				case planificar_nuevo_hilo: //Aca llega el TCB listo para planificar con su stack inicializado
@@ -252,7 +256,8 @@ void planificador() {
 					id_tipo = malloc(sizeof(int));
 					memcpy(&tamanio, datos->datos, sizeof(int));
 					memcpy(&pid, datos->datos + sizeof(int), sizeof(int));
-					memcpy(id_tipo, datos->datos + (2*sizeof(int)), sizeof(int));
+					memcpy(id_tipo, datos->datos + (2 * sizeof(int)),
+							sizeof(int));
 					producir_entrada_estandar(pid, id_tipo, n_descriptor,
 							tamanio);
 
@@ -269,6 +274,7 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
+					instruccion_protegida("Join", (t_hilo*) tcb);
 					realizar_join(tcb, tid_a_esperar);
 
 					break;
@@ -276,16 +282,18 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
+					instruccion_protegida("Bloquear", (t_hilo*) tcb);
 					liberar_cpu(n_descriptor);
 					realizar_bloqueo(tcb, id_recurso);
 
 					break;
 				case despertar:
 					memcpy(&id_recurso, datos->datos, sizeof(int));
+					instruccion_protegida("Despertar", (t_hilo*) tcb);
 					realizar_desbloqueo(id_recurso);
 
 					break;
-			}
+				}
 				free(datos);
 
 			}
@@ -325,21 +333,35 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 }
 
 void producir_salida_estandar(int pid, char* cadena) {
+	TCB_struct * tcb = obtener_tcbEjecutando(pid);
+	if(tcb != NULL){
+	instruccion_protegida("Salida_Estandar", (t_hilo*) tcb);
+	}else{
+		printf("NO se encontro tcb\n");
+	}
+
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
-	t_datosAEnviar * datos = crear_paquete(imprimir_en_pantalla, cadena, string_length(cadena));
+	t_datosAEnviar * datos = crear_paquete(imprimir_en_pantalla, cadena,
+			string_length(cadena));
 
 	enviar_datos(consola_asociada->socket_consola, datos);
 	free(datos->datos);
 	free(datos);
 }
 
-	/*Se hace un wait del mutex de entrada_salida al hacerse la solicitud de entrada y un post
-	cuando se le devuelve la entrada a la CPU, asi si otra CPU solicita entrada salida, espera a
-	que se libere el recurso compartido (la estructura de entrada salida). De esta forma las demas
-	CPUS que hagan otras solicitudes pueden ser planificadas*/
+/*Se hace un wait del mutex de entrada_salida al hacerse la solicitud de entrada y un post
+ cuando se le devuelve la entrada a la CPU, asi si otra CPU solicita entrada salida, espera a
+ que se libere el recurso compartido (la estructura de entrada salida). De esta forma las demas
+ CPUS que hagan otras solicitudes pueden ser planificadas*/
 void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 		int tamanio) {
 
+	TCB_struct * tcb = obtener_tcbEjecutando(pid);
+	if(tcb != NULL){
+	instruccion_protegida("Entrada_Estandar", (t_hilo*) tcb);
+	}else{
+		printf("NO se encontro tcb\n");
+	}
 
 	sem_wait(&mutex_entradaSalida);
 	entrada = malloc(sizeof(entrada_salida));
@@ -359,12 +381,13 @@ void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 
 }
 
-	/*Esta funcion es invocada cuando la consola manda el mensaje de que ya se ingresaron los datos*/
+/*Esta funcion es invocada cuando la consola manda el mensaje de que ya se ingresaron los datos*/
 void devolver_entrada_aCPU(int tamanio_datos) {
 	struct_CPU * CPU_asociada = obtener_CPUAsociada(entrada->socket_CPU);
 	t_datosAEnviar * datos = crear_paquete(devolucion_cadena, entrada->cadena,
 			tamanio_datos + 1);
-	printf("Devolviendo la cadena que es: %s y tiene largo %d\n", (char*)entrada->cadena, tamanio_datos);
+	printf("Devolviendo la cadena que es: %s y tiene largo %d\n",
+			(char*) entrada->cadena, tamanio_datos);
 	enviar_datos(CPU_asociada->socket_CPU, datos);
 	free(datos);
 	free(entrada->cadena);
@@ -377,43 +400,49 @@ void realizar_join(TCB_struct * tcb, int tid_a_esperar) {
 	estructura->tid_a_esperar = tid_a_esperar;
 	estructura->tcb_llamador = tcb;
 	list_add(hilos_join, estructura);
+	hilos(hilos_join);
 }
 
 /*Los bloqueados por recurso se manejan con un diccionario con colas. Cada recurso es una entrada en el diccionario.
  * Si existe la entrada de ese recurso, se obtiene la cola y se le agrega el tcb. De otra forma, se crea una nueva
  * cola y se la inserta en una nueva entrada en el diccionario.*/
-void realizar_bloqueo(TCB_struct * tcb, int id_recurso){
+void realizar_bloqueo(TCB_struct * tcb, int id_recurso) {
 
 	char * recurso = string_itoa(id_recurso);
 
-	if(dictionary_has_key(dic_bloqueados, recurso)){
-		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados, recurso);
+	if (dictionary_has_key(dic_bloqueados, recurso)) {
+		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados,
+				recurso);
 		queue_push(bloqueados_por_recurso, tcb);
-	}else{
+		hilos(bloqueados_por_recurso->elements);
+	} else {
 		t_queue * nuevo_bloqueado = queue_create();
 		queue_push(nuevo_bloqueado, tcb);
+		hilos(nuevo_bloqueado->elements);
 		dictionary_put(dic_bloqueados, recurso, nuevo_bloqueado);
 		printf("SE AGREGO UN NUEVO RECURSO A BLOQUEAR %d\n", id_recurso);
 	}
 }
 
-void realizar_desbloqueo(int id_recurso){
+void realizar_desbloqueo(int id_recurso) {
 
 	char * recurso = string_itoa(id_recurso);
 
-	if(dictionary_has_key(dic_bloqueados, recurso)){
-		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados, recurso);
+	if (dictionary_has_key(dic_bloqueados, recurso)) {
+		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados,
+				recurso);
 		TCB_struct * tcb = queue_pop(bloqueados_por_recurso);
+		hilos(bloqueados_por_recurso->elements);
 		meter_en_ready(1, tcb);
-	}else{
+	} else {
 		//NO EXISTEN BLOQUEADOS DE ESE RECURSO
 		exit(-1);
 	}
 }
 
-int chequear_proceso_abortado(TCB_struct * tcb){
+int chequear_proceso_abortado(TCB_struct * tcb) {
 	struct_consola * consola = obtener_consolaAsociada(tcb->PID);
-	if(consola->termino_ejecucion){
+	if (consola->termino_ejecucion) {
 		mandar_a_exit(tcb);
 		return -1;
 	}
@@ -437,16 +466,26 @@ void mandar_a_exit(TCB_struct * tcb) {
 
 	struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
 
-	if(consola_asociada == NULL){
-		printf("LA CONSOLA ES NULA!!! Se solicito de PID %d y el tamaño de la lista es %d\n", tcb->PID, list_size(consola_list));
+	if (consola_asociada == NULL ) {
+		printf(
+				"LA CONSOLA ES NULA!!! Se solicito de PID %d y el tamaño de la lista es %d\n",
+				tcb->PID, list_size(consola_list));
 		exit(-1);
 	}
 
 	consola_asociada->cantidad_hilos--;
 
-
 	queue_push(e_exit, tcb);
+	hilos(e_exit->elements);
 
 	sem_post(&sem_exit);
 }
 
+TCB_struct * obtener_tcbEjecutando(int TID){
+
+	bool tiene_mismo_tid(TCB_struct * tcb) {
+		return tcb->TID == TID;
+	}
+
+	return list_find(exec, (void*) tiene_mismo_tid);
+}

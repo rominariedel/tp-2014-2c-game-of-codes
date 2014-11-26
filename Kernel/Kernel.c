@@ -39,6 +39,7 @@ void iniciar_semaforos() {
 	sem_init(&sem_READY, 0, 1);
 	sem_init(&sem_kmDisponible, 0, 0);
 	sem_init(&sem_exit, 0, 1);
+	sem_init(&mutex_entradaSalida, 0, 1);
 }
 
 void obtenerDatosConfig(char ** argv) {
@@ -50,7 +51,7 @@ void obtenerDatosConfig(char ** argv) {
 	SYSCALLS = config_get_string_value(configuracion, "SYSCALLS");
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
 	char * PANEL = config_get_string_value(configuracion, "PANEL");
-	inicializar_panel(1, PANEL);
+	inicializar_panel(KERNEL, PANEL);
 }
 
 void liberar_recursos(struct_consola * consola_conectada) {
@@ -62,7 +63,7 @@ void liberar_recursos(struct_consola * consola_conectada) {
 		printf("Entre acaaaaa!\n");
 		matar_hijos(consola_conectada->PID);
 	}
-	if (consola_conectada->cantidad_hilos == 0) {
+	if (consola_conectada->cantidad_hilos < 1) {
 
 		int tamanio = 2 * sizeof(int);
 		void * datos = malloc(tamanio);
@@ -278,11 +279,12 @@ void boot() {
 			conexion_cpu(socket_conectado);
 			FD_SET(socket_conectado, &CPU_set);
 			struct_CPU* cpu_conectada = malloc(sizeof(struct_CPU));
-			cpu_conectada->PID = obtener_PID();
+			cpu_conectada->PID = -1;
 			cpu_conectada->bit_estado = libre;
 			cpu_conectada->socket_CPU = socket_conectado;
 			list_add(CPU_list, cpu_conectada);
-
+			printf("LISTA DE CPUS ");
+			hilos(CPU_list); //TODO: SACAR ESTE LOGUEO!!!!
 			sem_post(&sem_CPU);
 			if (descriptor_mas_alto_cpu == 0) {
 				descriptor_mas_alto_cpu = socket_conectado;
@@ -306,28 +308,30 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	tcb_bloqueado->id_recurso = dirSyscall;
 	tcb_bloqueado->tcb = *tcb;
 	list_add(block.prioridad_1, tcb_bloqueado);
+	hilos(block.prioridad_1);
+	sem_post(&sem_procesoListo);
 	sem_post(&sem_procesoListo);
 }
 
 void crear_hilo(TCB_struct tcb, int socketCPU) {
 
-	TCB_struct nuevoTCB;
+	TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
 
 	int base_stack = solicitar_segmento(&tcb, TAMANIO_STACK);
 
-	nuevoTCB.PID = tcb.PID;
-	int tid = obtener_TID(tcb.PID);
-	nuevoTCB.X = base_stack;
-	nuevoTCB.S = base_stack;
-	nuevoTCB.KM = 0;
-	nuevoTCB.PID = tcb.PID;
-	nuevoTCB.TID = tid;
-	nuevoTCB.M = tcb.M;
-	nuevoTCB.tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
-	nuevoTCB.P = tcb.P;
-	copiarRegistros(nuevoTCB.registrosProgramacion, tcb.registrosProgramacion);
+	nuevoTCB->PID = tcb.PID;
+	int tid = obtener_TID();
+	nuevoTCB->X = base_stack;
+	nuevoTCB->S = base_stack;
+	nuevoTCB->KM = 0;
+	nuevoTCB->PID = tcb.PID;
+	nuevoTCB->TID = tid;
+	nuevoTCB->M = tcb.M;
+	nuevoTCB->tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
+	nuevoTCB->P = tcb.P;
+	copiarRegistros(nuevoTCB->registrosProgramacion, tcb.registrosProgramacion);
 
-	t_datosAEnviar * datos = crear_paquete(0, &nuevoTCB, sizeof(TCB_struct));
+	t_datosAEnviar * datos = crear_paquete(0, nuevoTCB, sizeof(TCB_struct));
 	enviar_datos(socketCPU, datos);
 
 }
@@ -335,7 +339,6 @@ void crear_hilo(TCB_struct tcb, int socketCPU) {
 void planificar_hilo_creado(TCB_struct * nuevoTCB) {
 
 	meter_en_ready(1, nuevoTCB);
-	sem_post(&sem_procesoListo);
 
 	//Indico que la cantidad de hilos de un proceso aumentó
 	struct_consola * consola_asociada = obtener_consolaAsociada(nuevoTCB->PID);
@@ -345,7 +348,7 @@ void planificar_hilo_creado(TCB_struct * nuevoTCB) {
 
 void copiarRegistros(int registro1[5], int registro2[5]) {
 	int n = 5;
-	while (n > 0) {
+	while (n >= 0) {
 		registro1[n - 1] = registro2[n - 1];
 		n--;
 	}
@@ -429,7 +432,7 @@ void finalizo_quantum(TCB_struct* tcb) {
 
 }
 
-void sacar_de_ejecucion(TCB_struct* tcb) {
+void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 
 	int PID = tcb->PID;
 	int TID = tcb->TID;
@@ -437,6 +440,7 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
 	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
+	hilos(exec);
 	free(tcb_exec);
 
 	/* Fijarse si hay algun hilo esperando joins
@@ -454,7 +458,7 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 	}
 	mandar_a_exit(tcb);
 
-	if (consola_asociada->cantidad_hilos == 0) {
+	if (consola_asociada->cantidad_hilos == 1) {
 
 		int tamanio = 2 * sizeof(int);
 		void * datos = malloc(tamanio);
@@ -477,9 +481,11 @@ void sacar_de_ejecucion(TCB_struct* tcb) {
 		}
 		free(paquete);
 		printf("DESCONECTE LA CONSOLA ASOCIADA\n");
-	}
+	}else if(waitear && !(consola_asociada->cantidad_hilos < 1)){
 
 	sem_post(&sem_CPU);
+	}
+
 
 }
 
@@ -586,19 +592,12 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 		sem_post(&sem_kmDisponible);
 		meter_en_ready(1, &tcb_bloqueado->tcb);
 	} else {
-		sacar_de_ejecucion(tcb);
+		sacar_de_ejecucion(tcb, true);
 	}
 }
 
-void enviar_a_ejecucion(TCB_struct * tcb, bool waiteado) {
+void enviar_a_ejecucion(TCB_struct * tcb) {
 
-	printf(
-			"\nEsperando la activacion de una CPU para enviar a ejecutar un hilo. \n");
-
-	if (!waiteado) {
-		sem_wait(&sem_CPU);
-	}
-	printf("Se activó una CPU!");
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	if (cpu == NULL ) {
 		printf("FALLO. NO SE ENCONTRO CPU\n");
@@ -612,6 +611,8 @@ void enviar_a_ejecucion(TCB_struct * tcb, bool waiteado) {
 		exit(-1);
 	}
 	list_add(exec, tcb);
+	printf("EXEC ");
+	hilos(exec);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
@@ -626,9 +627,10 @@ void enviar_a_ejecucion(TCB_struct * tcb, bool waiteado) {
 void dispatcher() {
 
 	while (1) {
-		printf("\nSe detectó un nuevo proceso!\n");
+		sem_wait(&sem_procesoListo);
 		sem_wait(&sem_CPU);
 		sem_wait(&sem_procesoListo);
+		printf("\nSe detectó un nuevo proceso!\n");
 		if (!queue_is_empty(SYS_CALL)) {
 			tcb_ejecutandoSysCall = (TCB_struct*) queue_pop(SYS_CALL);
 
@@ -636,6 +638,8 @@ void dispatcher() {
 					tcb_ejecutandoSysCall->TID);
 			sem_wait(&sem_kmDisponible);
 			TCB_struct * tcb_km = queue_pop(block.prioridad_0);
+			printf("BLOQUEADOS PRIORIDAD 0 ");
+			hilos(block.prioridad_0->elements);
 			copiarRegistros(tcb_km->registrosProgramacion,
 					tcb_ejecutandoSysCall->registrosProgramacion);
 
@@ -645,7 +649,7 @@ void dispatcher() {
 			printf("COPIO EL PUNTERO DE INSTRUCCION: %d\n",
 					tcb_bloqueado->id_recurso);
 			free(tcb_ejecutandoSysCall);
-			enviar_a_ejecucion(tcb_km, true);
+			enviar_a_ejecucion(tcb_km);
 
 		} else {
 			TCB_struct * tcb;
@@ -655,7 +659,7 @@ void dispatcher() {
 			} else {
 				tcb = sacar_de_ready(1);
 			}
-			enviar_a_ejecucion(tcb, true);
+			enviar_a_ejecucion(tcb);
 		}
 	}
 
