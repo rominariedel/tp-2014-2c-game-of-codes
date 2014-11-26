@@ -56,11 +56,22 @@ sem_t mutex_marcosVacios;
 sem_t mutex_paginasEnMemoria;
 
 int main(int cantArgs, char** args) {
-	printf("\n -------------  MSP  -------------\n");
-	printf("Iniciando...\n");
+	printf("\n%s MSP %s", string_repeat('-', 20),
+				string_repeat('-', 20));
+	printf("\n");
+	printf("\nIniciando...\n");
 
 	inicializar(args);
-	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
+	logger = log_create(rutaLog, "Log Programa", false, LOG_LEVEL_DEBUG);
+
+	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL,
+			(void*) iniciarConexiones, NULL );
+	if (hilo_EsperarConexiones == 0) {
+		log_info(logger, "La espera de conexiones se incializó correctamente");
+	} else {
+		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
+	}
+
 
 	int hilo_Consola = pthread_create(&hiloConsola, NULL,
 			(void*) inicializarConsola, NULL );
@@ -72,14 +83,6 @@ int main(int cantArgs, char** args) {
 	} else {
 		log_error(logger,
 				"Ha ocurrido un error en la inicialización de la Consola de MSP");
-	}
-
-	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL,
-			(void*) iniciarConexiones, NULL );
-	if (hilo_EsperarConexiones == 0) {
-		log_info(logger, "La espera de conexiones se incializó correctamente");
-	} else {
-		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
 	}
 
 	pthread_join(hiloEsperarConexiones, NULL );
@@ -118,7 +121,7 @@ void inicializarConsola() {
 	int seguimiento = 1;
 
 	while (seguimiento) {
-		printf(">");
+		printf("\n>");
 		fgets(comando, 1500, stdin);
 		//scanf("%s",comando);
 		comando[string_length(comando) - 1] = '\0';
@@ -137,7 +140,6 @@ void inicializarConsola() {
 }
 
 void interpretarComando(char* comando) {
-	printf("%s \n",comando);
 	char** operacion;
 	operacion = string_n_split(comando,2, " ");
 	log_debug(logger, "La operación a ejecutar es: %s", operacion[0]);
@@ -151,16 +153,16 @@ void interpretarComando(char* comando) {
 
 	if (string_equals_ignore_case(operacion[0], "Crear_Segmento")) {
 		log_debug(logger, "Interpretó el comando de crear_segmento");
-		printf("Creando segmento...\n");
+		printf("\nCreando segmento...\n");
 		log_debug(logger, "Los parámetros para la operación son: %s, %s",
 						parametros[0], parametros[1]);
 		uint32_t baseSeg = crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
-		printf("%d", baseSeg);
+		printf("\nLa base del segmento creado es: %d", baseSeg);
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Destruir_Segmento")) {
 		log_debug(logger, "Interpretó el comando de destruir_segmento");
-		printf("Destruyendo segmento...\n");
+		printf("\nDestruyendo segmento...\n");
 		log_debug(logger, "Los parámetros para la operación son: %s, %s",
 						parametros[0], parametros[1]);
 		destruirSegmento(atoi(parametros[0]), (uint32_t) atoi(parametros[1]));
@@ -168,7 +170,7 @@ void interpretarComando(char* comando) {
 
 	else if (string_equals_ignore_case(operacion[0], "Escribir_Memoria")) {
 		log_debug(logger, "Interpretó el comando de escribir_memoria");
-		printf("Iniciando proceso de escritura de memoria...\n");
+		printf("\nIniciando proceso de escritura de memoria...\n");
 		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s, %s",
 						parametros[0], parametros[1], parametros[2], parametros[3]);
 		log_debug(logger,"se va a intentar escribir: %s", parametros[2]);
@@ -178,7 +180,7 @@ void interpretarComando(char* comando) {
 
 	else if (string_equals_ignore_case(operacion[0], "Leer_Memoria")) {
 		log_debug(logger, "Interpretó el comando de leer_memoria");
-		printf("Solicitando memoria...\n");
+		printf("\nSolicitando memoria...\n");
 		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s",
 						parametros[0], parametros[1], parametros[2]);
 		char* respuesta = solicitarMemoria(atoi(parametros[0]), atoi(parametros[1]),
@@ -215,9 +217,9 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
-		//tamanioMemoria = 512;
+		tamanioMemoria = 512;
 		memoriaDisponible = tamanioMemoria;
-		printf("Tamanio Memoria =  %d \n", tamanioMemoria);
+		printf("\nTamanio Memoria =  %d \n", tamanioMemoria);
 	}
 
 	if (config_has_property(configuracion, "PUERTO")) {
@@ -246,7 +248,7 @@ void cargarArchivoConfiguracion(char** args) {
 	}
 	if (config_has_property(configuracion, "BACKLOG")) {
 		backlog = config_get_int_value(configuracion, "BACKLOG");
-		printf("Backlog =  %d \n", backlog);
+		printf("Backlog =  %d \n\n", backlog);
 	}
 }
 
@@ -1020,7 +1022,7 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 }
 
 int tablaMarcos() {
-	printf("%s TABLA DE MARCOS %s \n", string_repeat('-', 36),
+	printf("\n%s TABLA DE MARCOS %s \n", string_repeat('-', 36),
 			string_repeat('-', 36));
 
 	bool ordenarPorMenorId(T_MARCO* marco1, T_MARCO* marco2) {
@@ -1263,7 +1265,7 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
-			printf("\0");
+			printf("\n");
 
 			break;
 
@@ -1281,7 +1283,7 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
-			printf("\0");
+			printf("\n");
 
 			break;
 
@@ -1306,7 +1308,7 @@ void interpretarOperacion(int* socket) {
 
 			free(resultado);
 
-			printf("\0");
+			printf("\n");
 
 			break;
 
@@ -1341,7 +1343,7 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
-			printf("\0");
+			printf("\n");
 
 			free(bytesAEscribir);
 			break;
