@@ -651,31 +651,41 @@ int interpretarYEjecutarInstruccion(char* instruccion){
  		return  sizeof(tparam_inte);
 		}
 	}
+	if(0 == strcmp(instruccion, "SHIF")){
+
+	}
 	if(0 == strcmp(instruccion,"NOPP")){
 		log_info(LOGCPU, "NOPP()");
 		NOPP();
 		return 0; }
 	if(0 == strcmp(instruccion,"PUSH")){
-		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
-		int status = procesarRespuesta(respuesta);
+		t_datosAEnviar* respuesta1 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 4, 4, solicitarMemoria);
+		int status = procesarRespuesta(respuesta1);
 		if(status < 0){
 			return status;
 			}else{
-				t_datosAEnviar* respuesta1 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 4, 4, solicitarMemoria);
 				int* numeroPUSH = malloc(respuesta1->tamanio);
-				memcpy(numeroPUSH, respuesta->datos, 4);
-
+				memcpy(numeroPUSH, respuesta1->datos, 4);
 				t_datosAEnviar* respuesta2 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 8, 1, solicitarMemoria);
+				int status2 = procesarRespuesta(respuesta2);
+				free(respuesta1);
 				char* reg1PUSH = malloc(respuesta2->tamanio);
-				memcpy(reg1PUSH, respuesta2->datos, 1);
-
-				tparam_push* parametros = malloc(sizeof(tparam_push));
-				parametros->numero = *numeroPUSH;
-				parametros->registro = reg1PUSH[0];
-				log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
-				PUSH(parametros);
-				return sizeof(tparam_push);
+					if(status2 < 0){
+						return status2;
+						}else{
+							memcpy(reg1PUSH, respuesta2->datos, 1);
+							free(respuesta2);
+						}
+							tparam_push* parametros = malloc(sizeof(tparam_push));
+							parametros->numero = *numeroPUSH;
+							parametros->registro = reg1PUSH[0];
+							log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
+							PUSH(parametros);
 			}
+
+		return sizeof(tparam_push);
+
+
 	}
 	if(0 == strcmp(instruccion,"TAKE")){
 		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));

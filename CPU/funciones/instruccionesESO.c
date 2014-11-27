@@ -33,13 +33,15 @@ void SETM(tparam_setm* parametrosSetm){
 
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	printf("GETM 1 \n");
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)), sizeof(int), solicitarMemoria);
 	int status= procesarRespuesta(respuesta);
+
+	int* valorMemoria = malloc(respuesta->tamanio);
+	valorMemoria = (int*) respuesta->datos;
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
-		memcpy((devolverRegistro(parametrosGetm->reg1)), respuesta->datos, respuesta->tamanio);
+		memcpy((devolverRegistro(parametrosGetm->reg1)), valorMemoria, respuesta->tamanio);
 	}
 }
 
@@ -116,6 +118,7 @@ void JMPZ(tparam_jmpz* parametrosJmpz){
 
 	if(A == 0){
 		punteroInstruccionActual = (parametrosJmpz->direccion);
+		aumentoPuntero = -1;
 	}
 }
 
@@ -125,6 +128,7 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 
 	if(A != 0){
 		punteroInstruccionActual = (parametrosJpnz->direccion);
+		aumentoPuntero = -1;
 	}
 }
 
@@ -168,12 +172,18 @@ void NOPP(){
 void PUSH(tparam_push* parametrosPush){
 	//Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del registro cursor de stack de forma acorde.
 	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, parametrosPush->registro, parametrosPush->numero, solicitarMemoria);
+	printf("\n\n\n\nENTRE A PUSH\n");
 	int status = procesarRespuesta(paquete);
-
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
-		int respuestaMSP = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,paquete->datos,parametrosPush->numero);
+		printf("paquete tamanio %d \n", paquete->tamanio);
+		void* bytesAEnviar = malloc(paquete->tamanio);
+		printf("bytesAEnviar %p", bytesAEnviar);
+		memcpy(bytesAEnviar, paquete->datos, paquete->tamanio);
+
+		int respuestaMSP = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,bytesAEnviar,paquete->tamanio);
+		printf("respuestaMSP %d", respuestaMSP);
 		if(respuestaMSP < 0){
 			finalizarEjecucion = -1;
 		}else{

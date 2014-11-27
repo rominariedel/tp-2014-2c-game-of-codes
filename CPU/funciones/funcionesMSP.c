@@ -12,10 +12,6 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 	enviar_datos(socketMSP,paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
-	if(respuesta==NULL){
-
-	}
-
 	return respuesta;
 }
 
@@ -105,14 +101,13 @@ int MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 	memcpy(datos + 2 * sizeof(int), bytes, tamanio);
 	memcpy(datos + 2* sizeof(int) + tamanio, &tamanio, sizeof(int));
 
-	t_datosAEnviar * paquete = crear_paquete(escribirMemoria, datos,2 * sizeof(int) + tamanio);
+	t_datosAEnviar * paquete = crear_paquete(escribirMemoria, datos,3 * sizeof(int) + tamanio);
 	enviar_datos(socketMSP, paquete);
 	free(datos);
 	free(paquete);
 
 	t_datosAEnviar* respuesta  = recibir_datos(socketMSP);
 	int status = procesarRespuesta(respuesta);
-	free(respuesta);
 	if(status < 0){
 		return status;
 	}
@@ -124,12 +119,12 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 	log_info(LOGCPU, "Procesando respuesta MSP");
 	int estado;
 	estado = 0;
-	if(respuesta == NULL){
+/*	if(respuesta == NULL){
 		estado = ejecucion_erronea;
 		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
 		return estado;
 	}else{
-	if(respuesta->codigo_operacion < 0){
+*/	if(respuesta->codigo_operacion < 0){
 		log_info(LOGCPU, "PROCESAR RESPUESTA : %d", respuesta->codigo_operacion);
 		printf("PROCESAR RESPUESTA: %d", respuesta->codigo_operacion);
 	switch(respuesta->codigo_operacion){
@@ -144,7 +139,7 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 	}
 		log_error(LOGCPU, "ERROR MSP: Me devolvio algo negativo, no es ni Segmentation Fault, ni Memoria Llena");
 		return estado;
-	}}
+} //TODO AGREGAR CORCHETE CUANDO DESCOMENTE IF
 
 	return estado;
 }
