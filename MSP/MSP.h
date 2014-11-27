@@ -69,7 +69,7 @@ typedef struct T_PARAMETROS_OPERACION {
 
 //Operaciones de interfaz
 uint32_t 	crearSegmento		(int PID, int tamanio);
-uint32_t	destruirSegmento 	(int PID, uint32_t baseSegmento);
+void		destruirSegmento 	(int PID, uint32_t baseSegmento);
 char* 		solicitarMemoria	(int PID, uint32_t direccionLogica, int tamanio);
 uint32_t 	escribirMemoria		(int PID, uint32_t direccionLogica, char * bytesAEscribir, int tamanio);
 

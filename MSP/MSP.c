@@ -62,7 +62,7 @@ int main(int cantArgs, char** args) {
 	printf("\nIniciando...\n");
 
 	inicializar(args);
-	logger = log_create(rutaLog, "Log Programa", false, LOG_LEVEL_DEBUG);
+	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
 
 	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL,
 			(void*) iniciarConexiones, NULL );
@@ -420,7 +420,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 
 //Destruye el segmento identificado por baseSegmento del programa PID y libera la
 //memoria que ocupaba ese segmento.
-uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
+void destruirSegmento(int PID, uint32_t baseSegmento) {
 	printf("\nDestruyendo segmento...\n");
 	log_debug(logger, "Entro a la función destruirSegmento");
 
@@ -458,35 +458,30 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 			list_remove_by_condition(proceso->segmentos,
 					(void*) segmentoPorBase);
 			log_debug(logger,
-					"Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmento/s",
+					"Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmento",
 					list_size(proceso->segmentos));
 
 			sem_wait(&mutex_MemoriaDisponible);
 			memoriaDisponible = memoriaDisponible + sizeof(seg->tamanio);
 			sem_post(&mutex_MemoriaDisponible);
-
+			log_debug(logger,"llegue aca");
+			printf("cambio la memoria disponible\n");
 			free(seg);
+			printf("se libero el segmento\n");
 		}
 
 		else {
 			log_error(logger,
 					"El segmento no ha sido destruido porque es inexistente");
-			sem_post(&mutex_procesos);
-			return operacion_exitosa;
 		}
 	} else {
 		log_error(logger,
 				"El segmento no ha sido destruido porque el proceso con PID: %d no existe",
 				PID);
-		sem_post(&mutex_procesos);
-		return error_general;
 	}
 
 	sem_post(&mutex_procesos);
-
-	log_info(logger, "El segmento ha sido detruido exitósamente");
-	printf("El segmento ha sido detruido exitósamente \n");
-	return operacion_exitosa;
+	printf("Se destruyo el segmento");
 }
 
 static void destruirPag(T_PAGINA* pagina) {
@@ -546,6 +541,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 	log_debug(logger, "Entro a la funcion solicitarMemoria");
 
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
+
 	int contadorPagina;
 	contadorPagina = direccionLogica.paginaId;
 
@@ -965,7 +961,6 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 
 		if (pag == NULL){
 
-			sem_post(&mutex_cantSwap);
 			sem_post(&mutex_marcosLlenos);
 			sem_post(&mutex_marcosVacios);
 			sem_post(&mutex_paginasEnMemoria);
@@ -1244,6 +1239,8 @@ void iniciarConexiones() {
 }
 
 void interpretarOperacion(int* socket) {
+	int seguimiento = 1;
+
 	t_datosAEnviar* datos;
 	int pid;
 	int tamanio;
@@ -1253,106 +1250,124 @@ void interpretarOperacion(int* socket) {
 	uint32_t respuesta;
 	t_datosAEnviar* paquete;
 
-	while (1) {
+	while (seguimiento) {
 
 		datos = recibir_datos(*socket);
-		printf("Se recibieron datos! Codigo de operacion: %d", datos->codigo_operacion);
+		//printf("Se recibieron datos! Codigo de operacion: %d \n", datos->codigo_operacion);
+		log_debug(logger,"Se recibieron datos");
 
-		switch (datos->codigo_operacion) {
-
-		case crear_segmento:
-			log_info(logger,"Se solicitó crear un segmento");
-
-			memcpy(&pid, datos->datos, sizeof(int));
-			memcpy(&tamanio, datos->datos + sizeof(int), sizeof(int));
-
-			log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, tamanio);
-
-			respuesta = crearSegmento(pid, tamanio);
-			log_debug(logger,"La respuesta seria: %d", respuesta);
-
-			paquete = crear_paquete(1, (void*) &respuesta, sizeof(int));
-
-			enviar_datos(*socket, paquete);
-
-			break;
-
-		case destruir_segmento:
-			log_info(logger,"Se solicitó destruir un segmento");
-
-			memcpy(&pid, datos->datos, sizeof(int));
-			memcpy(&baseSegmento, datos->datos + sizeof(int), sizeof(uint32_t));
-
-			log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, baseSegmento);
-
-			respuesta = destruirSegmento(pid, baseSegmento);
-
-
-			//paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
-
-			//enviar_datos(*socket, paquete);
-
-			break;
-
-		case solicitar_memoria:
-			log_info(logger,"Se solicitó leer memoria");
-
-			memcpy(&pid, datos->datos, sizeof(int));
-			log_debug(logger,"El pid es: %d", pid);
-			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
-			log_debug(logger,"La direccion es: %d", direccion);
-			memcpy(&tamanio,
-						datos->datos + datos->tamanio - sizeof(int), sizeof(int));
-			log_debug(logger,"El tamanio es: %d", tamanio);
-
-			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, tamanio);
-
-			char* resultado = solicitarMemoria(pid, direccion, tamanio);
-
-			paquete = crear_paquete(0, (void*) resultado, sizeof(int));
-
-			enviar_datos(*socket, paquete);
-
-			free(resultado);
-
-			break;
-
-		case escribir_memoria:
-			log_info(logger,"Se solicitó escribir en memoria");
-
-			memcpy(&pid, datos->datos, sizeof(int));
-			log_debug(logger,"El pid es: %d", pid);
-
-			memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
-			log_debug(logger,"La direccion es: %d", direccion);
-
-			bytesAEscribir = malloc((datos->tamanio - sizeof(int)*3)+1);
-			log_debug(logger,"tamanio - sizeof(int) %d",datos->tamanio - sizeof(int)*3 );
-			memcpy(bytesAEscribir,
-					datos->datos + sizeof(int) + sizeof(int),
-					datos->tamanio - (3 * sizeof(int)));
-
-			log_debug(logger,"bytes a escribir %s", bytesAEscribir);
-
-			memcpy(&tamanio,
-					datos->datos + datos->tamanio - sizeof(int), sizeof(int));
-			log_debug(logger,"El tamanio es: %d", tamanio);
-			bytesAEscribir[tamanio] = '\0';
-
-			log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, tamanio);
-
-			respuesta = escribirMemoria(pid, direccion, bytesAEscribir,
-					tamanio);
-
-			paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
-
-			enviar_datos(*socket, paquete);
-
-			free(bytesAEscribir);
-			break;
+		if (datos == NULL){
+			log_debug(logger, "Se desconectó la CPU");
+			seguimiento = 0;
 		}
-		free(datos->datos);
-		free(datos);
+		else {
+
+			switch (datos->codigo_operacion) {
+
+			case crear_segmento:
+				log_info(logger,"Se solicitó crear un segmento");
+
+				memcpy(&pid, datos->datos, sizeof(int));
+				memcpy(&tamanio, datos->datos + sizeof(int), sizeof(int));
+
+				log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, tamanio);
+
+				respuesta = crearSegmento(pid, tamanio);
+				log_debug(logger,"La respuesta seria: %d", respuesta);
+
+				paquete = crear_paquete(1, (void*) &respuesta, sizeof(int));
+
+				enviar_datos(*socket, paquete);
+
+				break;
+
+			case destruir_segmento:
+				log_info(logger,"Se solicitó destruir un segmento");
+
+				memcpy(&pid, datos->datos, sizeof(int));
+				memcpy(&baseSegmento, datos->datos + sizeof(int), sizeof(uint32_t));
+
+				log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, baseSegmento);
+
+				destruirSegmento(pid, (uint32_t) baseSegmento);
+
+				respuesta = 1;
+
+				log_debug(logger,"volvi aca");
+				paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
+				int enviaron = enviar_datos(*socket, paquete);
+				if (enviaron == 0){
+					log_debug(logger,"se enviaron");
+				}
+
+				break;
+
+			case solicitar_memoria:
+				log_info(logger,"Se solicitó leer memoria");
+
+				memcpy(&pid, datos->datos, sizeof(int));
+				log_debug(logger,"El pid es: %d", pid);
+				memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
+				log_debug(logger,"La direccion es: %d", direccion);
+				memcpy(&tamanio,
+							datos->datos + datos->tamanio - sizeof(int), sizeof(int));
+				log_debug(logger,"El tamanio es: %d", tamanio);
+
+				log_info(logger,"Los parámetros que se recibieron son: %d, %d, %d", pid, direccion, tamanio);
+
+				char* resultado = solicitarMemoria(pid, direccion, tamanio);
+
+				paquete = crear_paquete(0, (void*) resultado, sizeof(int));
+
+				enviar_datos(*socket, paquete);
+
+				free(resultado);
+
+				break;
+
+			case escribir_memoria:
+				log_info(logger,"Se solicitó escribir en memoria");
+
+				memcpy(&pid, datos->datos, sizeof(int));
+				log_debug(logger,"El pid es: %d", pid);
+
+				memcpy(&direccion, datos->datos + sizeof(int), sizeof(int));
+				log_debug(logger,"La direccion es: %d", direccion);
+
+				bytesAEscribir = malloc((datos->tamanio - sizeof(int)*3)+1);
+
+				log_debug(logger,"tamanio - sizeof(int) %d",datos->tamanio - sizeof(int)*3 );
+
+				memcpy(bytesAEscribir,
+						datos->datos + sizeof(int) + sizeof(int),
+						datos->tamanio - (3 * sizeof(int)));
+
+				log_debug(logger,"bytes a escribir %s", bytesAEscribir);
+
+				memcpy(&tamanio,
+						datos->datos + datos->tamanio - sizeof(int), sizeof(int));
+
+				log_debug(logger,"El tamanio es: %d", tamanio);
+				bytesAEscribir[tamanio] = '\0';
+
+				log_info(logger,"Los parámetros que se recibieron son: %d, %d, %s, %d", pid, direccion, bytesAEscribir, tamanio);
+
+				respuesta = escribirMemoria(pid, direccion, bytesAEscribir,
+						tamanio);
+
+				paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
+
+				enviar_datos(*socket, paquete);
+
+				free(bytesAEscribir);
+				break;
+			}
+
+			free(datos->datos);
+			free(datos);
+
+		}
+
 	}
 }
 
