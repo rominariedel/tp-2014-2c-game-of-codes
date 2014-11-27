@@ -1,4 +1,4 @@
-#CORRER DESPUES DE SUDO SU
+#!/bin/bash
 
 cd ../so-commons-library/src
 make all

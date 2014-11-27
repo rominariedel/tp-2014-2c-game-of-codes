@@ -458,7 +458,7 @@ void mandar_a_exit(TCB_struct * tcb) {
 	void * datos = malloc(tamanio);
 	memcpy(datos, &tcb->PID, sizeof(int));
 	memcpy(datos + sizeof(int), &tcb->X, sizeof(int));
-	printf("Se va a solicitar destruir otro segmento \n");
+	printf("Se va a solicitar destruir otro segmento base %d\n", tcb->X);
 	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos, tamanio);
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
