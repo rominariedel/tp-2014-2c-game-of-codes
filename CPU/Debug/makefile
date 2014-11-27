@@ -9,6 +9,7 @@ RM := rm
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include funciones/subdir.mk
+-include Default/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -26,7 +27,7 @@ endif
 all: CPU
 
 dependents:
-	-cd /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) clean all
+	-cd /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) all
 
 # Tool invocations
 CPU: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so

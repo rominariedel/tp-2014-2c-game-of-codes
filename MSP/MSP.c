@@ -72,7 +72,6 @@ int main(int cantArgs, char** args) {
 		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
 	}
 
-
 	int hilo_Consola = pthread_create(&hiloConsola, NULL,
 			(void*) inicializarConsola, NULL );
 
@@ -153,24 +152,21 @@ void interpretarComando(char* comando) {
 
 	if (string_equals_ignore_case(operacion[0], "Crear_Segmento")) {
 		log_debug(logger, "Interpretó el comando de crear_segmento");
-		printf("\nCreando segmento...\n");
 		log_debug(logger, "Los parámetros para la operación son: %s, %s",
 						parametros[0], parametros[1]);
-		uint32_t baseSeg = crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
-		printf("\nLa base del segmento creado es: %d", baseSeg);
+		crearSegmento(atoi(parametros[0]), atoi(parametros[1]));
+
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Destruir_Segmento")) {
 		log_debug(logger, "Interpretó el comando de destruir_segmento");
-		printf("\nDestruyendo segmento...\n");
-		log_debug(logger, "Los parámetros para la operación son: %s, %s",
+				log_debug(logger, "Los parámetros para la operación son: %s, %s",
 						parametros[0], parametros[1]);
 		destruirSegmento(atoi(parametros[0]), (uint32_t) atoi(parametros[1]));
 	}
 
 	else if (string_equals_ignore_case(operacion[0], "Escribir_Memoria")) {
 		log_debug(logger, "Interpretó el comando de escribir_memoria");
-		printf("\nIniciando proceso de escritura de memoria...\n");
 		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s, %s",
 						parametros[0], parametros[1], parametros[2], parametros[3]);
 		log_debug(logger,"se va a intentar escribir: %s", parametros[2]);
@@ -180,7 +176,7 @@ void interpretarComando(char* comando) {
 
 	else if (string_equals_ignore_case(operacion[0], "Leer_Memoria")) {
 		log_debug(logger, "Interpretó el comando de leer_memoria");
-		printf("\nSolicitando memoria...\n");
+
 		log_debug(logger, "Los parámetros para la operación son: %s, %s, %s",
 						parametros[0], parametros[1], parametros[2]);
 		char* respuesta = solicitarMemoria(atoi(parametros[0]), atoi(parametros[1]),
@@ -217,7 +213,7 @@ void cargarArchivoConfiguracion(char** args) {
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA")
 				* pow(2, 10);
-		tamanioMemoria = 512;
+		//tamanioMemoria = 512;
 		memoriaDisponible = tamanioMemoria;
 		printf("\nTamanio Memoria =  %d \n", tamanioMemoria);
 	}
@@ -248,7 +244,7 @@ void cargarArchivoConfiguracion(char** args) {
 	}
 	if (config_has_property(configuracion, "BACKLOG")) {
 		backlog = config_get_int_value(configuracion, "BACKLOG");
-		printf("Backlog =  %d \n\n", backlog);
+		printf("Backlog =  %d \n", backlog);
 	}
 }
 
@@ -277,6 +273,7 @@ void crearMarcos() {
 //Crea un nuevo segmento para el programa PID del tamaño tamanio. Devuelve la direccion
 //virtual base del segmento.
 uint32_t crearSegmento(int PID, int tamanio) {
+	printf("\nCreando segmento...\n");
 	log_debug(logger, "Entra a la función crearSegmento");
 
 	if (tamanio > pow(2, 20)) {
@@ -327,6 +324,9 @@ uint32_t crearSegmento(int PID, int tamanio) {
 			segmentoVacio->baseSegmento);
 
 	sem_post(&mutex_procesos);
+
+	printf("\nLa base del segmento creado es: %d", segmentoVacio->baseSegmento);
+
 	return segmentoVacio->baseSegmento;
 }
 
@@ -417,6 +417,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 //Destruye el segmento identificado por baseSegmento del programa PID y libera la
 //memoria que ocupaba ese segmento.
 uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
+	printf("\nDestruyendo segmento...\n");
 	log_debug(logger, "Entro a la función destruirSegmento");
 
 	bool procesoPorPid(T_PROCESO* proceso) {
@@ -480,6 +481,7 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 	sem_post(&mutex_procesos);
 
 	log_info(logger, "El segmento ha sido detruido exitósamente");
+	printf("El segmento ha sido detruido exitósamente");
 	return operacion_exitosa;
 }
 
@@ -536,6 +538,7 @@ static void destruirPag(T_PAGINA* pagina) {
 //Para el espacio de direcciones del proceso PID, devuelve hasta tamanio bytes
 //comenzando desde direccion.
 char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
+	printf("\nSolicitando memoria...\n");
 	log_debug(logger, "Entro a la funcion solicitarMemoria");
 
 	T_DIRECCION_LOG direccionLogica = uint32ToDireccionLogica(direccion);
@@ -733,6 +736,7 @@ void leoMemoria(T_PAGINA* pag) {
 //comenzando en la direccion.
 uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 		int tamanio) {
+	printf("\nIniciando proceso de escritura de memoria...\n");
 	log_debug(logger, "Entro a la funcion escribirMemoria");
 	log_debug(logger,"parametros %d %d %d", PID, direccion, tamanio);
 	if(bytesAEscribir == NULL){
@@ -911,7 +915,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 	sem_post(&mutex_procesos);
 	log_info(logger, "Se ha escrito en memoria exitósamente");
-
+	printf("Se ha escrito en memoria exitósamente");
 	free(aux);
 
 	return operacion_exitosa;
@@ -1200,7 +1204,7 @@ void iniciarConexiones() {
 	}
 	log_info(logger, "Se ha creado el servidor exitósamente");
 
-	printf("Esperando conexiones...\n");
+	printf("\nEsperando conexiones...\n");
 
 	pthread_t hiloKernel;
 	pthread_t hiloCPU;
@@ -1208,21 +1212,21 @@ void iniciarConexiones() {
 	while (1) {
 
 		int socket_conectado = recibir_conexion(socket_general);
-		printf("Se recibio una conexión!\n");
+		printf("\nSe recibio una conexión!\n");
 
 		int modulo_conectado = -1;
 		t_datosAEnviar* datos = recibir_datos(socket_conectado);
 		modulo_conectado = datos->codigo_operacion;
 
 		if (modulo_conectado == soy_CPU) {
-			printf("Se conecto una CPU\n");
+			printf("\nSe conecto una CPU\n");
 			log_info(logger,"Se conectó una CPU");
 			pthread_create(&hiloCPU, NULL, (void*) interpretarOperacion,
 					&socket_conectado);
 		}
 
 		else if (modulo_conectado == soy_kernel) {
-			printf("Se conecto el Kernel\n");
+			printf("\nSe conecto el Kernel\n");
 			log_info(logger,"Se concectó el Kernel");
 
 			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion,
@@ -1266,8 +1270,6 @@ void interpretarOperacion(int* socket) {
 
 			enviar_datos(*socket, paquete);
 
-			printf("\n");
-
 			break;
 
 		case destruir_segmento:
@@ -1280,11 +1282,9 @@ void interpretarOperacion(int* socket) {
 
 			respuesta = destruirSegmento(pid, baseSegmento);
 
-			paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
+			//paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
-			enviar_datos(*socket, paquete);
-
-			printf("\n");
+			//enviar_datos(*socket, paquete);
 
 			break;
 
@@ -1308,8 +1308,6 @@ void interpretarOperacion(int* socket) {
 			enviar_datos(*socket, paquete);
 
 			free(resultado);
-
-			printf("\n");
 
 			break;
 
@@ -1343,8 +1341,6 @@ void interpretarOperacion(int* socket) {
 			paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
 			enviar_datos(*socket, paquete);
-
-			printf("\n");
 
 			free(bytesAEscribir);
 			break;

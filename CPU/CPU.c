@@ -123,39 +123,57 @@ int main(int cantArgs, char** args){
 		aumentoPuntero = 1;
 		while((quantumActual<quantum || KMactual==1 ) && finalizarEjecucion) //TODO: sacar los comentarios
 		{
+			aumentoPuntero = 1;
 			log_info(LOGCPU, "\n \n \n -------------QUANTUM ACTUAL: %d-------------\n \n \n", quantumActual);
 			printf("\n -------------------------- %d ------------------------------------------------- \n", quantumActual);
 
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 			log_info(LOGCPU, " Solicito a MSP proximaInstruccionAEJecutar ");
 
-			char* proximaInstruccionAEjecutar = calloc(4, sizeof(char));
+			log_info(LOGCPU, "Puntero Instruccion Actual: %d", punteroInstruccionActual);
+			t_datosAEnviar* respuesta = malloc(sizeof(t_datosAEnviar));
 			if(KMactual == 1){
-				log_info(LOGCPU, "Estoy en modo Kernel, leo el archivo de SYSCALL");
-				proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(0, punteroInstruccionActual);
-				log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
+				log_info(LOGCPU, "Leo el archivo de SYSCALL");
+				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(0, punteroInstruccionActual);
 			}else{
-				proximaInstruccionAEjecutar = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
-				log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
+				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
 			}
 
+			char* proximaInstruccionAEjecutar = malloc(5);
+			int status = procesarRespuesta(respuesta);
+			if(status < 0){
+				abortar(ejecucion_erronea);
+				break;
+				}else{
+					log_info(LOGCPU, "Recibo Instruccion a ejecutar  ");
+					log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
+					memcpy(proximaInstruccionAEjecutar, respuesta -> datos, 4);
+					proximaInstruccionAEjecutar[4] = '\0';
+			}
+			free(respuesta);
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda.
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
 			usleep(RETARDO);
 
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion");
-			int respuesta = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
-			if(respuesta < 0){
-				abortar(respuesta);
+
+			int statusEjecutar = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
+			if(statusEjecutar < 0 || finalizarEjecucion == -1){
+				abortar(ejecucion_erronea);
 				break;
 			}else{
-				if(aumentoPuntero){
-					log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
-					log_info(LOGCPU, "Incrementar los 4 + respuesta : %d", respuesta);
-					punteroInstruccionActual += (respuesta + 4);
-					log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
-				}}
+				if(aumentoPuntero != -1){
+				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
+				log_info(LOGCPU, "Incrementar los 4 + respuesta : %d", statusEjecutar);
+				punteroInstruccionActual += (statusEjecutar + 4);
+				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
+				}
+				if(finalizarEjecucion == -2){
+					abortar(finaliza_ejecucion);
+					break;
+				}
+			}
 
 			//Muestro como quedan los registros.
 			log_info(LOGCPU, "  Registro A : %d  ", A);
@@ -382,147 +400,254 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
 		int status = procesarRespuesta(respuesta);
 		if(status < 0){
-		return status;
-		}else{
-			char* parametros = procesarParametros(t_datosAEnviar* respuesta);
-			free(respuesta);
-			tparam_load* parametrosLoad = (tparam_load*) parametros;
-			log_info(LOGCPU, "LOAD(%c,%d)",parametrosLoad->reg1, parametrosLoad->num);
-			LOAD(parametrosLoad);
-			return sizeof(tparam_load);
-		}
+			return status;
+			}else{
+				tparam_load* parametrosLoad = (tparam_load*) procesarRespuestaMSP(respuesta);
+				free(respuesta);
+				log_info(LOGCPU, "LOAD(%c,%d)",parametrosLoad->reg1, parametrosLoad->num);
+				LOAD(parametrosLoad);
+				return sizeof(tparam_load);
+			}
 	}
-/*	if(0 == strcmp(instruccion,"LOAD")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_load));
-		tparam_load* parametrosLoad = (tparam_load*) respuesta;
-		log_info(LOGCPU, "LOAD(%c,%d)",parametrosLoad->reg1, parametrosLoad->num);
-		LOAD(parametrosLoad);
-	return sizeof(tparam_load);
-	}*//*
+
 	if(0 == strcmp(instruccion,"GETM")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
-		tparam_getm * parametros = (tparam_getm*)respuesta;
-		log_info(LOGCPU, "GETM(%c,%c)",parametros->reg1, parametros->reg2);
-		GETM(parametros);
-	return sizeof(tparam_getm); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_getm));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+				return status;
+				}else{
+					tparam_getm* parametrosGetm = (tparam_getm*) procesarRespuestaMSP(respuesta);
+					free(respuesta);
+					log_info(LOGCPU, "GETM(%c,%c)",parametrosGetm->reg1, parametrosGetm->reg2);
+					GETM(parametrosGetm);
+					return sizeof(tparam_getm);
+				}
+	}
+
 	if(0 == strcmp(instruccion, "SETM")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_setm));
-		tparam_setm * parametros = (tparam_setm *) respuesta;
-		log_info(LOGCPU, "SETM(%d,%c,%c)",parametros->num, parametros->reg1, parametros->reg2);
-		SETM(parametros);
-		return sizeof(tparam_setm);
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_setm));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+				return status;
+				}else{
+					tparam_setm* parametros = (tparam_setm*) procesarRespuestaMSP(respuesta);
+					free(respuesta);
+					log_info(LOGCPU, "SETM(%d,%c,%c)",parametros->num, parametros->reg1, parametros->reg2);
+					SETM(parametros);
+					return sizeof(tparam_setm);
+				}
 	}
 	if(0 == strcmp(instruccion,"MOVR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
-		tparam_movr * parametros = (tparam_movr *) respuesta;
-		log_info(LOGCPU, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
-		MOVR(parametros);
-	return sizeof(tparam_movr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_movr));
+		int status = procesarRespuesta(respuesta);
+			if(status < 0){
+				return status;
+				}else{
+					tparam_movr * parametros = (tparam_movr *) procesarRespuestaMSP(respuesta);
+					log_info(LOGCPU, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
+					MOVR(parametros);
+					return sizeof(tparam_movr);
+				}
+	}
 	if(0 == strcmp(instruccion,"ADDR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
-		tparam_addr* parametros = (tparam_addr*)respuesta;
-		log_info(LOGCPU, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
-		ADDR(parametros);
-	return sizeof(tparam_addr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_addr));
+		int status = procesarRespuesta(respuesta);
+				if(status < 0){
+					return status;
+					}else{
+						tparam_addr* parametros = (tparam_addr*) procesarRespuestaMSP(respuesta);
+						log_info(LOGCPU, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
+						ADDR(parametros);
+						return sizeof(tparam_addr);
+					}
+	}
 	if(0 == strcmp(instruccion,"SUBR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
-		tparam_subr* parametros = (tparam_subr *) respuesta;
-		log_info(LOGCPU, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
-		SUBR(parametros);
-	return sizeof(tparam_subr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_subr));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+				return status;
+				}else{
+					tparam_subr* parametros = (tparam_subr *) procesarRespuestaMSP(respuesta);
+					log_info(LOGCPU, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
+					SUBR(parametros);
+					return sizeof(tparam_subr);
+				}
+	}
 	if(0 == strcmp(instruccion,"MULR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
-		tparam_mulr * parametros = (tparam_mulr *) respuesta;
-		log_info(LOGCPU, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
-		MULR(parametros);
-	return sizeof(tparam_mulr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_mulr));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+				return status;
+				}else{
+					tparam_mulr * parametros = (tparam_mulr *) procesarRespuestaMSP(respuesta);
+					log_info(LOGCPU, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
+					MULR(parametros);
+					return sizeof(tparam_mulr);
+				}
+	}
 	if(0 == strcmp(instruccion,"MODR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
-		tparam_modr * parametros = (tparam_modr *) respuesta;
-		log_info(LOGCPU, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
-		MODR(parametros);
-	return  sizeof(tparam_modr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_modr));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+				return status;
+				}else{
+					tparam_modr * parametros = (tparam_modr *)  procesarRespuestaMSP(respuesta);
+					log_info(LOGCPU, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
+					MODR(parametros);
+					return  sizeof(tparam_modr);
+				}
+	}
 	if(0 == strcmp(instruccion,"DIVR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
-		tparam_divr* parametros = (tparam_divr *) respuesta;
-		log_info(LOGCPU, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
-		DIVR(parametros);
-	return sizeof(tparam_divr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_divr));
+		int status = procesarRespuesta(respuesta);
+				if(status < 0){
+						return status;
+						}else{
+							tparam_divr* parametros = (tparam_divr *) procesarRespuestaMSP(respuesta);
+							log_info(LOGCPU, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
+							DIVR(parametros);
+							return sizeof(tparam_divr);
+						}
+	}
 	if(0 == strcmp(instruccion,"INCR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
-		tparam_incr* parametros = (tparam_incr *) respuesta;
-		log_info(LOGCPU, "INCR(%c)",parametros->reg1);
- 		INCR(parametros);
-	return sizeof(tparam_incr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_incr));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_incr* parametros = (tparam_incr *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "INCR(%c)",parametros->reg1);
+				INCR(parametros);
+				return sizeof(tparam_incr);
+			}
+	}
 	if(0 == strcmp(instruccion,"DECR")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
-		tparam_decr* parametros = (tparam_decr *) respuesta;
-		log_info(LOGCPU, "DECR(%c)",parametros->reg1);
- 		DECR(parametros);
-	return sizeof(tparam_decr); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_decr));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_decr* parametros = (tparam_decr *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "DECR(%c)",parametros->reg1);
+				DECR(parametros);
+				return sizeof(tparam_decr);
+			}
+	}
 	if(0 == strcmp(instruccion,"COMP")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
-		tparam_comp* parametros = (tparam_comp *) respuesta;
-		log_info(LOGCPU, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
- 		COMP(parametros);
-	return sizeof(tparam_comp); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_comp));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_comp* parametros = (tparam_comp *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
+				COMP(parametros);
+				return sizeof(tparam_comp);
+			}
+	}
 	if(0 == strcmp(instruccion,"CGEQ")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
-		tparam_cgeq* parametros = (tparam_cgeq *) respuesta;
-		log_info(LOGCPU, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
- 		CGEQ(parametros);
-	return  sizeof(tparam_cgeq); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cgeq));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_cgeq* parametros = (tparam_cgeq *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
+				CGEQ(parametros);
+				return  sizeof(tparam_cgeq);
+			}
+	}
 	if(0 == strcmp(instruccion,"CLEQ")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
-		tparam_cleq* parametros = (tparam_cleq *) respuesta;
-		log_info(LOGCPU, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
-		CLEQ(parametros);
-	return sizeof(tparam_cleq); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_cleq));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_cleq* parametros = (tparam_cleq *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
+				CLEQ(parametros);
+				return sizeof(tparam_cleq);
+			}
+	}
 	if(0 == strcmp(instruccion,"GOTO")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, 1); //TODO cambiar a sizeof(tparam_goto
-		tparam_goto* parametros = (tparam_goto *) respuesta;
-		log_info(LOGCPU, "GOTO(%c)",parametros->reg1);
-		GOTO(parametros);
-	return sizeof(tparam_goto); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, 1); //TODO cambiar a sizeof(tparam_goto
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_goto* parametros = (tparam_goto *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "GOTO(%c)",parametros->reg1);
+				aumentoPuntero = -1;
+				GOTO(parametros);
+				return 0;
+			}
+	}
 	if(0 == strcmp(instruccion,"JMPZ")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
-		tparam_jmpz* parametros = (tparam_jmpz *) respuesta;
-		log_info(LOGCPU, "JMPZ(%d)",parametros->direccion);
- 		JMPZ(parametros);
-	return sizeof(tparam_jmpz); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jmpz));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_jmpz* parametros = (tparam_jmpz *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "JMPZ(%d)",parametros->direccion);
+				JMPZ(parametros);
+				return sizeof(tparam_jmpz);
+			}
+	}
 	if(0 == strcmp(instruccion,"JPNZ")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
-		tparam_jpnz* parametros = (tparam_jpnz *) respuesta;
-		log_info(LOGCPU, "JPNZ(%d)",parametros->direccion);
- 		JPNZ(parametros);
-	return sizeof(tparam_jpnz); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_jpnz));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_jpnz* parametros = (tparam_jpnz *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "JPNZ(%d)",parametros->direccion);
+				JPNZ(parametros);
+				return sizeof(tparam_jpnz);
+			}
+	}
 	if(0 == strcmp(instruccion,"INTE")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
-		tparam_inte* parametros = (tparam_inte *) respuesta;
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_inte));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+		tparam_inte* parametros = (tparam_inte *) procesarRespuestaMSP(respuesta);
 		log_info(LOGCPU, "INTE(%d)",parametros->direccion);
  		INTE(parametros);
-	return  sizeof(tparam_inte); }
+ 		return  sizeof(tparam_inte);
+		}
+	}
 	if(0 == strcmp(instruccion,"NOPP")){
 		log_info(LOGCPU, "NOPP()");
 		NOPP();
 		return 0; }
 	if(0 == strcmp(instruccion,"PUSH")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
-		tparam_push* parametros = (tparam_push *) respuesta;
-		log_info(LOGCPU, "parametros PUSH numero : %d", parametros->numero);
-		log_info(LOGCPU, "parametros PUSH registro : %c", parametros->registro);
-		log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
-		PUSH(parametros);
-	return sizeof(tparam_push); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_push));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_push* parametros = (tparam_push *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
+				PUSH(parametros);
+				return sizeof(tparam_push);
+			}
+	}
 	if(0 == strcmp(instruccion,"TAKE")){
-		char* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
-		tparam_take* parametros = (tparam_take *) respuesta;
-		log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
-		TAKE(parametros);
-	return sizeof(tparam_take); }
+		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
+		int status = procesarRespuesta(respuesta);
+		if(status < 0){
+			return status;
+			}else{
+				tparam_take* parametros = (tparam_take *) procesarRespuestaMSP(respuesta);
+				log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
+				TAKE(parametros);
+				return sizeof(tparam_take);
+			}
+	}
 	if(0 == strcmp(instruccion,"XXXX")){
 		log_info(LOGCPU,"XXXX()");
-
 		XXXX();
 		return 0;}
 	if(0 == strcmp(instruccion,"MALC") && KMactual == 1){
@@ -590,7 +715,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			if(0 == strcmp(instruccion,"WAKE")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar WAKE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
-			return -12;}} */
+			return -12;}}
 	return -12;
 
 }
@@ -650,7 +775,6 @@ int* devolverRegistro(char registro){
 void abortar(int codigoOperacion){
 	actualizarTCB();
 	devolverTCBactual(codigoOperacion);
-	printf("DEVOLVER TCB PORQUE: %d", codigoOperacion);
 	finalizarEjecucion = -1;
 }
 

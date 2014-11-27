@@ -8,9 +8,6 @@
 
 #include "../CPU.h"
 
-
-
-
 void KERNEL_ejecutarRutinaKernel(int codOperacion, int direccion){
 	char* datos = malloc(sizeof(t_TCB) + sizeof(int));
 	log_info(LOGCPU, "\n ESTOY EN INTERRUPCION \n");
@@ -144,10 +141,19 @@ void KERNEL_CrearHilo(t_TCB * TCB, int registro){
 	A = hiloNuevo->TID;
 	hiloNuevo->P = registro;
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(TCB->TID, TCB->X, TCB->S - TCB->X, solicitarMemoria);
-	void* stackACopiar = malloc(TCB->S  - TCB->X);
-	memcpy(&stackACopiar, respuesta->datos , cursorStackActual - baseStackActual);
-	MSP_EscribirEnMemoria(hiloNuevo->PID,hiloNuevo->X, stackACopiar, TCB->S - TCB->X);
-	KERNEL_PlanificarHilo(hiloNuevo);
-	free(stackACopiar);
+	int status= procesarRespuesta(respuesta);
+	if(status < 0){
+		finalizarEjecucion = -1;
+	}else{
+		void* stackACopiar = malloc(TCB->S  - TCB->X);
+		memcpy(&stackACopiar, respuesta->datos , cursorStackActual - baseStackActual);
+		MSP_EscribirEnMemoria(hiloNuevo->PID,hiloNuevo->X, stackACopiar, TCB->S - TCB->X);
+		int status2= procesarRespuesta(respuesta);
+		if(status2 < 0){
+			finalizarEjecucion = -1;
+		}
+		KERNEL_PlanificarHilo(hiloNuevo);
+		free(stackACopiar);
+	}
 }
 

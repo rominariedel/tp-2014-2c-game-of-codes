@@ -15,7 +15,7 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 	return respuesta;
 }
 
-char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
+t_datosAEnviar* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	int tamanio = 4;
 	log_info(LOGCPU, "  Envio paquete a MSP  ");
 	char * datos = malloc(3 * sizeof (int));
@@ -26,23 +26,7 @@ char* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
 	enviar_datos(socketMSP,paquete);
 	free(datos);
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
-
-	log_info(LOGCPU, "  Recibo Respuesta MSP  ");
-	int status = procesarRespuesta(respuesta);
-
-	char* proximaInstruccion = malloc(5 /*, sizeof(char)*/);  //cambiar a calloc TODO
-	proximaInstruccion[4] = '\0';
-
-	printf("status = %d", status);
-	if(status == 0){
-		memcpy(proximaInstruccion, respuesta -> datos, 4);
-	}
-
-
-	free(respuesta);
-	printf("\n ME ESTA MANDANDO BIEN LA INSTRUCCION PROXIMA!! \n");
-
-	return proximaInstruccion;
+	return respuesta;
 }
 
 t_datosAEnviar* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){
@@ -60,11 +44,11 @@ t_datosAEnviar* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParam
 	return respuesta;
 }
 
-char* procesarParametros(t_datosAEnviar * respuesta){
-	char* parametros = calloc(respuesta->tamanio + 1, sizeof(char));
+char* procesarRespuestaMSP(t_datosAEnviar * respuesta){
+	char* respuestaMSP = calloc(respuesta->tamanio + 1, sizeof(char));
 	log_info(LOGCPU, "Llegaron bien los parametros");
-	memcpy(parametros, respuesta -> datos, respuesta->tamanio);
-	return parametros;
+	memcpy(respuestaMSP, respuesta -> datos, respuesta->tamanio);
+	return respuestaMSP;
 }
 
 int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
@@ -83,7 +67,7 @@ int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 	if(status == 0){
 		memcpy(dir_base, respuesta -> datos, sizeof(int));
 	}else{
-		abortar(ejecucion_erronea);
+		return status;
 	}
 
 	free(respuesta);
@@ -92,7 +76,7 @@ int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 
 }
 
-void MSP_DestruirSegmento(int PID, int baseSegmento){
+int MSP_DestruirSegmento(int PID, int baseSegmento){
 	char * datos = malloc(2 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &baseSegmento, sizeof(int));
@@ -101,11 +85,15 @@ void MSP_DestruirSegmento(int PID, int baseSegmento){
 
 	t_datosAEnviar * respuesta = recibir_datos(socketMSP);
 	procesarRespuesta(respuesta);
+
+	int status = procesarRespuesta(respuesta);
 	free(respuesta);
 	free(datos);
+
+	return status;
 }
 
-void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
+int MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 
 	char * datos = malloc((3 * sizeof(int)) + tamanio);
 
@@ -120,17 +108,19 @@ void MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 	free(paquete);
 
 	t_datosAEnviar* respuesta  = recibir_datos(socketMSP);
-	procesarRespuesta(respuesta);
+	int status = procesarRespuesta(respuesta);
 	free(respuesta);
+	if(status < 0){
+		return status;
+	}
+
+	return 0;
 }
 
 int procesarRespuesta(t_datosAEnviar* respuesta){
 	log_info(LOGCPU, "Procesando respuesta MSP");
 	int estado;
-	errorOperacionesConMemoria = 0;
-	errorMemoria = 0;
 	estado = 0;
-
 	if(respuesta == NULL){
 		estado = ejecucion_erronea;
 		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
