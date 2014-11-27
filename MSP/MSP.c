@@ -583,7 +583,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 						+ direccionLogica.desplazamiento) > seg->tamanio) {
 					log_error(logger, "Segmentation Fault: Direccion Invalida");
 					sem_post(&mutex_procesos);
-					return (char*) error_segmentation_fault;
+					return "error_segmentation_fault";
 				}
 				log_debug(logger, "tamanioPag * pag.pagID = %d",(tamanioPag * (pag->paginaID)));
 				log_debug(logger, "Dire.desplazamiento = %d",(direccionLogica.desplazamiento));
@@ -596,7 +596,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					log_error(logger,
 							"Segmentation Fault: Se excedieron los limites del segmento");
 					sem_post(&mutex_procesos);
-					return (char*) error_segmentation_fault;
+					return "error_segmentation_fault";
 				}
 
 				log_debug(logger, "La pagina tiene el marco asignado de id: %d",
@@ -647,7 +647,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 								log_error(logger,
 										"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
 								sem_post(&mutex_procesos);
-								return (char*) resultado;
+								return "error_memoria_llena";
 							}
 						}
 
@@ -672,7 +672,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 								log_error(logger,
 										"No se ha podido solicitar memoria ya que no se pudo asignar un marco a la página");
 								sem_post(&mutex_procesos);
-								return (char*) resultado;
+								return "error_memoria_llena";
 							}
 						}
 						memcpy(memoriaSolicitada + tamanioLeido, pag->data, tamanio);
@@ -692,20 +692,20 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 				log_error(logger,
 						"No se ha podido solicitar memoria ya que la página es inexistente");
 				sem_post(&mutex_procesos);
-				return (char*) error_general;
+				return "error_general";
 			}
 		} else {
 			log_error(logger,
 					"No se ha podido solicitar memoria ya que el segmento es inexistente");
 			sem_post(&mutex_procesos);
-			return (char*) error_general;
+			return "error_general";
 		}
 	} else {
 		log_error(logger,
 				"No se ha podido solicitar memoria ya que el proceso de PID: %d es inexistente",
 				PID);
 		sem_post(&mutex_procesos);
-		return (char*) error_general;
+		return "error_general";
 	}
 
 	sem_post(&mutex_procesos);
@@ -1254,7 +1254,7 @@ void interpretarOperacion(int* socket) {
 
 		datos = recibir_datos(*socket);
 		//printf("Se recibieron datos! Codigo de operacion: %d \n", datos->codigo_operacion);
-		log_debug(logger,"Se recibieron datos");
+		log_debug(logger,"Se recibieron datos del socket : %d", &socket);
 
 		if (datos == NULL){
 			log_debug(logger, "Se desconectó la CPU");
@@ -1277,7 +1277,9 @@ void interpretarOperacion(int* socket) {
 
 				paquete = crear_paquete(1, (void*) &respuesta, sizeof(int));
 
-				enviar_datos(*socket, paquete);
+				int r= enviar_datos(*socket, paquete);
+
+				log_debug(logger,"se enviaron los datos %d al socket %d", r, &socket);
 
 				break;
 
@@ -1317,7 +1319,19 @@ void interpretarOperacion(int* socket) {
 
 				char* resultado = solicitarMemoria(pid, direccion, tamanio);
 
-				paquete = crear_paquete(0, (void*) resultado, sizeof(int));
+				int codigo_operacion =0;
+
+				if(strcmp(resultado,"error_segmentation_fault") == 0){
+					codigo_operacion = error_segmentation_fault;
+				}
+				if(strcmp(resultado,"error_general") == 0){
+					codigo_operacion = error_general;
+				}
+				if(strcmp(resultado,"error_general") == 0){
+					codigo_operacion = error_memoria_llena;
+				}
+
+				paquete = crear_paquete(codigo_operacion, (void*) resultado, sizeof(int));
 
 				enviar_datos(*socket, paquete);
 
