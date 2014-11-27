@@ -45,11 +45,23 @@ void iniciar_semaforos() {
 void obtenerDatosConfig(char ** argv) {
 	configuracion = config_create(argv[1]);
 	PUERTO = config_get_string_value(configuracion, "PUERTO");
+	printf("PUERTO %s\n", PUERTO);
+
 	IP_MSP = config_get_string_value(configuracion, "IP_MSP");
+	printf("IP MSP %s\n", IP_MSP);
+
 	PUERTO_MSP = config_get_string_value(configuracion, "PUERTO_MSP");
+	printf("PUERTO MSP %s\n", PUERTO_MSP);
+
 	QUANTUM = config_get_int_value(configuracion, "QUANTUM");
+
+
 	SYSCALLS = config_get_string_value(configuracion, "SYSCALLS");
+
+
 	TAMANIO_STACK = config_get_int_value(configuracion, "TAMANIO_STACK");
+
+
 	char * PANEL = config_get_string_value(configuracion, "PANEL");
 	inicializar_panel(KERNEL, PANEL);
 }
@@ -65,6 +77,15 @@ void liberar_recursos(struct_consola * consola_conectada) {
 	}
 	if (consola_conectada->cantidad_hilos == 0) {
 
+		socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
+			if (socket_MSP < 0) {
+				printf("FALLO al conectar con la MSP\n");
+				exit(-1);
+			}
+
+			handshake_MSP(socket_MSP);
+
+
 		int tamanio = 2 * sizeof(int);
 		void * datos = malloc(tamanio);
 		memcpy(datos, &consola_conectada->PID, sizeof(int));
@@ -74,10 +95,14 @@ void liberar_recursos(struct_consola * consola_conectada) {
 		printf(
 				"Se va a solicitar que se destruya el codigo base %d proceso %d tamanio %d\n",
 				consola_conectada->M, consola_conectada->PID, tamanio);
-		enviar_datos(socket_MSP, paquete);
+		if(enviar_datos(socket_MSP, paquete)<0){
+			printf("NO SE PUDO ENVIAR LOS DATOS A LA MSP\n");
+		}
 		printf("SE HA SOLICITADO!!!\n");
 		free(datos);
 		free(paquete->datos);
+		free(paquete);
+		paquete = recibir_datos(socket_MSP);
 		free(paquete);
 	}
 
@@ -106,6 +131,7 @@ void loader() {
 				struct_consola * consola_conectada = obtener_consolaConectada(
 						n_descriptor);
 				if (consola_conectada == NULL ) {
+					printf("NO SE ENCONTRO CONSOLA CONECTADA\n");
 					break;
 				}
 				t_datosAEnviar * datos;
@@ -156,8 +182,14 @@ void loader() {
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
 					printf("\nSe inicializo el TCB PADRE\n");
-					meter_en_ready(1, nuevoTCB);
 					consola_conectada->cantidad_hilos = 1;
+
+					hilo_t * nuevo = malloc(sizeof(hilo_t));
+					memcpy(&nuevo->tcb, nuevoTCB, sizeof(TCB_struct));
+					nuevo->cola = READY;
+					list_add(HILOS_SISTEMA, nuevo);
+
+					meter_en_ready(1, nuevoTCB);
 					break;
 
 				case se_produjo_entrada:
@@ -186,27 +218,25 @@ void boot() {
 
 	printf("\n    INICIANDO BOOT   \n");
 
-	socket_gral = crear_servidor(PUERTO, backlog);
-	if (socket_gral < 0) {
-		printf("No se pudo crear el servidor\n");
-		exit(-1);
-	}
-	printf("Se ha creado el servidor exitosamente\n");
-
 	char * syscalls = extraer_syscalls(SYSCALLS);
 
 	printf("\n      CONECTANDO CON LA MSP\n");
-	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
-	if (socket_MSP < 0) {
-		printf("FALLO al conectar con la MSP\n");
-		exit(-1);
-	}
 
-	handshake_MSP(socket_MSP);
+	//socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
+	//if (socket_MSP < 0) {
+	//	printf("FALLO al conectar con la MSP\n");
+	//	exit(-1);
+	//}
+	//printf("Se creo el socket de la MSP que es %d\n", socket_MSP);
+
+	//handshake_MSP(socket_MSP);
+
+
 	printf("\n Solicitando segmentos principales en la MSP\n");
 
 	TCB_struct * tcb_km = malloc(sizeof(TCB_struct));
 	tcb_km->KM = 1;
+	tcb_km->PID = pid_KM_boot;
 
 	int base_segmento_codigo = solicitar_segmento(tcb_km,
 			tamanio_codigo_syscalls);
@@ -227,7 +257,6 @@ void boot() {
 	tcb_km->M = base_segmento_codigo;
 	tcb_km->tamanioSegmentoCodigo = tamanio_codigo_syscalls;
 	tcb_km->P = 0;
-	tcb_km->PID = pid_KM_boot;
 	tcb_km->S = base_segmento_stack;
 	tcb_km->TID = 0;
 	tcb_km->X = base_segmento_stack;
@@ -241,7 +270,10 @@ void boot() {
 	queue_push(block.prioridad_0, (void *) tcb_km);
 	sem_post(&sem_kmDisponible);
 
+	t_log * logger = log_create("../panel/lg", "KERNEL",1, LOG_LEVEL_DEBUG);
+
 	printf("Esperando conexiones...\n");
+	log_debug(logger, "ESPERANDO CONEXIONES");
 
 	FD_ZERO(&consola_set);
 	FD_ZERO(&CPU_set);
@@ -251,9 +283,24 @@ void boot() {
 	descriptor_mas_alto_consola = 0;
 	descriptor_mas_alto_cpu = 0;
 
+	socket_gral = crear_servidor(PUERTO, backlog);
+	if (socket_gral < 0) {
+		printf("No se pudo crear el servidor\n");
+		exit(-1);
+	}
+	printf("Se ha creado el servidor exitosamente en el socket %d\n", socket_gral);
+
 	while (1) {
+		log_debug(logger, "Se esta esperando recibir la conexion!!!!");
+		//socket_gral = crear_servidor(PUERTO, backlog);
+		//if (socket_gral < 0) {
+		//	printf("No se pudo crear el servidor\n");
+		//	exit(-1);
+		//}
+		//printf("Se ha creado el servidor exitosamente en el socket %d\n", socket_gral);
 
 		int socket_conectado = recibir_conexion(socket_gral);
+		log_debug(logger, "SE RECIBIO UNA CONEXION! SOCKET: %d\n", socket_conectado);
 		int modulo_conectado = -1;
 		t_datosAEnviar * datos = recibir_datos(socket_conectado);
 		modulo_conectado = datos->codigo_operacion;
@@ -283,8 +330,6 @@ void boot() {
 			cpu_conectada->bit_estado = libre;
 			cpu_conectada->socket_CPU = socket_conectado;
 			list_add(CPU_list, cpu_conectada);
-			printf("LISTA DE CPUS ");
-			hilos(CPU_list); //TODO: SACAR ESTE LOGUEO!!!!
 			sem_post(&sem_CPU);
 			if (descriptor_mas_alto_cpu == 0) {
 				descriptor_mas_alto_cpu = socket_conectado;
@@ -307,7 +352,7 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	tcb_bloqueado->id_recurso = dirSyscall;
 	tcb_bloqueado->tcb = *tcb;
 	list_add(block.prioridad_1, tcb_bloqueado);
-	hilos(block.prioridad_1);
+	loguear(BLOCK, tcb);
 	queue_push(SYS_CALL, tcb);
 	sem_post(&sem_procesoListo);
 	sem_post(&sem_procesoListo);
@@ -316,9 +361,9 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 void crear_hilo(TCB_struct tcb, int socketCPU) {
 
 	TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
-
+	printf("Por solicitarle segmento a la msp\n");
 	int base_stack = solicitar_segmento(&tcb, TAMANIO_STACK);
-
+	printf("Me devolvio base %d\n", base_stack);
 	nuevoTCB->PID = tcb.PID;
 	int tid = obtener_TID();
 	nuevoTCB->X = base_stack;
@@ -332,11 +377,22 @@ void crear_hilo(TCB_struct tcb, int socketCPU) {
 	copiarRegistros(nuevoTCB->registrosProgramacion, tcb.registrosProgramacion);
 
 	t_datosAEnviar * datos = crear_paquete(0, nuevoTCB, sizeof(TCB_struct));
-	enviar_datos(socketCPU, datos);
+	printf("por enviarle el nuevo hilo a la cpu socket %d\n", socketCPU);
+	if(enviar_datos(socketCPU, datos)<0){
+
+	}else{
+
+	printf("Datos enviados\n");
+	}
 
 }
 
 void planificar_hilo_creado(TCB_struct * nuevoTCB) {
+
+	hilo_t * nuevo = malloc(sizeof(hilo_t));
+	memcpy(&nuevo->tcb, nuevoTCB, sizeof(TCB_struct));
+	nuevo->cola = READY;
+	list_add(HILOS_SISTEMA, nuevo);
 
 	meter_en_ready(1, nuevoTCB);
 
@@ -358,23 +414,35 @@ void copiarRegistros(int registro1[5], int registro2[5]) {
  * segmento reservado*/
 int solicitar_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 
+	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
+		if (socket_MSP < 0) {
+			printf("FALLO al conectar con la MSP\n");
+			exit(-1);
+		}
+
+		handshake_MSP(socket_MSP);
+
+
 	char * datos = malloc(2 * sizeof(int));
 	memcpy(datos, &(tcb->PID), sizeof(int));
 	memcpy(datos + sizeof(int), &tamanio_del_segmento, sizeof(int));
-
 	t_datosAEnviar * paquete = crear_paquete(crear_segmento, (void*) datos,
 			2 * sizeof(int));
+	printf("TAMANIO DEL SEGMENTO %d, PID %d, SOCKET MSP %d, PAQUETE CODOP %d, TAMANIO PAQUETE %d", tamanio_del_segmento, tcb->PID, socket_MSP, paquete->codigo_operacion, paquete->tamanio);
 
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
+	printf("ESPERANDO RESPUESTA DE LA MSP\n");
+	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
+	printf("RECIBI ALGO!\n");
 	if (respuesta == NULL ) {
 		printf("no se recibio una respuesta\n");
 	}
 	int * dir_base = malloc(sizeof(int));
 	memcpy(dir_base, respuesta->datos, sizeof(int));
 	free(respuesta->datos);
-	free(respuesta);
+	free(respuesta); //TODO LEER CODIGO DE OPERACION, NO DIR_BASE
 	if ((*dir_base == error_memoriaLlena) || (*dir_base == error_general)) {
 		struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
 		//Copio el tid padre en el tcb para poder terminar la ejecucion del ese tid y que en consecuencia
@@ -391,6 +459,15 @@ int solicitar_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 		void * bytes) {
 
+	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
+		if (socket_MSP < 0) {
+			printf("FALLO al conectar con la MSP\n");
+			exit(-1);
+		}
+
+		handshake_MSP(socket_MSP);
+
+
 	char * datos = malloc((3 * sizeof(int)) + tamanio);
 
 	memcpy(datos, &tcb->PID, sizeof(int));
@@ -400,10 +477,12 @@ void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 
 	t_datosAEnviar * paquete = crear_paquete(escribir_en_memoria, datos,
 			(3 * sizeof(int)) + tamanio);
+	//enviar_datos(socket_MSP, paquete);
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
 	free(paquete);
-
+	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
+	//paquete = recibir_datos(socket_MSP);
 	paquete = recibir_datos(socket_MSP);
 	if ((paquete->codigo_operacion == error_segmentationFault)
 			|| (paquete->codigo_operacion == error_general)) {
@@ -440,7 +519,7 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
 	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
-	hilos(exec);
+
 	free(tcb_exec);
 
 	/* Fijarse si hay algun hilo esperando joins
@@ -460,6 +539,15 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 
 	if (consola_asociada->cantidad_hilos == 0) {
 
+		socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
+			if (socket_MSP < 0) {
+				printf("FALLO al conectar con la MSP\n");
+				exit(-1);
+			}
+
+			handshake_MSP(socket_MSP);
+
+
 		int tamanio = 2 * sizeof(int);
 		void * datos = malloc(tamanio);
 		memcpy(datos, &consola_asociada->PID, sizeof(int));
@@ -474,7 +562,8 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		free(datos);
 		free(paquete->datos);
 		free(paquete);
-
+		paquete = recibir_datos(socket_MSP);
+		free(paquete);
 		paquete = crear_paquete(terminar_conexion, NULL, 0);
 		if (enviar_datos(consola_asociada->socket_consola, paquete) < 0) {
 
@@ -577,6 +666,7 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 	if (tcb->KM == 1) {
 		printf("FINALIZO LA EJECUCION DE UNA INTERRUPCION\n");
 		queue_push(block.prioridad_0, tcb);
+		loguear(BLOCK, tcb);
 
 		bool tiene_mismo_tid(struct_bloqueado * estructura) {
 			return estructura->tcb.TID == TID;
@@ -618,8 +708,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 		exit(-1);
 	}
 	list_add(exec, tcb);
-	printf("EXEC ");
-	hilos(exec);
+	loguear(EXEC, tcb);
 	void * mensaje = malloc(sizeof(TCB_struct) + sizeof(int));
 	memcpy(mensaje, tcb, sizeof(TCB_struct));
 	memcpy(mensaje + sizeof(TCB_struct), &QUANTUM, sizeof(int));
@@ -645,8 +734,6 @@ void dispatcher() {
 					tcb_ejecutandoSysCall->TID);
 			sem_wait(&sem_kmDisponible);
 			TCB_struct * tcb_km = queue_pop(block.prioridad_0);
-			printf("BLOQUEADOS PRIORIDAD 0 ");
-			hilos(block.prioridad_0->elements);
 			copiarRegistros(tcb_km->registrosProgramacion,
 					tcb_ejecutandoSysCall->registrosProgramacion);
 
