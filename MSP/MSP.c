@@ -325,7 +325,7 @@ uint32_t crearSegmento(int PID, int tamanio) {
 
 	sem_post(&mutex_procesos);
 
-	printf("\nLa base del segmento creado es: %d", segmentoVacio->baseSegmento);
+	printf("La base del segmento creado es: %d \n", segmentoVacio->baseSegmento);
 
 	return segmentoVacio->baseSegmento;
 }
@@ -481,7 +481,7 @@ uint32_t destruirSegmento(int PID, uint32_t baseSegmento) {
 	sem_post(&mutex_procesos);
 
 	log_info(logger, "El segmento ha sido detruido exitósamente");
-	printf("El segmento ha sido detruido exitósamente");
+	printf("El segmento ha sido detruido exitósamente \n");
 	return operacion_exitosa;
 }
 
@@ -915,7 +915,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,
 
 	sem_post(&mutex_procesos);
 	log_info(logger, "Se ha escrito en memoria exitósamente");
-	printf("Se ha escrito en memoria exitósamente");
+	printf("Se ha escrito en memoria exitósamente\n");
 	free(aux);
 
 	return operacion_exitosa;
@@ -1212,7 +1212,7 @@ void iniciarConexiones() {
 	while (1) {
 
 		int socket_conectado = recibir_conexion(socket_general);
-		printf("\nSe recibio una conexión!\n");
+		printf("\n*** Se recibio una conexión! ***\n");
 
 		int modulo_conectado = -1;
 		t_datosAEnviar* datos = recibir_datos(socket_conectado);
