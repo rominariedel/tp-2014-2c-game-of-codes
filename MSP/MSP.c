@@ -135,7 +135,6 @@ void inicializarConsola() {
 		printf("\r\n");
 	}
 	log_debug(logger, "Se cerro la Consola");
-	//deberia matar al hilo? todo
 }
 
 void interpretarComando(char* comando) {
@@ -201,7 +200,12 @@ void interpretarComando(char* comando) {
 		log_debug(logger, "Interpretó el comando de listar_marcos");
 		tablaMarcos();
 	}
-
+	else if (string_equals_ignore_case(operacion[0], "Cambiar_algoritmo")) {
+		log_debug(logger, "Interpretó el comando de Cambiar_algoritmo");
+		log_debug(logger, "Los parámetros para la operación son: %s", parametros[0]);
+		sust_pags = parametros[0];
+		printf("Algoritmo de Sustitución de Páginas =  %s \n", sust_pags);
+	}
 	else {
 		log_debug(logger, "No existe esa operación");
 	}
