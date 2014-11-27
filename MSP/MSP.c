@@ -1256,6 +1256,7 @@ void interpretarOperacion(int* socket) {
 	while (1) {
 
 		datos = recibir_datos(*socket);
+		printf("Se recibieron datos! Codigo de operacion: %d", datos->codigo_operacion);
 
 		switch (datos->codigo_operacion) {
 
@@ -1285,6 +1286,7 @@ void interpretarOperacion(int* socket) {
 			log_info(logger,"Los parámetros que se recibieron son: %d, %d", pid, baseSegmento);
 
 			respuesta = destruirSegmento(pid, baseSegmento);
+
 
 			//paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
