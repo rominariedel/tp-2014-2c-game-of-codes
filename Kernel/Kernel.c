@@ -303,12 +303,12 @@ void boot() {
 }
 
 void interrumpir(TCB_struct * tcb, int dirSyscall) {
-	queue_push(SYS_CALL, tcb);
 	struct_bloqueado * tcb_bloqueado = malloc(sizeof(struct_bloqueado));
 	tcb_bloqueado->id_recurso = dirSyscall;
 	tcb_bloqueado->tcb = *tcb;
 	list_add(block.prioridad_1, tcb_bloqueado);
 	hilos(block.prioridad_1);
+	queue_push(SYS_CALL, tcb);
 	sem_post(&sem_procesoListo);
 	sem_post(&sem_procesoListo);
 }
@@ -481,11 +481,10 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		}
 		free(paquete);
 		printf("DESCONECTE LA CONSOLA ASOCIADA\n");
-	}else if(waitear && !(consola_asociada->cantidad_hilos < 1)){
+	} else if (waitear && !(consola_asociada->cantidad_hilos < 1)) {
 
 		sem_post(&sem_CPU);
 	}
-
 
 }
 
@@ -576,8 +575,15 @@ void fijarse_joins(int tid) {
 void finalizo_ejecucion(TCB_struct *tcb) {
 
 	if (tcb->KM == 1) {
+		printf("FINALIZO LA EJECUCION DE UNA INTERRUPCION\n");
 		queue_push(block.prioridad_0, tcb);
-		struct_bloqueado * tcb_bloqueado = obtener_bloqueado(tcb->TID);
+
+		bool tiene_mismo_tid(struct_bloqueado * estructura) {
+			return estructura->tcb.TID == TID;
+		}
+		struct_bloqueado * tcb_bloqueado = list_remove_by_condition(
+				block.prioridad_1, (void*) tiene_mismo_tid);
+
 		tcb_bloqueado->tcb.registrosProgramacion[0] =
 				tcb->registrosProgramacion[0];
 		tcb_bloqueado->tcb.registrosProgramacion[1] =
@@ -592,6 +598,7 @@ void finalizo_ejecucion(TCB_struct *tcb) {
 		sem_post(&sem_kmDisponible);
 		meter_en_ready(1, &tcb_bloqueado->tcb);
 	} else {
+		printf("FINALIZO LA EJECUCION DE UN TCB COMUNACHO\n");
 		sacar_de_ejecucion(tcb, true);
 	}
 }
