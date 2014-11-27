@@ -33,7 +33,7 @@ void SETM(tparam_setm* parametrosSetm){
 
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)), sizeof(int), solicitarMemoria);
+	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)), sizeof(int), solicitarMemoria);  //TODO cuanto le pido que lea????????? un int???
 	int status= procesarRespuesta(respuesta);
 
 	int* valorMemoria = malloc(respuesta->tamanio);
