@@ -130,7 +130,7 @@ int main(int cantArgs, char** args){
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 			log_info(LOGCPU, " Solicito a MSP proximaInstruccionAEJecutar ");
 
-			log_info(LOGCPU, "Puntero Instruccion Actual: %d", punteroInstruccionActual);
+			log_info(LOGCPU, "---------------------------------------- Puntero Instruccion Actual: %d", punteroInstruccionActual);
 			t_datosAEnviar* respuesta = malloc(sizeof(t_datosAEnviar));
 			if(KMactual == 1){
 				log_info(LOGCPU, "Leo el archivo de SYSCALL");
@@ -166,11 +166,18 @@ int main(int cantArgs, char** args){
 				if(aumentoPuntero != -1){
 				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
 				log_info(LOGCPU, "Incrementar los 4 + respuesta : %d", statusEjecutar);
+				printf( "---------------------------------------- Puntero Instruccion Actual: %d \n", punteroInstruccionActual);
 				punteroInstruccionActual += (statusEjecutar + 4);
+				printf( "---------------------------------------- AUMENTAR Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
+				log_info(LOGCPU, "---------------------------------------- Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
 				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
 				}
-				if(finalizarEjecucion == -2){
+				if(finalizarEjecucion == -2){ //ES PARA CUANDO SE EJECUTA XXXX()
 					abortar(finaliza_ejecucion);
+					break;
+				}
+				if(finalizarEjecucion == -3){
+					abortar(interrupcion);
 					break;
 				}
 			}
@@ -342,6 +349,7 @@ void devolverTCBactual(int codOperacion){
 	actualizarTCB();
 
 	log_info(LOGCPU, "Armando paquete con TCB actual PID %d, TID %d", PIDactual, TIDactual);
+	log_info(LOGCPU, "Armando paquete con TCB actual PID %d, TID %d");
 	void * mensaje = malloc(sizeof(t_TCB));
 	memcpy(mensaje, TCBactual, sizeof(t_TCB));
 	t_datosAEnviar* paquete = crear_paquete(codOperacion, mensaje, sizeof(t_TCB));
@@ -430,10 +438,35 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		if(status < 0){
 				return status;
 				}else{
-					tparam_setm* parametros = (tparam_setm*) procesarRespuestaMSP(respuesta);
-					free(respuesta);
+
+					t_datosAEnviar* respuesta1 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 4, 4, solicitarMemoria);
+					int* numeroSETM = malloc(respuesta1->tamanio);
+					memcpy(numeroSETM, respuesta->datos, 4);
+
+					t_datosAEnviar* respuesta2 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 8, 1, solicitarMemoria);
+					char* reg1SETM = malloc(respuesta2->tamanio);
+					memcpy(reg1SETM, respuesta2->datos, 1);
+
+					t_datosAEnviar* respuesta3 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 9, 1, solicitarMemoria);
+					char* reg2SETM = malloc(respuesta3->tamanio);
+					memcpy(reg2SETM, respuesta3->datos, 1);
+
+					tparam_setm* parametros = malloc(sizeof(tparam_setm));
+					parametros->num = *numeroSETM;
+					parametros->reg1 = reg1SETM[0];
+					parametros->reg2 = reg2SETM[0];
 					log_info(LOGCPU, "SETM(%d,%c,%c)",parametros->num, parametros->reg1, parametros->reg2);
 					SETM(parametros);
+
+/*
+					char* parametrosSETM = malloc(respuesta->tamanio);
+					parametrosSETM = procesarRespuestaMSP(respuesta);
+					tparam_setm* parametros = (tparam_setm*) procesarRespuestaMSP(respuesta);
+					free(respuesta);
+					printf("PARAMETROS SETM: %s", procesarRespuestaMSP(respuesta));
+
+					log_info(LOGCPU, "SETM(%d,%c,%c)",parametros->num, parametros->reg1, parametros->reg2);
+					SETM(parametros); */
 					return sizeof(tparam_setm);
 				}
 	}
@@ -628,7 +661,17 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		if(status < 0){
 			return status;
 			}else{
-				tparam_push* parametros = (tparam_push *) procesarRespuestaMSP(respuesta);
+				t_datosAEnviar* respuesta1 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 4, 4, solicitarMemoria);
+				int* numeroPUSH = malloc(respuesta1->tamanio);
+				memcpy(numeroPUSH, respuesta->datos, 4);
+
+				t_datosAEnviar* respuesta2 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 8, 1, solicitarMemoria);
+				char* reg1PUSH = malloc(respuesta2->tamanio);
+				memcpy(reg1PUSH, respuesta2->datos, 1);
+
+				tparam_push* parametros = malloc(sizeof(tparam_push));
+				parametros->numero = *numeroPUSH;
+				parametros->registro = reg1PUSH[0];
 				log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 				PUSH(parametros);
 				return sizeof(tparam_push);
@@ -640,6 +683,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		if(status < 0){
 			return status;
 			}else{
+				printf("----------------------------------------------------------------RESPUESTA: %p", respuesta->datos);
+				log_info(LOGCPU, "----------------------------------------------------------------RESPUESTA: %p", respuesta->datos);
 				tparam_take* parametros = (tparam_take *) procesarRespuestaMSP(respuesta);
 				log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
 				TAKE(parametros);

@@ -133,7 +133,7 @@ void INTE(tparam_inte* parametrosInte){
 	printf("PARAMETROS INTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE: %d", parametrosInte->direccion);
 	KERNEL_ejecutarRutinaKernel(interrupcion ,parametrosInte->direccion);
 	aumentoPuntero = -1;
-	finalizarEjecucion = -1;
+	finalizarEjecucion = -3;
 
 
 	/*
@@ -177,7 +177,7 @@ void PUSH(tparam_push* parametrosPush){
 		if(respuestaMSP < 0){
 			finalizarEjecucion = -1;
 		}else{
-		baseStackActual =+ parametrosPush->numero;
+		baseStackActual += parametrosPush->numero;
 		}
 	}
 	free(paquete);
