@@ -1238,7 +1238,7 @@ void iniciarConexiones() {
 
 }
 
-void interpretarOperacion(int* socket) {
+void interpretarOperacion(int* socket_conectado) {
 	int seguimiento = 1;
 
 	t_datosAEnviar* datos;
@@ -1252,9 +1252,9 @@ void interpretarOperacion(int* socket) {
 
 	while (seguimiento) {
 
-		datos = recibir_datos(*socket);
+		datos = recibir_datos(*socket_conectado);
 		//printf("Se recibieron datos! Codigo de operacion: %d \n", datos->codigo_operacion);
-		log_debug(logger,"Se recibieron datos del socket : %d", &socket);
+		log_debug(logger,"Se recibieron datos del socket : %d", socket_conectado);
 
 		if (datos == NULL){
 			log_debug(logger, "Se desconectó la CPU");
@@ -1277,9 +1277,9 @@ void interpretarOperacion(int* socket) {
 
 				paquete = crear_paquete(1, (void*) &respuesta, sizeof(int));
 
-				int r= enviar_datos(*socket, paquete);
+				int r= enviar_datos(*socket_conectado, paquete);
 
-				log_debug(logger,"se enviaron los datos %d al socket %d", r, &socket);
+				log_debug(logger,"se enviaron los datos %d al socket %d", r, socket_conectado);
 
 				break;
 
@@ -1297,7 +1297,7 @@ void interpretarOperacion(int* socket) {
 
 				log_debug(logger,"volvi aca");
 				paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
-				int enviaron = enviar_datos(*socket, paquete);
+				int enviaron = enviar_datos(*socket_conectado, paquete);
 				if (enviaron == 0){
 					log_debug(logger,"se enviaron");
 				}
@@ -1333,7 +1333,7 @@ void interpretarOperacion(int* socket) {
 
 				paquete = crear_paquete(codigo_operacion, (void*) resultado, sizeof(int));
 
-				enviar_datos(*socket, paquete);
+				enviar_datos(*socket_conectado, paquete);
 
 				free(resultado);
 
@@ -1371,7 +1371,7 @@ void interpretarOperacion(int* socket) {
 
 				paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
 
-				enviar_datos(*socket, paquete);
+				enviar_datos(*socket_conectado, paquete);
 
 				free(bytesAEscribir);
 				break;
