@@ -20,8 +20,8 @@
 #include <semaphore.h>
 #include <commons/collections/dictionary.h>
 #include <commons/log.h>
-#include "../ansisop-panel/panel.h"
-#include "../ansisop-panel/kernel.h"
+#include "../panel/panel.h"
+#include "../panel/kernel.h"
 
 /*          ESTRUCTURAS          */
 
@@ -128,6 +128,7 @@ struct_CPU * obtener_CPUAsociada(int socket_cpu);
 void mandar_a_exit(TCB_struct*);
 TCB_struct * obtener_tcbEjecutando(int TID);
 void loguear(t_cola cola, TCB_struct * tcb);
+hilo_t * obtener_hilo_asociado(TCB_struct * tcb);
 
 enum mensajes {
 

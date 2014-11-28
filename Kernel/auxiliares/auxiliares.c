@@ -251,14 +251,15 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&dirSysCall, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					//instruccion_protegida("Interrupcion", (t_hilo*) tcb); TODO
+
+					instruccion_protegida("Interrupcion", (t_hilo*) obtener_hilo_asociado(tcb));
 					printf("LLEGO LA DIRECCIONNANANANANANANANANANA: %d\n",
 							dirSysCall);
 					interrumpir(tcb, dirSysCall);
 					break;
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					//instruccion_protegida("Crear_Hilo", (t_hilo*) tcb); TODO
+					instruccion_protegida("Crear_Hilo", (t_hilo*) obtener_hilo_asociado(tcb));
 					crear_hilo(*tcb, n_descriptor);
 					break;
 				case planificar_nuevo_hilo: //Aca llega el TCB listo para planificar con su stack inicializado
@@ -287,7 +288,7 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
-					//instruccion_protegida("Join", (t_hilo*) tcb); TODO
+					instruccion_protegida("Join", (t_hilo*) obtener_hilo_asociado(tcb));
 					realizar_join(tcb, tid_a_esperar);
 
 					break;
@@ -295,14 +296,14 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					//instruccion_protegida("Bloquear", (t_hilo*) tcb); //TODO
+					instruccion_protegida("Bloquear", (t_hilo*) obtener_hilo_asociado(tcb));
 					liberar_cpu(n_descriptor);
 					realizar_bloqueo(tcb, id_recurso);
 
 					break;
 				case despertar:
 					memcpy(&id_recurso, datos->datos, sizeof(int));
-					//instruccion_protegida("Despertar", (t_hilo*) tcb); //TODO
+					instruccion_protegida("Despertar", (t_hilo*) obtener_hilo_asociado(tcb));
 					realizar_desbloqueo(id_recurso);
 
 					break;
@@ -348,7 +349,7 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 void producir_salida_estandar(int pid, char* cadena) {
 	TCB_struct * tcb = obtener_tcbEjecutando(pid);
 	if(tcb != NULL){
-	//instruccion_protegida("Salida_Estandar", (t_hilo*) tcb); //TODO
+	instruccion_protegida("Salida_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
 	}else{
 		printf("NO se encontro tcb\n");
 	}
@@ -371,7 +372,7 @@ void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 
 	TCB_struct * tcb = obtener_tcbEjecutando(pid);
 	if(tcb != NULL){
-	//instruccion_protegida("Entrada_Estandar", (t_hilo*) tcb); //TODO
+	instruccion_protegida("Entrada_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
 	}else{
 		printf("NO se encontro tcb\n");
 	}
@@ -514,4 +515,14 @@ TCB_struct * obtener_tcbEjecutando(int TID){
 	}
 
 	return list_find(exec, (void*) tiene_mismo_tid);
+}
+
+hilo_t * obtener_hilo_asociado(TCB_struct * tcb){
+
+	bool es_hilo(hilo_t * hilo){
+		return hilo->tcb.TID == tcb->TID;
+	}
+
+	return list_find(HILOS_SISTEMA, (void*)es_hilo);
+
 }
