@@ -19,8 +19,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <commons/collections/dictionary.h>
-#include "../ansisop-panel/panel.h"
-#include "../ansisop-panel/kernel.h"
+#include <commons/log.h>
+#include "../panel/panel.h"
+#include "../panel/kernel.h"
 
 /*          ESTRUCTURAS          */
 
@@ -67,6 +68,10 @@ typedef struct bloqueado {
 	TCB_struct tcb;
 } struct_bloqueado;
 
+typedef struct hilo {
+	TCB_struct tcb;
+	t_cola cola;
+}hilo_t;
 /*TIPOS DE BLOQUEADOS: manejo
  * INTERRUMPIDOS POR EJECUTAR SYSCALLS -> BLOCK.prioridad_1 && SYSCALLS
  * ESPERANDO UN RECURSO -> dictionary >> key=recurso >> t_queue *
@@ -122,6 +127,8 @@ int chequear_proceso_abortado(TCB_struct *);
 struct_CPU * obtener_CPUAsociada(int socket_cpu);
 void mandar_a_exit(TCB_struct*);
 TCB_struct * obtener_tcbEjecutando(int TID);
+void loguear(t_cola cola, TCB_struct * tcb);
+hilo_t * obtener_hilo_asociado(TCB_struct * tcb);
 
 enum mensajes {
 

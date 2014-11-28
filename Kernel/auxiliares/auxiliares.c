@@ -51,6 +51,8 @@ void crear_colas() {
 	hilos_join = list_create();
 
 	dic_bloqueados = dictionary_create();
+
+	HILOS_SISTEMA = list_create();
 }
 
 void free_listas() {
@@ -71,20 +73,32 @@ bool CPU_esta_libre(struct_CPU * cpu) {
 	return (cpu->bit_estado == 0);
 }
 
+void loguear(t_cola cola, TCB_struct * tcb){
+
+	bool tiene_tcb(hilo_t * hilo){
+		return hilo->tcb.TID == tcb->TID;
+	}
+
+	hilo_t * hilo = list_find(HILOS_SISTEMA, (void*) tiene_tcb);
+	memcpy(&hilo->tcb, tcb, sizeof(TCB_struct*));
+	hilo->cola = cola;
+
+	hilos(HILOS_SISTEMA);
+}
+
 void meter_en_ready(int prioridad, TCB_struct * tcb) {
 	sem_wait(&sem_READY);
-	printf("READY ");
+
 	switch (prioridad) {
 	case 0:
 		queue_push(ready.prioridad_0, tcb);
-		hilos(ready.prioridad_0->elements);
 		break;
 	case 1:
 		queue_push(ready.prioridad_1, tcb);
-		hilos(ready.prioridad_1->elements);
 		break;
 	}
 
+	loguear(READY, tcb);
 	sem_post(&sem_READY);
 	sem_post(&sem_procesoListo);
 	sem_post(&sem_procesoListo);
@@ -93,17 +107,18 @@ void meter_en_ready(int prioridad, TCB_struct * tcb) {
 TCB_struct * sacar_de_ready(int prioridad) {
 	sem_wait(&sem_READY);
 	TCB_struct * tcb = NULL;
+
+
 	printf("READY ");
 	switch (prioridad) {
 	case 0:
 		tcb = queue_pop(ready.prioridad_0);
-		hilos(ready.prioridad_0->elements);
 		break;
 	case 1:
 		tcb = queue_pop(ready.prioridad_1);
-		hilos(ready.prioridad_1->elements);
 		break;
 	}
+	loguear(READY, tcb);
 	sem_post(&sem_READY);
 	return tcb;
 }
@@ -118,8 +133,6 @@ void liberar_cpu(int socket) {
 
 	list_remove_and_destroy_by_condition(exec, (void*) tiene_mismo_tid, free);
 
-	printf("EXEC ");
-	hilos(exec);
 	cpu->PID = -1;
 
 	sem_post(&sem_CPU);
@@ -238,14 +251,15 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&dirSysCall, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					instruccion_protegida("Interrupcion", (t_hilo*) tcb);
+
+					instruccion_protegida("Interrupcion", (t_hilo*) obtener_hilo_asociado(tcb));
 					printf("LLEGO LA DIRECCIONNANANANANANANANANANA: %d\n",
 							dirSysCall);
 					interrumpir(tcb, dirSysCall);
 					break;
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					instruccion_protegida("Crear_Hilo", (t_hilo*) tcb);
+					instruccion_protegida("Crear_Hilo", (t_hilo*) obtener_hilo_asociado(tcb));
 					crear_hilo(*tcb, n_descriptor);
 					break;
 				case planificar_nuevo_hilo: //Aca llega el TCB listo para planificar con su stack inicializado
@@ -274,7 +288,7 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
-					instruccion_protegida("Join", (t_hilo*) tcb);
+					instruccion_protegida("Join", (t_hilo*) obtener_hilo_asociado(tcb));
 					realizar_join(tcb, tid_a_esperar);
 
 					break;
@@ -282,14 +296,14 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					instruccion_protegida("Bloquear", (t_hilo*) tcb);
+					instruccion_protegida("Bloquear", (t_hilo*) obtener_hilo_asociado(tcb));
 					liberar_cpu(n_descriptor);
 					realizar_bloqueo(tcb, id_recurso);
 
 					break;
 				case despertar:
 					memcpy(&id_recurso, datos->datos, sizeof(int));
-					instruccion_protegida("Despertar", (t_hilo*) tcb);
+					instruccion_protegida("Despertar", (t_hilo*) obtener_hilo_asociado(tcb));
 					realizar_desbloqueo(id_recurso);
 
 					break;
@@ -335,7 +349,7 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 void producir_salida_estandar(int pid, char* cadena) {
 	TCB_struct * tcb = obtener_tcbEjecutando(pid);
 	if(tcb != NULL){
-	instruccion_protegida("Salida_Estandar", (t_hilo*) tcb);
+	instruccion_protegida("Salida_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
 	}else{
 		printf("NO se encontro tcb\n");
 	}
@@ -358,7 +372,7 @@ void producir_entrada_estandar(int pid, char * id_tipo, int socket_CPU,
 
 	TCB_struct * tcb = obtener_tcbEjecutando(pid);
 	if(tcb != NULL){
-	instruccion_protegida("Entrada_Estandar", (t_hilo*) tcb);
+	instruccion_protegida("Entrada_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
 	}else{
 		printf("NO se encontro tcb\n");
 	}
@@ -400,7 +414,7 @@ void realizar_join(TCB_struct * tcb, int tid_a_esperar) {
 	estructura->tid_a_esperar = tid_a_esperar;
 	estructura->tcb_llamador = tcb;
 	list_add(hilos_join, estructura);
-	hilos(hilos_join);
+	loguear(BLOCK, tcb);
 }
 
 /*Los bloqueados por recurso se manejan con un diccionario con colas. Cada recurso es una entrada en el diccionario.
@@ -414,14 +428,13 @@ void realizar_bloqueo(TCB_struct * tcb, int id_recurso) {
 		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados,
 				recurso);
 		queue_push(bloqueados_por_recurso, tcb);
-		hilos(bloqueados_por_recurso->elements);
 	} else {
 		t_queue * nuevo_bloqueado = queue_create();
 		queue_push(nuevo_bloqueado, tcb);
-		hilos(nuevo_bloqueado->elements);
 		dictionary_put(dic_bloqueados, recurso, nuevo_bloqueado);
 		printf("SE AGREGO UN NUEVO RECURSO A BLOQUEAR %d\n", id_recurso);
 	}
+		loguear(BLOCK, tcb);
 }
 
 void realizar_desbloqueo(int id_recurso) {
@@ -432,7 +445,6 @@ void realizar_desbloqueo(int id_recurso) {
 		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados,
 				recurso);
 		TCB_struct * tcb = queue_pop(bloqueados_por_recurso);
-		hilos(bloqueados_por_recurso->elements);
 		meter_en_ready(1, tcb);
 	} else {
 		//NO EXISTEN BLOQUEADOS DE ESE RECURSO
@@ -458,12 +470,27 @@ void mandar_a_exit(TCB_struct * tcb) {
 	void * datos = malloc(tamanio);
 	memcpy(datos, &tcb->PID, sizeof(int));
 	memcpy(datos + sizeof(int), &tcb->X, sizeof(int));
+
+	socket_MSP = crear_cliente(IP_MSP, PUERTO_MSP);
+		if (socket_MSP < 0) {
+			printf("FALLO al conectar con la MSP\n");
+			exit(-1);
+		}
+
+		handshake_MSP(socket_MSP);
+
+
 	printf("Se va a solicitar destruir otro segmento base %d\n", tcb->X);
 	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos, tamanio);
-	enviar_datos(socket_MSP, paquete);
+	if(enviar_datos(socket_MSP, paquete)<0){
+		printf("NO SE HA PODIDO SOLICITAR LA DESTRUCCION DEL SEGMENTO!!! \n");
+	}
 	free(datos);
 	free(paquete);
-
+	printf("Esperando recibir datos de la msp\n");
+	paquete = recibir_datos(socket_MSP);
+	printf("Datos recibidos \n");
+	free(paquete);
 	struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);
 
 	if (consola_asociada == NULL ) {
@@ -476,7 +503,7 @@ void mandar_a_exit(TCB_struct * tcb) {
 	consola_asociada->cantidad_hilos--;
 
 	queue_push(e_exit, tcb);
-	hilos(e_exit->elements);
+	loguear(EXIT, tcb);
 
 	sem_post(&sem_exit);
 }
@@ -488,4 +515,14 @@ TCB_struct * obtener_tcbEjecutando(int TID){
 	}
 
 	return list_find(exec, (void*) tiene_mismo_tid);
+}
+
+hilo_t * obtener_hilo_asociado(TCB_struct * tcb){
+
+	bool es_hilo(hilo_t * hilo){
+		return hilo->tcb.TID == tcb->TID;
+	}
+
+	return list_find(HILOS_SISTEMA, (void*)es_hilo);
+
 }

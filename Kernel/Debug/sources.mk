@@ -13,8 +13,7 @@ EXECUTABLES :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+panel \
 auxiliares \
-ansisop-panel \
-ansisop-panel/collections \
 . \
 

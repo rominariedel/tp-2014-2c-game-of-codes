@@ -51,12 +51,16 @@ int main(int argc, char ** argv) {
 		return EXIT_FAILURE;
 	}
 	t_datosAEnviar * paquete;
-	printf("Conectado al Kernel. Ya se puede enviar el codigo ESO\n");
+	printf("Conectado al Kernel. Ya se puede enviar el codigo ESO. Socket %d\n", kernelSocket);
 	log_info(logger, "Se realizo la conexion con el kernel.", "INFO");
 
 	//AUTENTICACION
 	paquete = crear_paquete(soy_consola, NULL, 0);
-	enviar_datos(kernelSocket, paquete);
+	if(enviar_datos(kernelSocket, paquete)>0){
+	printf("SE ENVIARON DATOS\n");
+	}else{
+		printf("NO\n");
+	}
 	free(paquete);
 
 
