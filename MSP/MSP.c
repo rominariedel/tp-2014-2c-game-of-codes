@@ -31,7 +31,7 @@ char* rutaSwap;
 char* MSP_CONFIG;
 int tamanioPag = 256;
 int socket_general;
-int backlog;
+int backlog; //todo validar
 int contadorLRU;
 
 t_list* procesos;
@@ -121,7 +121,7 @@ void inicializarConsola() {
 
 	while (seguimiento) {
 		printf("\n>");
-		fgets(comando, 1500, stdin);
+		fgets(comando, 1500, stdin); //todo
 		//scanf("%s",comando);
 		comando[string_length(comando) - 1] = '\0';
 
@@ -132,6 +132,7 @@ void inicializarConsola() {
 		} else {
 			interpretarComando(comando);
 		}
+		//todo free??
 		printf("\r\n");
 	}
 	log_debug(logger, "Se cerro la Consola");
@@ -320,17 +321,14 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	T_SEGMENTO* segmentoVacio = crearSegmentoVacio(proceso, tamanio);
 
 	list_add(proceso->segmentos, segmentoVacio);
-	log_debug(logger,
-			"Se agrega el segmento a la lista de segmentos del proceso, tamanio: %d", list_size(proceso->segmentos));
+	log_debug(logger, "Se agrega el segmento a la lista de segmentos del proceso, tamanio: %d", list_size(proceso->segmentos));
 
 	log_info(logger,"Se creó exitósamente el segmento");
-	log_info(logger, "La dirección base del segmento creado es %d",
-			segmentoVacio->baseSegmento);
+	log_info(logger, "La dirección base del segmento creado es %d", segmentoVacio->baseSegmento);
 
 	sem_post(&mutex_procesos);
 
 	printf("La base del segmento creado es: %d \n", segmentoVacio->baseSegmento);
-
 	return segmentoVacio->baseSegmento;
 }
 
@@ -360,14 +358,13 @@ int calcularProximoSID(T_PROCESO* proceso) {
 		return 0;
 	}
 
-	T_SEGMENTO* ultimoSegmento = list_get(proceso->segmentos,
-			list_size(proceso->segmentos) - 1);
+	T_SEGMENTO* ultimoSegmento = list_get(proceso->segmentos, list_size(proceso->segmentos) - 1);
 	return ((ultimoSegmento->SID) + 1);
-
 }
 
 t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 	log_debug(logger, "Entro a la funcion crearPaginasPorTamanioSegmento");
+
 	//instancio la lista de paginas
 	t_list* paginas = list_create();
 	log_debug(logger, "Creo la lista de paginas");
@@ -381,21 +378,19 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 	if (division.rem != 0) {
 		cantidadPaginas += 1;
 	}
-	log_debug(logger,
-			"La cantidad de paginas que va a tener el segmento son: %d",
-			cantidadPaginas);
+	log_debug(logger, "La cantidad de paginas que va a tener el segmento son: %d", cantidadPaginas);
 
 	int i;
 	for (i = 0; i < cantidadPaginas; i++) {
 		log_debug(logger, "Entro al for para crear cada pagina");
+
 		//creo una pagina vacia
 		T_PAGINA * paginaVacia = malloc(sizeof(T_PAGINA));
 		paginaVacia->paginaID = i;
 		log_debug(logger, "El id de la pag es: %d", paginaVacia->paginaID);
 		paginaVacia->swapped = false;
 		paginaVacia->marcoID = -1;
-		log_debug(logger, "El id del marco para la pag es: %d",
-				paginaVacia->marcoID);
+		log_debug(logger, "El id del marco para la pag es: %d", paginaVacia->marcoID);
 		paginaVacia->SID = SID;
 		paginaVacia->PID = PID;
 		paginaVacia->contadorLRU = 0;
@@ -413,8 +408,7 @@ t_list* crearPaginasPorTamanioSegmento(int tamanio, int SID, int PID) {
 		log_debug(logger, "Agrego la pagina a la lista de paginas");
 	}
 
-	log_debug(logger, "El tamaño de la lista de paginas es: %d",
-			list_size(paginas));
+	log_debug(logger, "El tamaño de la lista de paginas es: %d", list_size(paginas));
 	return paginas;
 }
 
@@ -438,11 +432,10 @@ void destruirSegmento(int PID, uint32_t baseSegmento) {
 
 	if (proceso != NULL ) {
 		log_debug(logger, "Encontró al proceso con el pid: %d", proceso->PID);
+
 		//busco en la lista de segmentos del proceso el segmento con esa base
-		T_SEGMENTO * seg = list_find(proceso->segmentos,
-				(void*) segmentoPorBase);
-		log_debug(logger, "Encontró al proceso con la base: %d",
-				seg->baseSegmento);
+		T_SEGMENTO * seg = list_find(proceso->segmentos, (void*) segmentoPorBase);
+		log_debug(logger, "Encontró al proceso con la base: %d", seg->baseSegmento);
 
 		if (seg != NULL ) {
 
@@ -453,31 +446,24 @@ void destruirSegmento(int PID, uint32_t baseSegmento) {
 					list_size(seg->paginas));
 
 			//elimino de la lista de segmentos del proceso, el segmento
-			log_debug(logger, "El proceso tiene %d segmentos",
-					list_size(proceso->segmentos));
-			list_remove_by_condition(proceso->segmentos,
-					(void*) segmentoPorBase);
-			log_debug(logger,
-					"Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmento",
+			log_debug(logger, "El proceso tiene %d segmentos", list_size(proceso->segmentos));
+			list_remove_by_condition(proceso->segmentos, (void*) segmentoPorBase);
+			log_debug(logger, "Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmento",
 					list_size(proceso->segmentos));
 
 			sem_wait(&mutex_MemoriaDisponible);
 			memoriaDisponible = memoriaDisponible + sizeof(seg->tamanio);
 			sem_post(&mutex_MemoriaDisponible);
-			log_debug(logger,"llegue aca");
-			printf("cambio la memoria disponible\n");
+
 			free(seg);
-			printf("se libero el segmento\n");
+			log_debug(logger, "se libero el segmento\n");
 		}
 
 		else {
-			log_error(logger,
-					"El segmento no ha sido destruido porque es inexistente");
+			log_error(logger, "El segmento no ha sido destruido porque es inexistente");
 		}
 	} else {
-		log_error(logger,
-				"El segmento no ha sido destruido porque el proceso con PID: %d no existe",
-				PID);
+		log_error(logger, "El segmento no ha sido destruido porque el proceso con PID: %d no existe", PID);
 	}
 
 	sem_post(&mutex_procesos);
@@ -1197,6 +1183,7 @@ uint32_t direccionLogicaToUint32(T_DIRECCION_LOG direccionLogica) {
 
 void iniciarConexiones() {
 	socket_general = crear_servidor(puerto, backlog);
+
 	if (socket_general < 0) {
 		log_error(logger, "No se pudo crear el servidor");
 		exit(-1);
@@ -1207,21 +1194,21 @@ void iniciarConexiones() {
 
 	pthread_t hiloKernel;
 	pthread_t hiloCPU;
-
+	int * sock;
 	while (1) {
-
-		int socket_conectado = recibir_conexion(socket_general);
+		sock = malloc(sizeof(int));
+		*sock = recibir_conexion(socket_general);
 		printf("\n*** Se recibio una conexión! ***\n");
 
 		int modulo_conectado = -1;
-		t_datosAEnviar* datos = recibir_datos(socket_conectado);
+		t_datosAEnviar* datos = recibir_datos(*sock);
 		modulo_conectado = datos->codigo_operacion;
 
 		if (modulo_conectado == soy_CPU) {
 			printf("\nSe conecto una CPU\n");
 			log_info(logger,"Se conectó una CPU");
 			pthread_create(&hiloCPU, NULL, (void*) interpretarOperacion,
-					&socket_conectado);
+					sock);
 		}
 
 		else if (modulo_conectado == soy_kernel) {
@@ -1229,7 +1216,7 @@ void iniciarConexiones() {
 			log_info(logger,"Se concectó el Kernel");
 
 			pthread_create(&hiloKernel, NULL, (void*) interpretarOperacion,
-					&socket_conectado);
+					sock);
 		}
 
 		free(datos->datos);
@@ -1241,6 +1228,7 @@ void iniciarConexiones() {
 void interpretarOperacion(int* socket_conectado) {
 	int seguimiento = 1;
 
+	log_debug(logger,"entro con socket : %d", *socket_conectado);
 	t_datosAEnviar* datos;
 	int pid;
 	int tamanio;
@@ -1254,7 +1242,7 @@ void interpretarOperacion(int* socket_conectado) {
 
 		datos = recibir_datos(*socket_conectado);
 		//printf("Se recibieron datos! Codigo de operacion: %d \n", datos->codigo_operacion);
-		log_debug(logger,"Se recibieron datos del socket : %d", socket_conectado);
+		log_debug(logger,"Se recibieron datos del socket : %d", *socket_conectado);
 
 		if (datos == NULL){
 			log_debug(logger, "Se desconectó la CPU");
@@ -1275,11 +1263,11 @@ void interpretarOperacion(int* socket_conectado) {
 				respuesta = crearSegmento(pid, tamanio);
 				log_debug(logger,"La respuesta seria: %d", respuesta);
 
-				paquete = crear_paquete(1, (void*) &respuesta, sizeof(int));
+				paquete = crear_paquete(1, (void*) &respuesta, sizeof(uint32_t));
 
 				int r= enviar_datos(*socket_conectado, paquete);
 
-				log_debug(logger,"se enviaron los datos %d al socket %d", r, socket_conectado);
+				log_debug(logger,"se enviaron los datos %d al socket %d", r, *socket_conectado);
 
 				break;
 
@@ -1331,6 +1319,7 @@ void interpretarOperacion(int* socket_conectado) {
 					codigo_operacion = error_memoria_llena;
 				}
 
+				//todo esta bien en codigo_operacion??
 				paquete = crear_paquete(codigo_operacion, (void*) resultado, sizeof(int));
 
 				enviar_datos(*socket_conectado, paquete);
