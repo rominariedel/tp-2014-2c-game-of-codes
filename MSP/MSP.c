@@ -435,9 +435,10 @@ void destruirSegmento(int PID, uint32_t baseSegmento) {
 
 		//busco en la lista de segmentos del proceso el segmento con esa base
 		T_SEGMENTO * seg = list_find(proceso->segmentos, (void*) segmentoPorBase);
-		log_debug(logger, "Encontró al proceso con la base: %d", seg->baseSegmento);
 
 		if (seg != NULL ) {
+
+			log_debug(logger, "Encontró al proceso con la base: %d", seg->baseSegmento);
 
 			//elimino las paginas del segmento
 			list_clean_and_destroy_elements(seg->paginas, (void*) destruirPag);
@@ -1225,8 +1226,10 @@ void iniciarConexiones() {
 
 }
 
-void interpretarOperacion(int* socket_conectado) {
+void interpretarOperacion(int* sock_conectado) {
 	int seguimiento = 1;
+	int * socket_conectado = malloc(sizeof(int));
+	memcpy(socket_conectado, sock_conectado, sizeof(int));
 
 	log_debug(logger,"entro con socket : %d", *socket_conectado);
 	t_datosAEnviar* datos;
