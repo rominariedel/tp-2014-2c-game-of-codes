@@ -279,8 +279,8 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	}
 
 	sem_wait(&mutex_MemoriaDisponible);
-	if ((memoriaDisponible + cantidadSwap) < tamanio) {
-		log_error(logger, "La memoria disponible no es suficiente para el tamanio del segmento");
+	if (memoriaDisponible < tamanio) {
+		log_error(logger, "La memoria disponible (principal + swap) no es suficiente para el tamanio del segmento");
 		sem_post(&mutex_MemoriaDisponible);
 		return error_memoria_llena;
 	}
@@ -487,7 +487,7 @@ static void destruirPag(T_PAGINA* pagina) {
 		marco->PID = -1;
 		marco->pagina = NULL;
 
-		log_info("Se desasigna el marco de id %d de la pagina de id %d para destruirla", marco->marcoID, pagina->paginaID);
+		log_info(logger, "Se desasigna el marco de id %d de la pagina de id %d para destruirla", marco->marcoID, pagina->paginaID);
 		sem_wait(&mutex_paginasEnMemoria);
 		list_remove_by_condition(paginasEnMemoria, (void*) paginaPorId);
 		sem_post(&mutex_paginasEnMemoria);
@@ -911,7 +911,7 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	T_MARCO* marcoAsignado;
 
 	if (pag->swapped) {
-		log_ingo(logger, "La pagina a la que se le va a asignar un marco está swappeada, Swap in");
+		log_info(logger, "La pagina a la que se le va a asignar un marco está swappeada, Swap in");
 		pag = swapInPagina(PID, seg, pag);
 
 		if (pag == NULL){
