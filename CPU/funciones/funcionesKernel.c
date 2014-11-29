@@ -25,7 +25,7 @@ void KERNEL_ejecutarRutinaKernel(int codOperacion, int direccion){
 
 int KERNEL_IngreseNumeroPorConsola(int PID){
 	//codOperacion = solicitarNumero
-	int codigo = 'N';
+	char codigo = 'N';
 	char * datos = malloc(sizeof(int) * 2 + sizeof(char));
 	int tamanio = 4;
 	memcpy(datos, &tamanio, sizeof(int));

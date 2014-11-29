@@ -168,14 +168,15 @@ void NOPP(){
 
 void PUSH(tparam_push* parametrosPush){
 	//Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del registro cursor de stack de forma acorde.
-	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, parametrosPush->registro, parametrosPush->numero, solicitarMemoria);
+	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, *devolverRegistro(parametrosPush->registro), parametrosPush->numero, solicitarMemoria);
 	int status = procesarRespuesta(paquete);
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
 		void* bytesAEnviar = malloc(paquete->tamanio);
-		printf("bytesAEnviar %p", bytesAEnviar);
 		memcpy(bytesAEnviar, paquete->datos, paquete->tamanio);
+		printf("bytesAEnviar %p", bytesAEnviar);
+		printf("tamanio bytesAEnviar %d", paquete->tamanio);
 
 		int respuestaMSP = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,bytesAEnviar,paquete->tamanio);
 		printf("respuestaMSP %d", respuestaMSP);
