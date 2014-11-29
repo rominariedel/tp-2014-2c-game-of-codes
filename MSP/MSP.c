@@ -126,11 +126,11 @@ void inicializarConsola() {
 		} else {
 			interpretarComando(comando);
 		}
-		//todo free??
+
 		printf("\r\n");
 	}
 
-	log_debug(logger, "Se cerro la Consola");
+	log_info(logger, "Se cerro la Consola");
 }
 
 void interpretarComando(char* comando) {
@@ -189,7 +189,7 @@ void interpretarComando(char* comando) {
 		tablaMarcos();
 	}
 	else if (string_equals_ignore_case(operacion[0], "Cambiar_algoritmo")) {
-		log_info(logger, "Se solicito Cambiar el algoritmo de susticion de paginas a: %s", parametros[0]);
+		log_info(logger, "Se solicito cambiar el algoritmo de susticion de paginas a: %s", parametros[0]);
 		sust_pags = parametros[0];
 		printf("Algoritmo de Sustitucion de Paginas =  %s \n", sust_pags);
 	}
