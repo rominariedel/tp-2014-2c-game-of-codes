@@ -22,7 +22,7 @@ enum mensajes {
 };
 
 char * extraer_data(char * path);
-void evaluar_ingreso(char*);
+void evaluar_ingreso(void *);
 void ingresar_cadena_menorA(int);
 void ingresar_numero();
 
@@ -82,11 +82,12 @@ int main(int argc, char ** argv) {
 		}
 		void * datos;
 		char * datos_a_imprimir;
-		char* solicitud_ingreso;
+		void * solicitud_ingreso;
 		switch (paquete->codigo_operacion) {
 		case imprimir_en_pantalla:
-			datos_a_imprimir = malloc(paquete->tamanio);
+			datos_a_imprimir = malloc(paquete->tamanio + 1 );
 			memcpy(datos_a_imprimir, paquete->datos, paquete->tamanio);
+			datos_a_imprimir[paquete->tamanio + 1] = '\0';
 			printf(
 					"Se ha solicitado salida estandar de los siguientes datos:\n %s\n",
 					datos_a_imprimir);
@@ -118,22 +119,27 @@ int main(int argc, char ** argv) {
 	return 0;
 }
 
-void evaluar_ingreso(char * solicitud) {
+void evaluar_ingreso(void * solicitud) {
+	printf("EVALUANDO INGRESO \n");
 	char primera_letra;
 	memcpy(&primera_letra, solicitud, sizeof(char));
-
+	//memcpy(&primera_letra, solicitud, sizeof(int));
+	printf("solicitud : %c", primera_letra);
 	if (primera_letra == 'N') {
 		//Se ha solicitado que se ingrese un numero entre 0 y 2³¹
 		ingresar_numero();
-	} else if (primera_letra == 'C') {
+	} else if (primera_letra == 'C' ) {
 		//Se ha solicitado que se ingrese una cadena de longitud menor que el segundo parametro
 		int segunda_letra;
+
 		memcpy(&segunda_letra, solicitud + sizeof(char), sizeof(int));
+		printf("SEGUNDA LETRA : %d", segunda_letra);
 		ingresar_cadena_menorA(segunda_letra);
 	}
 }
 
 void ingresar_cadena_menorA(int tamanio) {
+	printf("6 ingresar cadena menor \n");
 	int recibido_not_success = 1;
 
 	while (recibido_not_success) {
