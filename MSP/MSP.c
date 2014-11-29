@@ -46,7 +46,7 @@ pthread_t hiloEsperarConexiones;
 //	Logger
 t_log* logger;
 
-//	Semáforos
+//	Semaforos
 sem_t mutex_MemoriaDisponible;
 sem_t mutex_cantSwap;
 sem_t mutex_contadorLRU;
@@ -767,7 +767,7 @@ uint32_t escribirMemoria(int PID, uint32_t direccion, char* bytesAEscribir,	int 
 				}
 
 				if (pag->marcoID == -1) {
-					log_debug(logger, "Como la pag no tenía marco, le asigno");
+					log_debug(logger, "Como la pag no tenia marco, le asigno");
 					int resultado = asignoMarcoAPagina(PID, seg, pag);
 					log_debug(logger,"El resultado de asignarMarco es: %d",resultado);
 
@@ -993,8 +993,8 @@ int tablaMarcos() {
 	int cantidadMarcos = list_size(marcos);
 	for (i = 0; cantidadMarcos > i; i++) {
 		T_MARCO* marco = list_get(marcos, i);
-		printf("\nNúmero de marco: %d     ", marco->marcoID);
-		log_info(logger, "Número de marco: %d", marco->marcoID);
+		printf("\nNumero de marco: %d     ", marco->marcoID);
+		log_info(logger, "Numero de marco: %d", marco->marcoID);
 
 		if (marco->empty) {
 			printf("Marco disponible \n");
@@ -1053,8 +1053,8 @@ int tablaSegmentos() {
 		for (j = 0; cantidadSegmentos > j; j++) {
 			T_SEGMENTO* segmento = list_get(proceso->segmentos, j);
 			printf("%c", '\n');
-			printf("Número de segmento: %-d", (int) segmento->SID);
-			log_info(logger, "Número de segmento: %d", (int) segmento->SID);
+			printf("Numero de segmento: %-d", (int) segmento->SID);
+			log_info(logger, "Numero de segmento: %d", (int) segmento->SID);
 			printf("     ");
 			printf("Tamaño: %-d", segmento->tamanio);
 			log_info(logger,"Tamaño: %-d", segmento->tamanio);

@@ -213,16 +213,16 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU,"Puntero X: %d",baseStackActual);
 			log_info(LOGCPU,"Puntero S: %d",cursorStackActual);
 
-			printf( "Registro A : %d  ", A);
-			printf( "Registro B : %d  ", B);
-			printf( "Registro C : %d  ", C);
-			printf( "Registro D : %d  ", D);
-			printf( "Registro E : %d  ", E);
+			printf( "Registro A : %d  \n", A);
+			printf( "Registro B : %d  \n", B);
+			printf( "Registro C : %d  \n", C);
+			printf( "Registro D : %d  \n", D);
+			printf( "Registro E : %d  \n", E);
 
-			printf( "Puntero M: %d", baseSegmentoCodigoActual);
-			printf( "Puntero P: %d", punteroInstruccionActual);
-			printf( "Puntero X: %d", baseStackActual);
-			printf( "Puntero S: %d", cursorStackActual);
+			printf( "Puntero M: %d\n", baseSegmentoCodigoActual);
+			printf( "Puntero P: %d\n", punteroInstruccionActual);
+			printf( "Puntero X: %d\n", baseStackActual);
+			printf( "Puntero S: %d\n", cursorStackActual);
 
 
 
