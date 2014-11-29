@@ -8,11 +8,9 @@ RM := rm
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include panel/commons/collections/subdir.mk
--include panel/commons/subdir.mk
--include panel/subdir.mk
 -include funciones/subdir.mk
--include Default/subdir.mk
+-include commons/collections/subdir.mk
+-include commons/subdir.mk
 -include subdir.mk
 -include objects.mk
 

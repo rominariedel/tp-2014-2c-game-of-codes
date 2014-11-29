@@ -9,15 +9,10 @@
 #include "CPU.h"
 
 int main(int cantArgs, char** args){
-<<<<<<< HEAD
-	LOGCPU = log_create("LOGCPU", "CPU", 0, LOG_LEVEL_TRACE);
-
-	//inicializar_panel(CPU, "LOGOBLIGATORIO");
-=======
 
 	LOGCPU = log_create("LOGCPU", "CPU", 0, LOG_LEVEL_TRACE);
-	//inicializar_panel(CPU, "LOGSOBLIGATORIOS");
->>>>>>> ae96647feb387ef419225ce468ecd8220a1da6ad
+
+	inicializar_panel(CPU, "LOGOBLIGATORIOS");
 
 	log_info(LOGCPU, "\n -------------  -------------  Bienvenido al CPU  -------------  ------------- \n");
 	printf(" \n\n  -------------  Bienvenido al CPU  -------------\n\n");
@@ -169,11 +164,8 @@ int main(int cantArgs, char** args){
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda.
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
-<<<<<<< HEAD
+
 			sleep(RETARDO / 1000);
-=======
-			sleep(1);
->>>>>>> ae96647feb387ef419225ce468ecd8220a1da6ad
 
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion");
 
