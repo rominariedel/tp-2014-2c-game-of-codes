@@ -264,9 +264,10 @@ void planificador() {
 					liberar_cpu(n_descriptor);
 					break;
 				case ejecucion_erronea:
-					liberar_cpu(n_descriptor);
+					
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					abortar(tcb);
+					liberar_cpu(n_descriptor);
 					break;
 				case interrupcion:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
@@ -350,7 +351,7 @@ void planificador() {
 					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
 					instruccion_protegida("Bloquear", (t_hilo*) obtener_hilo_asociado(tcb));
-					liberar_cpu(n_descriptor);
+					//liberar_cpu(n_descriptor);
 					realizar_bloqueo(tcb, id_recurso);
 
 					break;

@@ -1,7 +1,7 @@
 PUERTO=1122
-IP_MSP=192.168.0.130
+IP_MSP=192.168.3.48
 PUERTO_MSP=6667
 QUANTUM=4
 SYSCALLS=../out.bc
 TAMANIO_STACK=400
-PANEL=/home/utnso/git/tp-2014-2c-game-of-codes/Kernel/logs
+PANEL=../logs

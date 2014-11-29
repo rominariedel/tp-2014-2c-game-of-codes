@@ -616,7 +616,8 @@ void matar_hijos_en_lista(int PID, t_list* lista, int tipo_lista) {
 		cantidad = list_count_satisfying(lista, (void*) tiene_mismo_pid);
 		sem_wait(&sem_procesoListo);
 
-		while (contador < cantidad) {
+                sem_wait(&sem_procesoListo);		
+                while (contador < cantidad) {
 			tcb = list_remove_by_condition(lista, (void*) tiene_mismo_pid);
 			mandar_a_exit(tcb);
 			contador++;
@@ -702,8 +703,8 @@ void fijarse_joins(int tid) {
 		}
 	}
 
-	list_remove_and_destroy_by_condition(hilos_join, (void*) esta_esperando_tid,
-			free);
+	//list_remove_and_destroy_by_condition(hilos_join, (void*) esta_esperando_tid,
+	//		free);
 	//Como el filter contiene referencias a estructuras que contiene hilos_join, con liberar los elementos del
 	//filter tendrían que dejar de estar los elementos en hilos_join
 
