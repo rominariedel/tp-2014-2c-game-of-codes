@@ -244,7 +244,7 @@ void planificador() {
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
-				int dirSysCall, tamanio, pid, tid_a_esperar, id_recurso;
+				int dirSysCall, tamanio, pid, tid_a_esperar, id_recurso, tid;
 				char * cadena;
 				char * id_tipo;
 
@@ -333,9 +333,9 @@ void planificador() {
 				case salida_estandar:
 					cadena = malloc(datos->tamanio - sizeof(int));
 					memcpy(&pid, datos->datos, sizeof(int));
-					memcpy(cadena, datos->datos + sizeof(int),
-							datos->tamanio - sizeof(int));
-					producir_salida_estandar(pid, cadena);
+					memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
+					memcpy(cadena, datos->datos + sizeof(int) + sizeof(int), datos->tamanio - sizeof(int) - sizeof(int));
+					producir_salida_estandar(pid, tid, cadena);
 
 					break;
 				case join:
@@ -401,8 +401,8 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 	return list_find(block.prioridad_1, (void*) tiene_mismo_tid);
 }
 
-void producir_salida_estandar(int pid, char* cadena) {
-	TCB_struct * tcb = obtener_tcbEjecutando(pid);
+void producir_salida_estandar(int pid, int tid,char* cadena) {
+	TCB_struct * tcb = obtener_tcbEjecutando(tid);
 	if(tcb != NULL){
 	instruccion_protegida("Salida_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
 	}else{

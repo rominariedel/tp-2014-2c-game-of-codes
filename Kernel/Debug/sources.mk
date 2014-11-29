@@ -15,5 +15,7 @@ EXECUTABLES :=
 SUBDIRS := \
 panel \
 auxiliares \
+ansisop-panel \
+ansisop-panel/collections \
 . \
 

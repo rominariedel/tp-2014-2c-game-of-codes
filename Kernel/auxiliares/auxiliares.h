@@ -116,7 +116,7 @@ void planificador();
 struct_consola * obtener_consolaConectada(int);
 struct_consola * obtener_consolaAsociada(int);
 struct_bloqueado * obtener_bloqueado(int);
-void producir_salida_estandar(int, char*);
+void producir_salida_estandar(int, int, char*);
 void producir_entrada_estandar(int, char, int, int);
 void devolver_entrada_aCPU(int);
 void realizar_join(TCB_struct *, int);
