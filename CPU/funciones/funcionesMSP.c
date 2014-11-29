@@ -65,9 +65,12 @@ int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 	int * dir_base = malloc(sizeof(int));
 	if(status == 0){
 		memcpy(dir_base, respuesta -> datos, sizeof(int));
-	}else{
+	}else{if(status<0){
 		printf("ERROR MSP al crear Nuevo Segmento\n");
 		log_info(LOGCPU,"ERROR MSP al crear Nuevo Segmento");
+
+	}
+
 		return status;
 	}
 
@@ -88,6 +91,10 @@ int MSP_DestruirSegmento(int PID, int baseSegmento){
 	procesarRespuesta(respuesta);
 
 	int status = procesarRespuesta(respuesta);
+	if(status < 0){
+		printf("MSP: No se pudo destruir Segmento \n");
+		log_error(LOGCPU,"No se pudo destruir Segmento \n");
+	}
 	free(respuesta);
 	free(datos);
 
@@ -111,6 +118,8 @@ int MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 	t_datosAEnviar* respuesta  = recibir_datos(socketMSP);
 	int status = procesarRespuesta(respuesta);
 	if(status < 0){
+		printf("No se pudo Escribir en Memoria \n");
+		log_error(LOGCPU,"No se pudo Escribir en Memoria \n");
 		return status;
 	}
 	free(respuesta);
@@ -121,8 +130,6 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 	log_info(LOGCPU, "Procesando respuesta MSP");
 	int estado;
 	estado = 0;
-	log_info(LOGCPU, "PROCESAR RESPUESTA : %d", respuesta->codigo_operacion);
-	printf("PROCESAR RESPUESTA: %d", respuesta->codigo_operacion);
 	if(respuesta == NULL){
 		estado = ejecucion_erronea;
 		printf("ERROR MSP: No se pudieron recibir datos MSP");

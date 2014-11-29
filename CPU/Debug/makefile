@@ -35,7 +35,7 @@ dependents:
 CPU: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug" -L/home/utnso/tp-2014-2c-game-of-codes/ansisop-panel/panel -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug" -o "CPU" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

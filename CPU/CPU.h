@@ -9,9 +9,6 @@
 #define CPU_H_
 
 
-#include <string.h>
-#include <stdio.h>
-#include "stdint.h"
 #include <stdlib.h>
 #include <commons/log.h>
 #include <commons/string.h>
@@ -35,8 +32,9 @@
 #include "funciones/funcionesMSP.h"
 #include "funciones/funcionesKernel.h"
 #include "funciones/instruccionesESO.h"
-//#include <panel.h>
-//#include <cpu.h>
+#include "cpu.h"
+
+
 
 /* Estructuras */
 
@@ -99,13 +97,13 @@ char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
 char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
 void abortar(int codOperacion);
 
+typedef enum { NEW, READY, EXEC, BLOCK, EXIT } t_cola;
 
-/*
 typedef struct hilo {
-	t_TCB tcb;
+	t_TCB * tcb;
 	t_cola cola;
 }hilo_t;
-*/
+
 
 
 enum operaciones{

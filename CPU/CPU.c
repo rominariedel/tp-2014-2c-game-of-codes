@@ -80,11 +80,11 @@ int main(int cantArgs, char** args){
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
 		quantum = recibirTCByQuantum(datosKernel);
-		/*hilo_t* hiloAEjecutar;
+/*		hilo_t* hiloAEjecutar;
 		hiloAEjecutar->tcb = TCBactual;
 		hiloAEjecutar->cola = EXEC;
-		comienzo_ejecucion(hiloAEjecutar, quantum);*/
-
+		comienzo_ejecucion(hiloAEjecutar, quantum);
+*/
 
 		free(datosKernel);
 
@@ -103,7 +103,7 @@ int main(int cantArgs, char** args){
 		log_info(LOGCPU,"D: %d",D);
 		log_info(LOGCPU,"E: %d",E);
 
-/*
+
 		printf("\n Recibí datos del TCB actual y sus registros de programacion \n");
 		printf("\n PID: %d \n", PIDactual);
 		printf("\n TID: %d \n", TIDactual);
@@ -118,14 +118,14 @@ int main(int cantArgs, char** args){
 		printf("\n C: %d \n",C);
 		printf("\n D: %d \n",D);
 		printf("\n E: %d \n",E);
-*/
+
 
 
 		int quantumActual = 0;
 		printf("\n Quantum a ejecutar para PID: %d es: %d \n",PIDactual, quantum);
 		log_info(LOGCPU, "Quantum a ejecutar para PID : %d es: %d",PIDactual, quantum);
 
-
+		printf("\n \n \n -------------EMPIEZO A EJECUTAR TCB-------------\n \n \n");
 		log_info(LOGCPU, "\n \n \n -------------EMPIEZO A EJECUTAR TCB-------------\n \n \n");
 
 		ejecutoInterrupcion = 0;
@@ -139,8 +139,10 @@ int main(int cantArgs, char** args){
 
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 			log_info(LOGCPU, "Solicito a MSP proximaInstruccionAEJecutar ");
+			printf("Solicito a MSP proxima instruccion a ejecutar");
 
 			log_info(LOGCPU, "Puntero Instruccion Actual: %d", punteroInstruccionActual);
+			printf("Puntero Instruccion Actual: %d", punteroInstruccionActual);
 			t_datosAEnviar* respuesta = malloc(sizeof(t_datosAEnviar));
 			if(KMactual == 1){
 				log_info(LOGCPU, "Leo el archivo de SYSCALL");
@@ -152,11 +154,15 @@ int main(int cantArgs, char** args){
 			char* proximaInstruccionAEjecutar = malloc(5);
 			int status = procesarRespuesta(respuesta);
 			if(status < 0){
+				printf("Error al Solicitar Proxima Instruccion a Ejecutar");
+				log_error(LOGCPU,"Error al Solicitar Proxima Instruccion a Ejecutar");
 				abortar(ejecucion_erronea);
 				break;
 				}else{
 					log_info(LOGCPU, "Recibo Instruccion a ejecutar  ");
 					log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
+					printf("Recibo Instruccion a ejecutar  ");
+					printf("Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
 					memcpy(proximaInstruccionAEjecutar, respuesta -> datos, 4);
 					proximaInstruccionAEjecutar[4] = '\0';
 			}
@@ -209,8 +215,8 @@ int main(int cantArgs, char** args){
 
 
 
-
-			/*t_registros_cpu* listaRegistros = malloc(sizeof(t_registros_cpu));
+/*
+			t_registros_cpu* listaRegistros = malloc(sizeof(t_registros_cpu));
 			listaRegistros->registros_programacion[0]= A;
 			listaRegistros->registros_programacion[1]= B;
 			listaRegistros->registros_programacion[2]= C;
@@ -222,8 +228,8 @@ int main(int cantArgs, char** args){
 			listaRegistros->P = punteroInstruccionActual;
 			listaRegistros->S = cursorStackActual;
 			listaRegistros->X = baseStackActual;
-			cambio_registros(*listaRegistros);*/
-
+			cambio_registros(*listaRegistros);
+*/
 
 			// 4. Actualizará los registros de propósito general del TCB correspondientes según la especificación de la instrucción.
 

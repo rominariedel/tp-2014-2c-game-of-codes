@@ -5,7 +5,7 @@ funciones/instruccionesESO.d: ../funciones/instruccionesESO.c \
  ../funciones/../variablesGlobales.h \
  ../funciones/../funciones/funcionesMSP.h \
  ../funciones/../funciones/funcionesKernel.h \
- ../funciones/../funciones/instruccionesESO.h
+ ../funciones/../funciones/instruccionesESO.h ../funciones/../cpu.h
 
 ../funciones/../CPU.h:
 
@@ -22,3 +22,5 @@ funciones/instruccionesESO.d: ../funciones/instruccionesESO.c \
 ../funciones/../funciones/funcionesKernel.h:
 
 ../funciones/../funciones/instruccionesESO.h:
+
+../funciones/../cpu.h:
