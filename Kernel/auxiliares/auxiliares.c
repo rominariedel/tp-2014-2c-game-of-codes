@@ -74,13 +74,19 @@ bool CPU_esta_libre(struct_CPU * cpu) {
 }
 
 void loguear(t_cola cola, TCB_struct * tcb_log){
-
+	printf("KM DEL TCB A LOGUEAR %d\n", tcb_log->KM);
 	bool tiene_tcb(hilo_t * hilo){
-		return hilo->tcb.TID == tcb_log->TID;
+		if(tcb_log->KM ==1){
+			return hilo->tcb.KM ==1;
+		}else{
+
+		return (hilo->tcb.TID == tcb_log->TID)&&(hilo->tcb.KM != 1);}
 	}
 
 	hilo_t * hilo = list_find(HILOS_SISTEMA, (void*) tiene_tcb);
-
+	if(hilo == NULL){
+		printf("FALLO EN EN LOGUEAR, NO SE ENCONTRO HILO\n");
+	}
 
 	hilo->tcb.PID = tcb_log->PID;
 	hilo->tcb.TID = tcb_log->TID;
@@ -292,9 +298,7 @@ void planificador() {
 					if(hilo2==NULL){
 						printf("NO SE ENCONTRO EL HILO!\n");
 						exit(1);
-					}else{
-
-					instruccion_protegida("Interrupcion", hilo2);}
+					}else{instruccion_protegida("Interrupcion", hilo2);}
 					printf("LLEGO LA DIRECCIONNANANANANANANANANANA: %d\n",
 							dirSysCall);
 					interrumpir(tcb, dirSysCall);

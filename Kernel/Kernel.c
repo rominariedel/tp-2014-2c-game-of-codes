@@ -298,8 +298,8 @@ void boot() {
 	pthread_t thread_planificador;
 	pthread_t thread_loader;
 
-	descriptor_mas_alto_consola = 0;
-	descriptor_mas_alto_cpu = 0;
+	descriptor_mas_alto_consola = socket_gral;
+	descriptor_mas_alto_cpu = socket_gral;
 
 	socket_gral = crear_servidor(PUERTO, backlog);
 	if (socket_gral < 0) {
@@ -806,11 +806,11 @@ void dispatcher() {
 		if (!queue_is_empty(SYS_CALL)) {
 
 			printf("ENTRE A EJECUTAR UNA INTERRUPCION!!!!!!!\n");
+			sem_wait(&sem_kmDisponible);
 			tcb_ejecutandoSysCall = (TCB_struct*) queue_pop(SYS_CALL);
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
 					tcb_ejecutandoSysCall->TID);
-			sem_wait(&sem_kmDisponible);
 			TCB_struct * tcb_km = queue_pop(block.prioridad_0);
 			copiarRegistros(tcb_km->registrosProgramacion,
 					tcb_ejecutandoSysCall->registrosProgramacion);
