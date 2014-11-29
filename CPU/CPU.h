@@ -35,6 +35,8 @@
 #include "funciones/funcionesMSP.h"
 #include "funciones/funcionesKernel.h"
 #include "funciones/instruccionesESO.h"
+//#include "panel.h"
+//#include "cpu.h"
 
 /* Estructuras */
 
@@ -111,8 +113,6 @@ enum mensajesMSP{
 	error_memoriaLlena = -3,
 	error_segmentationFault = -2,
 	no_llego_respuesta = 90,
-	solicitarMemoriaP = 1111,
-
 };
 
 enum mensajesKernelCodOperacion{
