@@ -17,9 +17,9 @@ void inicializar_panel(t_tipo_proceso tipo_proceso, char* path){
 	string_append(&logFile, ".log");
 
 	remove(logFile);
-	log = log_create(logFile, tipo_proceso_str, true, LOG_LEVEL_INFO);
+	logger = log_create(logFile, tipo_proceso_str, true, LOG_LEVEL_INFO);
 
-	log_info(log, "Inicializando panel para %s, en \"%s\"", tipo_proceso_str, logFile);
+	log_info(logger, "Inicializando panel para %s, en \"%s\"", tipo_proceso_str, logFile);
 
 	free(logFile);
 

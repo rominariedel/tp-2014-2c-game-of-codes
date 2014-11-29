@@ -35,8 +35,8 @@
 #include "funciones/funcionesMSP.h"
 #include "funciones/funcionesKernel.h"
 #include "funciones/instruccionesESO.h"
-//#include "panel.h"
-//#include "cpu.h"
+//#include <panel.h>
+//#include <cpu.h>
 
 /* Estructuras */
 

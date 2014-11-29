@@ -30,6 +30,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.1756969590" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">
 								<option id="gnu.c.link.option.paths.353053930" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Sockets/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="/home/utnso/tp-2014-2c-game-of-codes/ansisop-panel/panel"/>
 								</option>
 								<option id="gnu.c.link.option.libs.359478288" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="Sockets"/>

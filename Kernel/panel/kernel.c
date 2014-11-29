@@ -30,7 +30,7 @@ void conexion_cpu(uint32_t id) {
 	list_add(kernel_cpus_conectadas, num);
 
 	char* ids = ids_desde_lista(kernel_cpus_conectadas);
-	log_info(log, "Nueva CPU (%d) => [%s]", id, ids);
+	log_info(logger, "Nueva CPU (%d) => [%s]", id, ids);
 	free(ids);
 }
 void desconexion_cpu(uint32_t id) {
@@ -38,7 +38,7 @@ void desconexion_cpu(uint32_t id) {
 	list_remove_and_destroy_by_condition(kernel_cpus_conectadas, (void*) _esElId, free);
 
 	char* ids = ids_desde_lista(kernel_cpus_conectadas);
-	log_info(log, "Desconexión CPU (%d) => [%s]", id, ids);
+	log_info(logger, "Desconexión CPU (%d) => [%s]", id, ids);
 	free(ids);
 }
 
@@ -48,7 +48,7 @@ void conexion_consola(uint32_t id) {
 	list_add(kernel_consolas_conectadas, num);
 
 	char* ids = ids_desde_lista(kernel_consolas_conectadas);
-	log_info(log, "Nueva Consola (%d) => [%s]", id, ids);
+	log_info(logger, "Nueva Consola (%d) => [%s]", id, ids);
 	free(ids);
 }
 
@@ -57,7 +57,7 @@ void desconexion_consola(uint32_t id) {
 	list_remove_and_destroy_by_condition(kernel_consolas_conectadas, (void*) _esElId, free);
 
 	char* ids = ids_desde_lista(kernel_consolas_conectadas);
-	log_info(log, "Desconexión Consola (%d) => [%s]", id, ids);
+	log_info(logger, "Desconexión Consola (%d) => [%s]", id, ids);
 	free(ids);
 }
 
@@ -87,10 +87,10 @@ void hilos(t_list* hilos) {
 	agregarResumen("\n  BLOCK:\n", _esBlock);
 	agregarResumen("\n  EXIT:\n", _esExit);
 
-	log_info(log, resumen);
+	log_info(logger, resumen);
 	free(resumen);
 }
 
 void instruccion_protegida(char* mnemonico, t_hilo* hilo) {
-	log_info(log, "El hilo { PID: %d, TID: %d } ejecutó la instrucción %s", hilo->pid, hilo->tid, mnemonico);
+	log_info(logger, "El hilo { PID: %d, TID: %d } ejecutó la instrucción %s", hilo->pid, hilo->tid, mnemonico);
 }
