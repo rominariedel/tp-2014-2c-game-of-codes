@@ -757,9 +757,9 @@ void finalizo_ejecucion(TCB_struct *tcb_fin) {
 void enviar_a_ejecucion(TCB_struct * tcb) {
 
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
-	if (cpu == NULL ) {
-		printf("FALLO. NO SE ENCONTRO CPU\n");
-		exit(-1);
+	while(cpu == NULL ) {
+		wait(&sem_CPU);
+		cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	}
 	cpu->bit_estado = ocupado;
 	cpu->PID = tcb->PID;

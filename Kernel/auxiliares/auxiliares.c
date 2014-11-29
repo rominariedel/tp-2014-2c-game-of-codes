@@ -215,7 +215,7 @@ void planificador() {
 	while (1) {
 
 		struct timeval * timeout = malloc(sizeof(struct timeval));
-		timeout->tv_sec = 4;
+		timeout->tv_sec = 1;
 		timeout->tv_usec = 0;
 
 		copia_set = CPU_set;
@@ -264,10 +264,10 @@ void planificador() {
 					liberar_cpu(n_descriptor);
 					break;
 				case ejecucion_erronea:
-					
+					liberar_cpu(n_descriptor);
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					abortar(tcb);
-					liberar_cpu(n_descriptor);
+					//liberar_cpu(n_descriptor);
 					break;
 				case interrupcion:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
