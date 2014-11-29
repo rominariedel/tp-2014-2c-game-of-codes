@@ -18,30 +18,27 @@ void LOAD(tparam_load* parametrosLoad){ //Carga en el registro, el número dado.
 void SETM(tparam_setm* parametrosSetm){
 	//Pone tantos bytes desde el segundo registro, hacia la memoria apuntada por el primer registro
 
-	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *devolverRegistro(parametrosSetm->reg2), parametrosSetm->num, solicitarMemoria);
-	int status= procesarRespuesta(respuesta);
-	if(status < 0){
+	void* bytesAEnviar = malloc(parametrosSetm->num);
+	memcpy(bytesAEnviar, devolverRegistro(parametrosSetm->reg2),parametrosSetm->num);
+	int status = MSP_EscribirEnMemoria(PIDactual,*devolverRegistro(parametrosSetm->reg1), bytesAEnviar,
+			parametrosSetm->num);
+	if (status < 0) {
 		finalizarEjecucion = -1;
-	}else{
-		MSP_EscribirEnMemoria(PIDactual, parametrosSetm->reg1, respuesta->datos, respuesta->tamanio);
-		int status2= procesarRespuesta(respuesta);
-			if(status2 < 0){
-				finalizarEjecucion = -1;
-			}
+
 	}
 }
 
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)), sizeof(int), solicitarMemoria);  //TODO cuanto le pido que lea????????? un int???
+	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)),1, solicitarMemoria);
 	int status= procesarRespuesta(respuesta);
 
-	int* valorMemoria = malloc(respuesta->tamanio);
-	valorMemoria = (int*) respuesta->datos;
+	int* valorMemoria = malloc(1);
+	*valorMemoria = *((int*) respuesta->datos);
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
-		memcpy((devolverRegistro(parametrosGetm->reg1)), valorMemoria, respuesta->tamanio);
+		memcpy((devolverRegistro(parametrosGetm->reg1)), valorMemoria, 1);
 	}
 }
 
@@ -172,12 +169,10 @@ void NOPP(){
 void PUSH(tparam_push* parametrosPush){
 	//Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del registro cursor de stack de forma acorde.
 	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, parametrosPush->registro, parametrosPush->numero, solicitarMemoria);
-	printf("\n\n\n\nENTRE A PUSH\n");
 	int status = procesarRespuesta(paquete);
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
-		printf("paquete tamanio %d \n", paquete->tamanio);
 		void* bytesAEnviar = malloc(paquete->tamanio);
 		printf("bytesAEnviar %p", bytesAEnviar);
 		memcpy(bytesAEnviar, paquete->datos, paquete->tamanio);
@@ -187,7 +182,7 @@ void PUSH(tparam_push* parametrosPush){
 		if(respuestaMSP < 0){
 			finalizarEjecucion = -1;
 		}else{
-		baseStackActual += parametrosPush->numero;
+			cursorStackActual = cursorStackActual + parametrosPush->numero;
 		}
 	}
 	free(paquete);
@@ -200,12 +195,12 @@ void TAKE(tparam_take* parametrosTake){
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
-	baseStackActual =- parametrosTake->numero;
+	cursorStackActual -= parametrosTake->numero;
 	int status2 = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,paquete->datos,parametrosTake->numero);
 	if(status2 < 0){
 		finalizarEjecucion = -1;
 	}else{
-		baseStackActual =+ parametrosTake->numero;
+		cursorStackActual = cursorStackActual + parametrosTake->numero;
 		}
 	}
 	free(paquete);
@@ -252,6 +247,7 @@ void INNN(){
 	// el proceso Kernel.
 	log_info(LOGCPU, "\n PEDIRLE AL KERNEL QUE INGRESE UN NUMERO\n");
 	A = KERNEL_IngreseNumeroPorConsola(PIDactual);
+	log_info(LOGCPU, "\n KERNEL INGRESO NUMERO\n");
 }
 
 
@@ -284,7 +280,8 @@ void OUTC(){
 		if(status < 0){
 			finalizarEjecucion = -1;
 		}else{
-			char cadena[respuesta->tamanio];
+			char cadena[respuesta->tamanio + 1];
+			cadena[respuesta->tamanio] = '\0';
 			memcpy(cadena, respuesta->datos, respuesta->tamanio);
 			KERNEL_MostrarCadenaPorConsola(PIDactual, cadena);
 		}

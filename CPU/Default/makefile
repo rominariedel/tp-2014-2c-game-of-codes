@@ -12,6 +12,7 @@ RM := rm
 -include subdir.mk
 -include objects.mk
 
+
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C_DEPS)),)
 -include $(C_DEPS)

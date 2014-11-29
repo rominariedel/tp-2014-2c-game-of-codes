@@ -4,26 +4,23 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../CPU.c \
-../cpu.c \
-../kernel.c \
-../panel.c 
+../panel/commons/collections/dictionary.c \
+../panel/commons/collections/list.c \
+../panel/commons/collections/queue.c 
 
 OBJS += \
-./CPU.o \
-./cpu.o \
-./kernel.o \
-./panel.o 
+./panel/commons/collections/dictionary.o \
+./panel/commons/collections/list.o \
+./panel/commons/collections/queue.o 
 
 C_DEPS += \
-./CPU.d \
-./cpu.d \
-./kernel.d \
-./panel.d 
+./panel/commons/collections/dictionary.d \
+./panel/commons/collections/list.d \
+./panel/commons/collections/queue.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-%.o: ../%.c
+panel/commons/collections/%.o: ../panel/commons/collections/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
 	gcc -I"/home/utnso/tp-2014-2c-game-of-codes/Sockets" -O2 -g -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"

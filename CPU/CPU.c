@@ -11,6 +11,8 @@
 int main(int cantArgs, char** args){
 	LOGCPU = log_create("/home/utnso/Escritorio/LogCPU", "CPU", 0, LOG_LEVEL_TRACE);
 
+	//inicializar_panel(CPU, "/home/utnso/tp-2014-2c-game-of-codes/CPU");
+
 	log_info(LOGCPU, "\n -------------  -------------  Bienvenido al CPU  -------------  ------------- \n");
 	printf(" \n\n  -------------  Bienvenido al CPU  -------------\n\n");
 	log_info(LOGCPU, "CARGAR ARCHIVOS CONFIGURACION");
@@ -77,6 +79,8 @@ int main(int cantArgs, char** args){
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
 		quantum = recibirTCByQuantum(datosKernel);
+		//comienzo_ejecucion(TCBactual, quantum); TODO: Log obligatorio
+
 		free(datosKernel);
 
 		log_info(LOGCPU,"Recibí datos del TCB actual y sus registros de programacion \n");
@@ -129,9 +133,9 @@ int main(int cantArgs, char** args){
 			printf("\n -------------------------- %d ------------------------------------------------- \n", quantumActual);
 
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
-			log_info(LOGCPU, " Solicito a MSP proximaInstruccionAEJecutar ");
+			log_info(LOGCPU, "Solicito a MSP proximaInstruccionAEJecutar ");
 
-			log_info(LOGCPU, "---------------------------------------- Puntero Instruccion Actual: %d", punteroInstruccionActual);
+			log_info(LOGCPU, "Puntero Instruccion Actual: %d", punteroInstruccionActual);
 			t_datosAEnviar* respuesta = malloc(sizeof(t_datosAEnviar));
 			if(KMactual == 1){
 				log_info(LOGCPU, "Leo el archivo de SYSCALL");
@@ -155,7 +159,7 @@ int main(int cantArgs, char** args){
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda.
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
-			usleep(RETARDO);
+			usleep(RETARDO * 1000);
 
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion");
 
@@ -167,10 +171,11 @@ int main(int cantArgs, char** args){
 				if(aumentoPuntero != -1){
 				log_info(LOGCPU, "Incrementar punteroInstruccion %d", punteroInstruccionActual);
 				log_info(LOGCPU, "Incrementar los 4 + respuesta : %d", statusEjecutar);
-				printf( "---------------------------------------- Puntero Instruccion Actual: %d \n", punteroInstruccionActual);
+				printf( "Puntero Instruccion Actual: %d \n", punteroInstruccionActual);
+				printf("Aumentar %d al puntero de instruccion \n", statusEjecutar);
 				punteroInstruccionActual += (statusEjecutar + 4);
-				printf( "---------------------------------------- AUMENTAR Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
-				log_info(LOGCPU, "---------------------------------------- Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
+				printf( "AUMENTAR Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
+				log_info(LOGCPU, "Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
 				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
 				}
 				if(finalizarEjecucion == -2){ //ES PARA CUANDO SE EJECUTA XXXX()
@@ -178,7 +183,8 @@ int main(int cantArgs, char** args){
 					break;
 				}
 				if(finalizarEjecucion == -3){
-					abortar(interrupcion);
+					printf("SE MANDO INTERRUPCION ");
+					//abortar(interrupcion);
 					break;
 				}
 			}
@@ -363,10 +369,12 @@ void devolverTCBactual(int codOperacion){
 	if(status == -1){
 		log_info(LOGCPU, "No se pudo devolver el TCB actual");
 		perror("No se pudo devolver el TCBactual");}
+	free(paquete->datos);
+	free(paquete);
 	free(mensaje);
 	log_info(LOGCPU, "Se devolvio TCB al Kernel");
 
-
+	//fin_ejecucion();  TODO logueo obligatorio
 	//TODO: cada vez que devuelvo tcb es porq termino ejecucion? entonces poner limpiarRegistros
 	limpiarRegistros();
 }
@@ -739,18 +747,46 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		}
 	}
 	if(0 == strcmp(instruccion,"TAKE")){
-		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
+	/*	t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_take));
 		int status = procesarRespuesta(respuesta);
 		if(status < 0){
 			return status;
 			}else{
 				printf("----------------------------------------------------------------RESPUESTA: %p", respuesta->datos);
-				log_info(LOGCPU, "----------------------------------------------------------------RESPUESTA: %p", respuesta->datos);
+				log_info(LOGCPU, "------------------------------------------------------RESPUESTA: %p", respuesta->datos);
 				tparam_take* parametros = (tparam_take *) procesarRespuestaMSP(respuesta);
-				log_info(LOGCPU, "PUSH(%d,%c)",parametros->numero, parametros->registro);
+				log_info(LOGCPU, "TAKE(%d,%c)",parametros->numero, parametros->registro);
 				TAKE(parametros);
 				return sizeof(tparam_take);
+			}*/
+		t_datosAEnviar* respuesta1 = MSP_SolicitarMemoria(PIDactual,
+				punteroInstruccionActual + 4, 4, solicitarMemoria);
+		int status = procesarRespuesta(respuesta1);
+		if (status < 0) {
+			return status;
+		} else {
+			int* numeroTAKE = malloc(respuesta1->tamanio);
+			memcpy(numeroTAKE, respuesta1->datos, 4);
+			t_datosAEnviar* respuesta2 = MSP_SolicitarMemoria(PIDactual,
+					punteroInstruccionActual + 8, 1, solicitarMemoria);
+			int status2 = procesarRespuesta(respuesta2);
+			free(respuesta1);
+			char* reg1TAKE = malloc(respuesta2->tamanio);
+			if (status2 < 0) {
+				return status2;
+			} else {
+				memcpy(reg1TAKE, respuesta2->datos, 1);
+				free(respuesta2);
+				tparam_take* parametros = malloc(sizeof(tparam_take));
+				parametros->numero = *numeroTAKE;
+				parametros->registro = reg1TAKE[0];
+				log_info(LOGCPU, "TAKE(%d,%c)", parametros->numero,
+						parametros->registro);
+				TAKE(parametros);
 			}
+
+			return sizeof(tparam_take);
+		}
 	}
 	if(0 == strcmp(instruccion,"XXXX")){
 		log_info(LOGCPU,"XXXX()");
@@ -780,12 +816,28 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar INNN()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -12;}}
+	if(0 == strcmp(instruccion,"INNC") && KMactual == 1){
+			log_info(LOGCPU,"INNC()");
+			INNC();
+			return 0; }else{
+				if(0 == strcmp(instruccion,"INNC")){
+				log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar INNC()", PIDactual, KMactual);
+				printf("no tiene permiso para ejecutar esta instruccion");
+				return -12;}}
 	if(0 == strcmp(instruccion,"OUTN") && KMactual == 1){
 		log_info(LOGCPU,"OUTN()");
 		OUTN();
 		return 0; }else{
 			if(0 == strcmp(instruccion,"OUTN")){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar OUTN()", PIDactual, KMactual);
+			printf("no tiene permiso para ejecutar esta instruccion");
+			return -12;}}
+	if(0 == strcmp(instruccion,"OUTC") && KMactual == 1){
+		log_info(LOGCPU,"OUTC()");
+		OUTC();
+		return 0; }else{
+			if(0 == strcmp(instruccion,"OUTC")){
+			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar OUTC()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -12;}}
 	if(0 == strcmp(instruccion,"CREA\0")&& KMactual == 1){
@@ -873,6 +925,15 @@ int* devolverRegistro(char registro){
 		break;
 	case 'M':
 		return &baseSegmentoCodigoActual;
+		break;
+	case 'P':
+		return &punteroInstruccionActual;
+		break;
+	case'X':
+		return &baseStackActual;
+		break;
+	case 'S':
+		return &cursorStackActual;
 		break;
 	}
 	return 0;

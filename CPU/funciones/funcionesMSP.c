@@ -66,6 +66,8 @@ int MSP_CrearNuevoSegmento(int PID, int tamanioSegmento){
 	if(status == 0){
 		memcpy(dir_base, respuesta -> datos, sizeof(int));
 	}else{
+		printf("ERROR MSP al crear Nuevo Segmento\n");
+		log_info(LOGCPU,"ERROR MSP al crear Nuevo Segmento");
 		return status;
 	}
 
@@ -94,7 +96,7 @@ int MSP_DestruirSegmento(int PID, int baseSegmento){
 
 int MSP_EscribirEnMemoria(int PID, int direccion, void * bytes, int tamanio) {
 
-	char * datos = malloc((3 * sizeof(int)) + tamanio);
+	char * datos = malloc((3 * sizeof(int))+ tamanio);
 
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &direccion, sizeof(int));
@@ -119,27 +121,28 @@ int procesarRespuesta(t_datosAEnviar* respuesta){
 	log_info(LOGCPU, "Procesando respuesta MSP");
 	int estado;
 	estado = 0;
-/*	if(respuesta == NULL){
+	log_info(LOGCPU, "PROCESAR RESPUESTA : %d", respuesta->codigo_operacion);
+	printf("PROCESAR RESPUESTA: %d", respuesta->codigo_operacion);
+	if(respuesta == NULL){
 		estado = ejecucion_erronea;
+		printf("ERROR MSP: No se pudieron recibir datos MSP");
 		log_error(LOGCPU, "ERROR MSP: No se pudieron recibir datos MSP");
 		return estado;
 	}else{
-*/	if(respuesta->codigo_operacion < 0){
-		log_info(LOGCPU, "PROCESAR RESPUESTA : %d", respuesta->codigo_operacion);
-		printf("PROCESAR RESPUESTA: %d", respuesta->codigo_operacion);
+	if(respuesta->codigo_operacion < 0){
 	switch(respuesta->codigo_operacion){
 		case error_segmentationFault:
 			estado = error_segmentationFault;
+			printf("ERROR MSP: Segmentation Fault");
 			log_error(LOGCPU, "ERROR MSP: Segmentation Fault");
 			break;
 		case error_memoriaLlena:
 			estado = error_memoriaLlena;
+			printf("ERROR MSP: Memoria Llena");
 			log_error(LOGCPU, "ERROR MSP: Memoria Llena");
 			break;
 	}
-		log_error(LOGCPU, "ERROR MSP: Me devolvio algo negativo, no es ni Segmentation Fault, ni Memoria Llena");
-		return estado;
-} //TODO AGREGAR CORCHETE CUANDO DESCOMENTE IF
+	}}
 
 	return estado;
 }
