@@ -60,7 +60,7 @@ void boot();
 void escribir_memoria(TCB_struct *, int, int, void*);
 void obtenerDatosConfig(char**);
 void sacar_de_ejecucion(TCB_struct *, bool);
-int solicitar_segmento(TCB_struct * , int);
+int solicitar_crear_segmento(TCB_struct * , int);
 void iniciar_semaforos();
 void enviar_a_ejecucion(TCB_struct *);
 void dispatcher();
@@ -68,9 +68,8 @@ void copiarRegistros(int registro1[5], int registro2[5]);
 void handshake_MSP(int socketMSP);
 void fijarse_joins(int tid);
 void matar_hijos(int PID);
-void matar_hijos_en_lista(int, t_list*, bool, bool);
+void matar_hijos_en_lista(int, t_list*, int);
 void matar_hijo_en_diccionario(int PID);
-
 
 
 #endif /* VARIABLES_GLOBALES_H_ */

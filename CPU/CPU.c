@@ -9,9 +9,9 @@
 #include "CPU.h"
 
 int main(int cantArgs, char** args){
-	LOGCPU = log_create("/home/utnso/Escritorio/LogCPU", "CPU", 0, LOG_LEVEL_TRACE);
 
-	//inicializar_panel(CPU, "/home/utnso/tp-2014-2c-game-of-codes/CPU");
+	LOGCPU = log_create("LOGCPU", "CPU", 0, LOG_LEVEL_TRACE);
+	//inicializar_panel(CPU, "LOGSOBLIGATORIOS");
 
 	log_info(LOGCPU, "\n -------------  -------------  Bienvenido al CPU  -------------  ------------- \n");
 	printf(" \n\n  -------------  Bienvenido al CPU  -------------\n\n");
@@ -159,7 +159,7 @@ int main(int cantArgs, char** args){
 
 			// 	3. Interpretará la instrucción en BESO y realizará la operación que corresponda.
 			log_info(LOGCPU, " Espero %d segundos de retardo ", RETARDO);
-			usleep(RETARDO * 1000);
+			sleep(1);
 
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion");
 

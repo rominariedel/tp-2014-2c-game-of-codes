@@ -92,6 +92,7 @@ sem_t mutex_entradaSalida;
 sem_t sem_READY;
 sem_t sem_kmDisponible;
 sem_t sem_exit;
+sem_t sem_lecturaEscritura;
 
 /*       FUNCIONES        */
 
@@ -116,7 +117,7 @@ struct_consola * obtener_consolaConectada(int);
 struct_consola * obtener_consolaAsociada(int);
 struct_bloqueado * obtener_bloqueado(int);
 void producir_salida_estandar(int, char*);
-void producir_entrada_estandar(int, char*, int, int);
+void producir_entrada_estandar(int, char, int, int);
 void devolver_entrada_aCPU(int);
 void realizar_join(TCB_struct *, int);
 char * extraer_syscalls(char *);
@@ -129,6 +130,8 @@ void mandar_a_exit(TCB_struct*);
 TCB_struct * obtener_tcbEjecutando(int TID);
 void loguear(t_cola cola, TCB_struct * tcb);
 hilo_t * obtener_hilo_asociado(TCB_struct * tcb);
+void copiar_tcb(TCB_struct * tcb_destino, TCB_struct * tcb_origen);
+void destruir_segmento_MSP(int, int);
 
 enum mensajes {
 
