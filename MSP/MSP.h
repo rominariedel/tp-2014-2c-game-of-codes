@@ -61,12 +61,6 @@ typedef struct T_DIRECCION_LOG {
 	int desplazamiento;
 }T_DIRECCION_LOG;
 
-typedef struct T_PARAMETROS_OPERACION {
-	t_datosAEnviar* datos;
-	int socketAsociado;
-}T_PARAMETROS_OPERACION;
-
-
 //Operaciones de interfaz
 uint32_t 	crearSegmento		(int PID, int tamanio);
 void		destruirSegmento 	(int PID, uint32_t baseSegmento);
