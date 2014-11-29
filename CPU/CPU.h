@@ -13,8 +13,8 @@
 #include <stdio.h>
 #include "stdint.h"
 #include <stdlib.h>
+#include <commons/log.h>
 #include <commons/string.h>
-#include "commons/log.h"
 #include <pthread.h>
 #include <time.h>
 #include <stdint.h>
@@ -35,8 +35,8 @@
 #include "funciones/funcionesMSP.h"
 #include "funciones/funcionesKernel.h"
 #include "funciones/instruccionesESO.h"
-#include "panel.h"
-#include "cpu.h"
+//#include "panel.h"
+//#include "cpu.h"
 
 /* Estructuras */
 
@@ -100,10 +100,12 @@ char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
 void abortar(int codOperacion);
 
 
+/*
 typedef struct hilo {
 	t_TCB tcb;
 	t_cola cola;
 }hilo_t;
+*/
 
 
 enum operaciones{

@@ -1,0 +1,380 @@
+08:59:00:928 (2651): 
+ -------------  -------------  Bienvenido al CPU  -------------  ------------- 
+
+08:59:00:933 (2651): CARGAR ARCHIVOS CONFIGURACION
+08:59:00:935 (2651):  --------------------------------------
+08:59:00:935 (2651): IP MSP : 192.168.0.101
+08:59:00:939 (2651): PUERTO MSP : 6667
+08:59:00:940 (2651): IP KERNEL : 192.168.0.104 
+08:59:00:941 (2651): PUERTO KERNEL : 1122
+08:59:00:941 (2651): RETARDO : 800 
+08:59:00:942 (2651):  -------------------------------------- 
+
+08:59:00:944 (2651): Iniciando conexion con la MSP
+08:59:01:59 (2651): Se conecto correctamente con la MSP
+08:59:01:59 (2651): IP MSP: 192.168.0.101 , PUERTO MSP: 6667 
+
+08:59:01:59 (2651): Aviso a la MSP que soy_CPU
+08:59:01:59 (2651): Conectando con el Kernel ...
+08:59:01:63 (2651): SE CONECTO CORRECTAMENTE CON EL KERNEL
+08:59:01:63 (2651): IP Kernel: 192.168.0.104 , PUERTO Kernel: 1122 
+
+08:59:01:63 (2651): Aviso al Kernel que soy_CPU
+08:59:01:63 (2651): 
+ 
+ 
+ -------------ESPERANDO DATOS DEL KERNEL-------------
+ 
+ 
+
+08:59:01:63 (2651): recibir TCB y quantum del Kernel
+08:59:06:612 (2651):   Desempaquetando Paquete  
+08:59:06:612 (2651): Recibí datos del TCB actual y sus registros de programacion 
+
+08:59:06:612 (2651): PID: 2 
+
+08:59:06:613 (2651): TID: 2 
+
+08:59:06:613 (2651): KM: 0 
+
+08:59:06:613 (2651): BASE SEGMENTO CODIGO: 0 
+
+08:59:06:613 (2651): TAMANIO SEGMENTO CODIGO 210 
+
+08:59:06:613 (2651): PUNTERO INSTRUCCION 0 
+
+08:59:06:613 (2651): BASE STACK 1048576 
+
+08:59:06:613 (2651): CURSOR STACK 1048576 
+
+08:59:06:613 (2651): A: 0
+08:59:06:613 (2651): B: 0
+08:59:06:613 (2651): C: 0
+08:59:06:613 (2651): D: 0
+08:59:06:613 (2651): E: 0
+08:59:06:614 (2651): Quantum a ejecutar para PID : 2 es: 4
+08:59:06:614 (2651): 
+ 
+ 
+ -------------EMPIEZO A EJECUTAR TCB-------------
+ 
+ 
+
+08:59:06:614 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 0-------------
+ 
+ 
+
+08:59:06:615 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+08:59:06:615 (2651): Puntero Instruccion Actual: 0
+08:59:06:615 (2651):   Envio paquete a MSP  
+08:59:06:622 (2651): Procesando respuesta MSP
+08:59:06:622 (2651): PROCESAR RESPUESTA : 0
+08:59:06:622 (2651): Recibo Instruccion a ejecutar  
+08:59:06:622 (2651): Proxima Instruccion A Ejecutar: 0x92855e8 
+08:59:06:622 (2651):  Espero 800 segundos de retardo 
+08:59:14:624 (2651): Interpretar y Ejecutar Instruccion
+08:59:14:624 (2651): 
+ INSTRUCCION A EJECUTAR: LOAD 
+
+08:59:14:636 (2651): Procesando respuesta MSP
+08:59:14:636 (2651): PROCESAR RESPUESTA : 0
+08:59:14:636 (2651): Llegaron bien los parametros
+08:59:14:636 (2651): LOAD(B,140)
+08:59:14:636 (2651): Incrementar punteroInstruccion 0
+08:59:14:637 (2651): Incrementar los 4 + respuesta : 5
+08:59:14:637 (2651): Puntero Instruccion Actual: 9
+
+08:59:14:637 (2651): punteroInstruccion: 9
+08:59:14:637 (2651): Registro A : 0  
+08:59:14:637 (2651): Registro B : 140  
+08:59:14:638 (2651): Registro C : 0  
+08:59:14:638 (2651): Registro D : 0  
+08:59:14:638 (2651): Registro E : 0  
+08:59:14:638 (2651): Puntero M: 0
+08:59:14:638 (2651): Puntero P: 9
+08:59:14:638 (2651): Puntero X: 1048576
+08:59:14:638 (2651): Puntero S: 1048576
+08:59:14:638 (2651): Ejecutando 1 de 4 quantum
+08:59:14:638 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 1-------------
+ 
+ 
+
+08:59:14:638 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+08:59:14:638 (2651): Puntero Instruccion Actual: 9
+08:59:14:639 (2651):   Envio paquete a MSP  
+08:59:14:646 (2651): Procesando respuesta MSP
+08:59:14:647 (2651): PROCESAR RESPUESTA : 0
+08:59:14:647 (2651): Recibo Instruccion a ejecutar  
+08:59:14:647 (2651): Proxima Instruccion A Ejecutar: 0x9285638 
+08:59:14:647 (2651):  Espero 800 segundos de retardo 
+08:59:22:649 (2651): Interpretar y Ejecutar Instruccion
+08:59:22:649 (2651): 
+ INSTRUCCION A EJECUTAR: LOAD 
+
+08:59:22:673 (2651): Procesando respuesta MSP
+08:59:22:673 (2651): PROCESAR RESPUESTA : 0
+08:59:22:673 (2651): Llegaron bien los parametros
+08:59:22:673 (2651): LOAD(A,5)
+08:59:22:673 (2651): Incrementar punteroInstruccion 9
+08:59:22:674 (2651): Incrementar los 4 + respuesta : 5
+08:59:22:674 (2651): Puntero Instruccion Actual: 18
+
+08:59:22:674 (2651): punteroInstruccion: 18
+08:59:22:674 (2651): Registro A : 5  
+08:59:22:674 (2651): Registro B : 140  
+08:59:22:674 (2651): Registro C : 0  
+08:59:22:674 (2651): Registro D : 0  
+08:59:22:674 (2651): Registro E : 0  
+08:59:22:674 (2651): Puntero M: 0
+08:59:22:674 (2651): Puntero P: 18
+08:59:22:674 (2651): Puntero X: 1048576
+08:59:22:674 (2651): Puntero S: 1048576
+08:59:22:674 (2651): Ejecutando 2 de 4 quantum
+08:59:22:674 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 2-------------
+ 
+ 
+
+08:59:22:674 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+08:59:22:674 (2651): Puntero Instruccion Actual: 18
+08:59:22:674 (2651):   Envio paquete a MSP  
+08:59:22:681 (2651): Procesando respuesta MSP
+08:59:22:681 (2651): PROCESAR RESPUESTA : 0
+08:59:22:681 (2651): Recibo Instruccion a ejecutar  
+08:59:22:681 (2651): Proxima Instruccion A Ejecutar: 0x92856c8 
+08:59:22:681 (2651):  Espero 800 segundos de retardo 
+08:59:30:682 (2651): Interpretar y Ejecutar Instruccion
+08:59:30:682 (2651): 
+ INSTRUCCION A EJECUTAR: PUSH 
+
+08:59:30:688 (2651): Procesando respuesta MSP
+08:59:30:688 (2651): PROCESAR RESPUESTA : 0
+08:59:30:701 (2651): Procesando respuesta MSP
+08:59:30:701 (2651): PROCESAR RESPUESTA : 0
+08:59:30:701 (2651): PUSH(4,A)
+08:59:30:715 (2651): Procesando respuesta MSP
+08:59:30:716 (2651): PROCESAR RESPUESTA : 0
+08:59:30:724 (2651): Procesando respuesta MSP
+08:59:30:724 (2651): PROCESAR RESPUESTA : 0
+08:59:30:724 (2651): Incrementar punteroInstruccion 18
+08:59:30:724 (2651): Incrementar los 4 + respuesta : 5
+08:59:30:724 (2651): Puntero Instruccion Actual: 27
+
+08:59:30:724 (2651): punteroInstruccion: 27
+08:59:30:724 (2651): Registro A : 5  
+08:59:30:724 (2651): Registro B : 140  
+08:59:30:724 (2651): Registro C : 0  
+08:59:30:724 (2651): Registro D : 0  
+08:59:30:725 (2651): Registro E : 0  
+08:59:30:725 (2651): Puntero M: 0
+08:59:30:725 (2651): Puntero P: 27
+08:59:30:725 (2651): Puntero X: 1048576
+08:59:30:725 (2651): Puntero S: 1048580
+08:59:30:725 (2651): Ejecutando 3 de 4 quantum
+08:59:30:725 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 3-------------
+ 
+ 
+
+08:59:30:725 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+08:59:30:725 (2651): Puntero Instruccion Actual: 27
+08:59:30:725 (2651):   Envio paquete a MSP  
+08:59:30:729 (2651): Procesando respuesta MSP
+08:59:30:729 (2651): PROCESAR RESPUESTA : 0
+08:59:30:729 (2651): Recibo Instruccion a ejecutar  
+08:59:30:729 (2651): Proxima Instruccion A Ejecutar: 0x9285ac8 
+08:59:30:729 (2651):  Espero 800 segundos de retardo 
+08:59:38:730 (2651): Interpretar y Ejecutar Instruccion
+08:59:38:730 (2651): 
+ INSTRUCCION A EJECUTAR: INTE 
+
+08:59:38:845 (2651): Procesando respuesta MSP
+08:59:38:845 (2651): PROCESAR RESPUESTA : 0
+08:59:38:845 (2651): Llegaron bien los parametros
+08:59:38:845 (2651): INTE(132)
+08:59:38:845 (2651): 
+ ESTOY EN INTERRUPCION 
+
+08:59:38:845 (2651): Incrementar punteroInstruccion 27
+08:59:38:846 (2651): Puntero Instruccion actual: 35
+08:59:38:846 (2651): 
+ 
+ 
+ -------------ESPERANDO DATOS DEL KERNEL-------------
+ 
+ 
+
+08:59:38:846 (2651): recibir TCB y quantum del Kernel
+09:00:34:348 (2651):   Desempaquetando Paquete  
+09:00:34:348 (2651): Recibí datos del TCB actual y sus registros de programacion 
+
+09:00:34:348 (2651): PID: 2 
+
+09:00:34:348 (2651): TID: 2 
+
+09:00:34:349 (2651): KM: 1 
+
+09:00:34:349 (2651): BASE SEGMENTO CODIGO: 0 
+
+09:00:34:349 (2651): TAMANIO SEGMENTO CODIGO 332 
+
+09:00:34:349 (2651): PUNTERO INSTRUCCION 132 
+
+09:00:34:349 (2651): BASE STACK 1048576 
+
+09:00:34:349 (2651): CURSOR STACK 1048580 
+
+09:00:34:349 (2651): A: 5
+09:00:34:349 (2651): B: 140
+09:00:34:349 (2651): C: 0
+09:00:34:349 (2651): D: 0
+09:00:34:349 (2651): E: 0
+09:00:34:352 (2651): Quantum a ejecutar para PID : 2 es: 4
+09:00:34:352 (2651): 
+ 
+ 
+ -------------EMPIEZO A EJECUTAR TCB-------------
+ 
+ 
+
+09:00:34:352 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 0-------------
+ 
+ 
+
+09:00:34:352 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+09:00:34:352 (2651): Puntero Instruccion Actual: 132
+09:00:34:352 (2651): Leo el archivo de SYSCALL
+09:00:34:352 (2651):   Envio paquete a MSP  
+09:00:34:460 (2651): Procesando respuesta MSP
+09:00:34:460 (2651): PROCESAR RESPUESTA : 0
+09:00:34:460 (2651): Recibo Instruccion a ejecutar  
+09:00:34:460 (2651): Proxima Instruccion A Ejecutar: 0x9285cf0 
+09:00:34:460 (2651):  Espero 800 segundos de retardo 
+09:00:42:461 (2651): Interpretar y Ejecutar Instruccion
+09:00:42:461 (2651): 
+ INSTRUCCION A EJECUTAR: NOPP 
+
+09:00:42:461 (2651): NOPP()
+09:00:42:461 (2651): Incrementar punteroInstruccion 132
+09:00:42:461 (2651): Incrementar los 4 + respuesta : 0
+09:00:42:461 (2651): Puntero Instruccion Actual: 136
+
+09:00:42:462 (2651): punteroInstruccion: 136
+09:00:42:462 (2651): Registro A : 5  
+09:00:42:462 (2651): Registro B : 140  
+09:00:42:462 (2651): Registro C : 0  
+09:00:42:462 (2651): Registro D : 0  
+09:00:42:462 (2651): Registro E : 0  
+09:00:42:462 (2651): Puntero M: 0
+09:00:42:462 (2651): Puntero P: 136
+09:00:42:463 (2651): Puntero X: 1048576
+09:00:42:463 (2651): Puntero S: 1048580
+09:00:42:463 (2651): Ejecutando 1 de 4 quantum
+09:00:42:463 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 1-------------
+ 
+ 
+
+09:00:42:463 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+09:00:42:463 (2651): Puntero Instruccion Actual: 136
+09:00:42:463 (2651): Leo el archivo de SYSCALL
+09:00:42:463 (2651):   Envio paquete a MSP  
+09:00:42:539 (2651): Procesando respuesta MSP
+09:00:42:539 (2651): PROCESAR RESPUESTA : 0
+09:00:42:540 (2651): Recibo Instruccion a ejecutar  
+09:00:42:540 (2651): Proxima Instruccion A Ejecutar: 0x9285d20 
+09:00:42:541 (2651):  Espero 800 segundos de retardo 
+09:00:50:542 (2651): Interpretar y Ejecutar Instruccion
+09:00:50:542 (2651): 
+ INSTRUCCION A EJECUTAR: NOPP 
+
+09:00:50:543 (2651): NOPP()
+09:00:50:543 (2651): Incrementar punteroInstruccion 136
+09:00:50:543 (2651): Incrementar los 4 + respuesta : 0
+09:00:50:543 (2651): Puntero Instruccion Actual: 140
+
+09:00:50:543 (2651): punteroInstruccion: 140
+09:00:50:543 (2651): Registro A : 5  
+09:00:50:543 (2651): Registro B : 140  
+09:00:50:543 (2651): Registro C : 0  
+09:00:50:543 (2651): Registro D : 0  
+09:00:50:543 (2651): Registro E : 0  
+09:00:50:543 (2651): Puntero M: 0
+09:00:50:543 (2651): Puntero P: 140
+09:00:50:544 (2651): Puntero X: 1048576
+09:00:50:544 (2651): Puntero S: 1048580
+09:00:50:544 (2651): Ejecutando 2 de 4 quantum
+09:00:50:544 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 2-------------
+ 
+ 
+
+09:00:50:544 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+09:00:50:544 (2651): Puntero Instruccion Actual: 140
+09:00:50:544 (2651): Leo el archivo de SYSCALL
+09:00:50:544 (2651):   Envio paquete a MSP  
+09:00:50:649 (2651): Procesando respuesta MSP
+09:00:50:649 (2651): PROCESAR RESPUESTA : 0
+09:00:50:649 (2651): Recibo Instruccion a ejecutar  
+09:00:50:649 (2651): Proxima Instruccion A Ejecutar: 0x9285ce0 
+09:00:50:649 (2651):  Espero 800 segundos de retardo 
+09:00:58:651 (2651): Interpretar y Ejecutar Instruccion
+09:00:58:652 (2651): 
+ INSTRUCCION A EJECUTAR: NOPP 
+
+09:00:58:652 (2651): NOPP()
+09:00:58:652 (2651): Incrementar punteroInstruccion 140
+09:00:58:652 (2651): Incrementar los 4 + respuesta : 0
+09:00:58:652 (2651): Puntero Instruccion Actual: 144
+
+09:00:58:652 (2651): punteroInstruccion: 144
+09:00:58:652 (2651): Registro A : 5  
+09:00:58:652 (2651): Registro B : 140  
+09:00:58:652 (2651): Registro C : 0  
+09:00:58:652 (2651): Registro D : 0  
+09:00:58:652 (2651): Registro E : 0  
+09:00:58:652 (2651): Puntero M: 0
+09:00:58:652 (2651): Puntero P: 144
+09:00:58:652 (2651): Puntero X: 1048576
+09:00:58:652 (2651): Puntero S: 1048580
+09:00:58:652 (2651): Ejecutando 3 de 4 quantum
+09:00:58:652 (2651): 
+ 
+ 
+ -------------QUANTUM ACTUAL: 3-------------
+ 
+ 
+
+09:00:58:652 (2651): Solicito a MSP proximaInstruccionAEJecutar 
+09:00:58:652 (2651): Puntero Instruccion Actual: 144
+09:00:58:652 (2651): Leo el archivo de SYSCALL
+09:00:58:652 (2651):   Envio paquete a MSP  
+09:00:58:810 (2651): Procesando respuesta MSP
+09:00:58:810 (2651): PROCESAR RESPUESTA : 0
+09:00:58:811 (2651): Recibo Instruccion a ejecutar  
+09:00:58:811 (2651): Proxima Instruccion A Ejecutar: 0x9285c28 
+09:00:58:811 (2651):  Espero 800 segundos de retardo 
+09:01:06:812 (2651): Interpretar y Ejecutar Instruccion
+09:01:06:812 (2651): 
+ INSTRUCCION A EJECUTAR: CREA 
+
+09:01:06:812 (2651): CREA()
+09:01:06:835 (2651): Procesando respuesta MSP
+09:01:06:835 (2651): PROCESAR RESPUESTA : 0

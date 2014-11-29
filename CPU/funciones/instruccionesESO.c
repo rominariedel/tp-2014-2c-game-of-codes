@@ -280,9 +280,12 @@ void OUTC(){
 		if(status < 0){
 			finalizarEjecucion = -1;
 		}else{
-			char cadena[respuesta->tamanio + 1];
-			cadena[respuesta->tamanio] = '\0';
+			char* cadena = malloc(respuesta->tamanio + 1);
+			//cadena[respuesta->tamanio] = '\0';
 			memcpy(cadena, respuesta->datos, respuesta->tamanio);
+			char fin = '\0';
+			memcpy(cadena + respuesta->tamanio, &fin, 1);
+			log_info(LOGCPU, "cadena a mostrar: %s", cadena);
 			KERNEL_MostrarCadenaPorConsola(PIDactual, cadena);
 		}
 }
