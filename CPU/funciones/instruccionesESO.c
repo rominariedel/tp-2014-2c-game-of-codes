@@ -20,8 +20,7 @@ void SETM(tparam_setm* parametrosSetm){
 
 	void* bytesAEnviar = malloc(parametrosSetm->num);
 	memcpy(bytesAEnviar, devolverRegistro(parametrosSetm->reg2),parametrosSetm->num);
-	int status = MSP_EscribirEnMemoria(PIDactual,*devolverRegistro(parametrosSetm->reg1), bytesAEnviar,
-			parametrosSetm->num);
+	int status = MSP_EscribirEnMemoria(PIDactual,*devolverRegistro(parametrosSetm->reg1), bytesAEnviar,	parametrosSetm->num);
 	if (status < 0) {
 		finalizarEjecucion = -1;
 
@@ -131,7 +130,7 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 
 void INTE(tparam_inte* parametrosInte){
 	//abortar(interrupcion);
-	printf("PARAMETROS INTEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE: %d", parametrosInte->direccion);
+
 	KERNEL_ejecutarRutinaKernel(interrupcion ,parametrosInte->direccion);
 	aumentoPuntero = -1;
 	finalizarEjecucion = -3;

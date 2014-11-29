@@ -213,6 +213,17 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU,"Puntero X: %d",baseStackActual);
 			log_info(LOGCPU,"Puntero S: %d",cursorStackActual);
 
+			printf( "Registro A : %d  ", A);
+			printf( "Registro B : %d  ", B);
+			printf( "Registro C : %d  ", C);
+			printf( "Registro D : %d  ", D);
+			printf( "Registro E : %d  ", E);
+
+			printf( "Puntero M: %d", baseSegmentoCodigoActual);
+			printf( "Puntero P: %d", punteroInstruccionActual);
+			printf( "Puntero X: %d", baseStackActual);
+			printf( "Puntero S: %d", cursorStackActual);
+
 
 
 /*
@@ -447,6 +458,11 @@ void limpiarRegistros(){
 int interpretarYEjecutarInstruccion(char* instruccion){
 	printf("\n INSTRUCCION A EJECUTAR: %s \n", instruccion);
 	log_info(LOGCPU, "\n INSTRUCCION A EJECUTAR: %s \n", instruccion);
+	int PIDaux = PIDactual;
+	if(KMactual == 1){
+		PIDaux = PIDactual;
+		PIDactual = 0;
+	}
 
 	//t_list* list_parametros = list_create();
 
@@ -462,7 +478,6 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				printf( "LOAD(%c,%d)",parametros->reg1, parametros->num);
 				//list_add(list_parametros, (void*)&parametros->reg1);
 				//list_add(list_parametros,  (void*)&parametros->num);
-
 				LOAD(parametros);
 				return sizeof(tparam_load);
 			}
@@ -802,6 +817,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				SHIF(parametros);
 				return sizeof(tparam_shif);
 			}
+
 		}
 /*
 		t_datosAEnviar* respuesta = MSP_SolicitarParametros(punteroInstruccionActual + 4, sizeof(tparam_shif));
@@ -1004,6 +1020,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			log_error(LOGCPU, "PID: %d KM = %d, no tiene permiso para ejecutar WAKE()", PIDactual, KMactual);
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -12;}}
+	PIDactual = PIDaux;
 	return -12;
 
 }
