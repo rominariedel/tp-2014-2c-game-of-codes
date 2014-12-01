@@ -757,7 +757,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	while(cpu == NULL ) {
-		wait(&sem_CPU);
+		sem_wait(&sem_CPU);
 		cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	}
 	cpu->bit_estado = ocupado;

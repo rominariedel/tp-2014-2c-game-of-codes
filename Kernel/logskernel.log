@@ -1,5 +1,5 @@
-[INFO] 15:46:57:992 kernel/(3007:3007): Inicializando panel para kernel, en "../logskernel.log"
-[INFO] 15:46:58:101 kernel/(3007:3008): Hilos ejecutando:
+[INFO] 05:18:01:618 kernel/(2417:2417): Inicializando panel para kernel, en "../logskernel.log"
+[INFO] 05:18:01:994 kernel/(2417:2420): Hilos ejecutando:
   NEW:
 
   READY:
@@ -7,669 +7,115 @@
   EXEC:
 
   BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 15:47:03:687 kernel/(3007:3008): Nueva CPU (7) => [7]
-[INFO] 15:47:05:723 kernel/(3007:3008): Nueva CPU (8) => [7-8]
-[INFO] 15:47:10:191 kernel/(3007:3008): Nueva Consola (9) => [9]
-[INFO] 15:47:10:252 kernel/(3007:3011): Hilos ejecutando:
+[INFO] 05:18:04:450 kernel/(2417:2420): Nueva CPU (7) => [7]
+[INFO] 05:18:06:479 kernel/(2417:2420): Nueva Consola (8) => [8]
+[INFO] 05:18:06:542 kernel/(2417:2427): Hilos ejecutando:
   NEW:
 
   READY:
-    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+    { PID: 1, TID: 1, KM: 0, PC: 4194304, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXEC:
 
   BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 15:47:10:273 kernel/(3007:3009): Hilos ejecutando:
+[INFO] 05:18:06:583 kernel/(2417:2421): Hilos ejecutando:
   NEW:
 
   READY:
-    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+    { PID: 1, TID: 1, KM: 0, PC: 4194304, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXEC:
 
   BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 15:47:10:288 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-
-  EXEC:
-    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:10:932 kernel/(3007:3008): Nueva Consola (10) => [9-10]
-[INFO] 15:47:12:401 kernel/(3007:3008): Nueva Consola (11) => [9-10-11]
-[INFO] 15:47:12:433 kernel/(3007:3010): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Interrupcion
-[INFO] 15:47:12:440 kernel/(3007:3010): Hilos ejecutando:
+[INFO] 05:18:06:610 kernel/(2417:2421): Hilos ejecutando:
   NEW:
 
   READY:
 
   EXEC:
-
+    { PID: 1, TID: 1, KM: 0, PC: 4194304, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 15:47:12:454 kernel/(3007:3009): Hilos ejecutando:
+[INFO] 05:18:10:729 kernel/(2417:2425): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 4194336, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 0, B: 1, C: 20, D: 27, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 05:18:10:763 kernel/(2417:2421): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 4194336, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 0, B: 1, C: 20, D: 27, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 05:18:10:784 kernel/(2417:2421): Hilos ejecutando:
   NEW:
 
   READY:
 
   EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+    { PID: 1, TID: 1, KM: 0, PC: 4194336, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 0, B: 1, C: 20, D: 27, E: 0 }
   BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 15:47:12:721 kernel/(3007:3008): Nueva Consola (12) => [9-10-11-12]
-[INFO] 15:47:12:796 kernel/(3007:3008): Nueva Consola (13) => [9-10-11-12-13]
-[INFO] 15:47:14:347 kernel/(3007:3011): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:14:378 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:14:403 kernel/(3007:3009): Hilos ejecutando:
+[INFO] 05:18:12:824 kernel/(2417:2425): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Interrupcion
+[INFO] 05:18:12:834 kernel/(2417:2425): Hilos ejecutando:
   NEW:
 
   READY:
 
   EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+
   BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 4194350, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 1, B: 1, C: 20, D: 27, E: 0 }
   EXIT:
 
-[INFO] 15:47:14:445 kernel/(3007:3011): Hilos ejecutando:
+[INFO] 05:18:12:868 kernel/(2417:2421): Hilos ejecutando:
   NEW:
 
   READY:
-    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+
   EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+    { PID: 1, TID: 1, KM: 1, PC: 76, M: 4194304 (332b) }
+      { X: 5242880, S: 5242880, A: 1, B: 1, C: 20, D: 27, E: 0 }
   BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+    { PID: 1, TID: 1, KM: 0, PC: 4194350, M: 4194304 (69b) }
+      { X: 5242880, S: 5242880, A: 1, B: 1, C: 20, D: 27, E: 0 }
   EXIT:
 
-[INFO] 15:47:14:514 kernel/(3007:3011): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:14:571 kernel/(3007:3011): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:16:605 kernel/(3007:3010): El hilo { PID: 2, TID: 2 } ejecutó la instrucción Interrupcion
-[INFO] 15:47:16:607 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:21:748 kernel/(3007:3010): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Bloquear
-[INFO] 15:47:21:756 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:22:788 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 1, TID: 1, KM: 1, PC: 244, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:22:819 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 1, TID: 1, KM: 1, PC: 244, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:22:848 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 2, TID: 2, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:22:905 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 2, TID: 2, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:22:924 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 2, TID: 2, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 0, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:27:105 kernel/(3007:3010): El hilo { PID: 3, TID: 3 } ejecutó la instrucción Interrupcion
-[INFO] 15:47:27:107 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 2, TID: 2, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  EXIT:
-
-[INFO] 15:47:32:204 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 2, TID: 2, KM: 1, PC: 236, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  EXIT:
-
-[INFO] 15:47:32:234 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 2, TID: 2, KM: 1, PC: 236, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  EXIT:
-
-[INFO] 15:47:32:269 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 3, TID: 3, KM: 1, PC: 312, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  BLOCK:
-    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  EXIT:
-
-[INFO] 15:47:32:324 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 3, TID: 3, KM: 1, PC: 312, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  BLOCK:
-    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  EXIT:
-
-[INFO] 15:47:32:342 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 3, TID: 3, KM: 1, PC: 312, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  EXIT:
-
-[INFO] 15:47:34:453 kernel/(3007:3010): El hilo { PID: 4, TID: 4 } ejecutó la instrucción Interrupcion
-[INFO] 15:47:34:456 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 3, TID: 3, KM: 1, PC: 312, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }
-  BLOCK:
-    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:35:443 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 3, TID: 3, KM: 1, PC: 332, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:35:490 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 3, TID: 3, KM: 1, PC: 332, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:35:524 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:35:580 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXEC:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:35:601 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }
-  EXEC:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 0, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:39:796 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:39:830 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:39:885 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }
-  BLOCK:
-    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:44:147 kernel/(3007:3010): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Interrupcion
-[INFO] 15:47:44:150 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:44:923 kernel/(3007:3010): El hilo { PID: 4, TID: 4 } ejecutó la instrucción Bloquear
-[INFO] 15:47:44:927 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 4, TID: 4, KM: 1, PC: 176, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:45:954 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 4, TID: 4, KM: 1, PC: 244, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 15:47:45:996 kernel/(3007:3010): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 4, TID: 4, KM: 1, PC: 244, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
-  EXIT:
-
-[INFO] 15:47:46:33 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 108, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
-  EXIT:
-
-[INFO] 15:47:46:93 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 108, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
-  EXIT:
-
-[INFO] 15:47:46:113 kernel/(3007:3009): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 3, TID: 3, KM: 0, PC: 35, M: 0 (92b) }
-      { X: 1048576, S: 1048576, A: 1048623, B: 47, C: 0, D: 0, E: 44 }    { PID: 4, TID: 4, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 5, TID: 5, KM: 0, PC: 32, M: 0 (69b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1, C: 20, D: 27, E: 0 }
-  EXEC:
-    { PID: 1, TID: 1, KM: 1, PC: 108, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 17, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 0, B: 1048623, C: 0, D: 254, E: 0 }
-  BLOCK:
-    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
-      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
-  EXIT:
-
+[INFO] 05:18:17:891 kernel/(2417:2425): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Salida_Estandar

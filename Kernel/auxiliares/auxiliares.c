@@ -331,7 +331,7 @@ void planificador() {
 
 					break;
 				case salida_estandar:
-					cadena = malloc(datos->tamanio - sizeof(int));
+					cadena = malloc(datos->tamanio - sizeof(int) - sizeof(int));
 					memcpy(&pid, datos->datos, sizeof(int));
 					memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
 					memcpy(cadena, datos->datos + sizeof(int) + sizeof(int), datos->tamanio - sizeof(int) - sizeof(int));
@@ -402,6 +402,7 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 }
 
 void producir_salida_estandar(int pid, int tid,char* cadena) {
+	printf("SALIDA ESTANDAR! \n PID: %d \n TID: %d \n CADENA_ %s\n", pid, tid, cadena);
 	TCB_struct * tcb = obtener_tcbEjecutando(tid);
 	if(tcb != NULL){
 	instruccion_protegida("Salida_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
@@ -412,8 +413,12 @@ void producir_salida_estandar(int pid, int tid,char* cadena) {
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
 	t_datosAEnviar * datos = crear_paquete(imprimir_en_pantalla, cadena,
 			string_length(cadena));
-
-	enviar_datos(consola_asociada->socket_consola, datos);
+	if(consola_asociada == NULL){
+		printf("NO SE ENCONTRO CONSOLA ASOCIADA");
+	}
+	enviar_datos(consola_asociada->socket_consola, datos); //TODO: BUUUUUGGGG!!!!! NO ENCUENTRA
+	//LA CPU ME ESTA MANDANDO PID 0 Y FIJARSE SI ME ESTA MANDANDO LA CADENA COMO UN INT O UN CHAR
+	//SI ES UN NRO
 	free(datos->datos);
 	free(datos);
 }
