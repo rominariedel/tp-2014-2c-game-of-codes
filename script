@@ -49,7 +49,7 @@ mv STDOUT.bc ../../Consola/Default
 mv sysCalls.bc ../../Kernel
 
 
-cd ../../so-commons-library/src
+cd ../../../so-commons-library/src
 make all
 make install
 
