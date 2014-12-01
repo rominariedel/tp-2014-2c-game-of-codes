@@ -7,25 +7,25 @@ cd tp-2014-2c-game-of-codes/so-ensamblador
 make all
 cd build
 
-./so-ensamblador -o arithmetics.bc arithmetics.txt
-./so-ensamblador -o bigStack.bc bigStack.txt
-./so-ensamblador -o cpyloop.bc cpyloop.txt
-./so-ensamblador -o data.bc data.txt
-./so-ensamblador -o flow.bc flow.txt
-./so-ensamblador -o getMemory.bc getMemory.txt
-./so-ensamblador -o labels.bc labels.txt
-./so-ensamblador -o load.bc load.txt
-./so-ensamblador -o logic.bc logic.txt
-./so-ensamblador -o segFault.bc segFault.txt
-./so-ensamblador -o shifter.bc shifter.txt
-./so-ensamblador -o stack.bc stack.txt
-./so-ensamblador -o sysCalls.bc systemCalls.txt
-./so-ensamblador -o free.bc systemCalls/build.txt
-./so-ensamblador -o hilos.bc systemCalls/hilos.txt
-./so-ensamblador -o malloc.bc systemCalls/malloc.txt
-./so-ensamblador -o semaphores.bc systemCalls/semaphores.txt
-./so-ensamblador -o STDIN.bc systemCalls/STDIN.txt
-./so-ensamblador -o STDOUT.bc systemCalls/STDOUT.txt
+./so-ensamblador -o arithmetics.bc ../EjemplosESO/arithmetics.txt
+./so-ensamblador -o bigStack.bc ../EjemplosESO/bigStack.txt
+./so-ensamblador -o cpyloop.bc ../EjemplosESO/cpyloop.txt
+./so-ensamblador -o data.bc ../EjemplosESO/data.txt
+./so-ensamblador -o flow.bc ../EjemplosESO/flow.txt
+./so-ensamblador -o getMemory.bc ../EjemplosESO/getMemory.txt
+./so-ensamblador -o labels.bc ../EjemplosESO/labels.txt
+./so-ensamblador -o load.bc ../EjemplosESO/load.txt
+./so-ensamblador -o logic.bc ../EjemplosESO/logic.txt
+./so-ensamblador -o segFault.bc ../EjemplosESO/segFault.txt
+./so-ensamblador -o shifter.bc ../EjemplosESO/shifter.txt
+./so-ensamblador -o stack.bc ../EjemplosESO/stack.txt
+./so-ensamblador -o sysCalls.bc ../EjemplosESO/systemCalls.txt
+./so-ensamblador -o free.bc ../EjemplosESO/systemCalls/build.txt
+./so-ensamblador -o hilos.bc ../EjemplosESO/systemCalls/hilos.txt
+./so-ensamblador -o malloc.bc ../EjemplosESO/systemCalls/malloc.txt
+./so-ensamblador -o semaphores.bc ../EjemplosESO/systemCalls/semaphores.txt
+./so-ensamblador -o STDIN.bc ../EjemplosESO/systemCalls/STDIN.txt
+./so-ensamblador -o STDOUT.bc ../EjemplosESO/systemCalls/STDOUT.txt
 
 mv arithmetics.bc ../../Consola/Default
 mv bigStack.bc ../../Consola/Default
