@@ -1,6 +1,54 @@
 #!/bin/bash
+cd ..
+git clone https://github.com/sisoputnfrba/so-commons-library
 
-cd ../so-commons-library/src
+cd tp-2014-2c-game-of-codes/so-ensamblador
+
+make all
+
+./so-ensamblador -o arithmetics.bc build/arithmetics.txt
+./so-ensamblador -o bigStack.bc build/bigStack.txt
+./so-ensamblador -o cpyloop.bc build/cpyloop.txt
+./so-ensamblador -o data.bc build/data.txt
+./so-ensamblador -o flow.bc build/flow.txt
+./so-ensamblador -o getMemory.bc build/getMemory.txt
+./so-ensamblador -o labels.bc build/labels.txt
+./so-ensamblador -o load.bc build/load.txt
+./so-ensamblador -o logic.bc build/logic.txt
+./so-ensamblador -o segFault.bc build/segFault.txt
+./so-ensamblador -o shifter.bc build/shifter.txt
+./so-ensamblador -o stack.bc build/stack.txt
+./so-ensamblador -o sysCalls.bc build/systemCalls.txt
+./so-ensamblador -o free.bc build/systemCalls/build.txt
+./so-ensamblador -o hilos.bc build/systemCalls/hilos.txt
+./so-ensamblador -o malloc.bc build/systemCalls/malloc.txt
+./so-ensamblador -o semaphores.bc build/systemCalls/semaphores.txt
+./so-ensamblador -o STDIN.bc build/systemCalls/STDIN.txt
+./so-ensamblador -o STDOUT.bc build/systemCalls/STDOUT.txt
+
+mv arithmetics.bc ../Consola/Default
+mv bigStack.bc ../Consola/Default
+mv cpyloop.bc ../Consola/Default
+mv data.bc ../Consola/Default
+mv flow.bc ../Consola/Default
+mv getMemory.bc ../Consola/Default
+mv labels.bc ../Consola/Default
+mv load.bc ../Consola/Default
+mv logic.bc ../Consola/Default
+mv segFault.bc ../Consola/Default
+mv shifter.bc ../Consola/Default
+mv stack.bc ../Consola/Default
+mv free.bc ../Consola/Default
+mv hilos.bc ../Consola/Default
+mv malloc.bc ../Consola/Default
+mv semaphores.bc ../Consola/Default
+mv STDIN.bc ../Consola/Default
+mv STDOUT.bc ../Consola/Default
+
+mv sysCalls.bc ../Kernel
+
+
+cd ../../so-commons-library/src
 make all
 make install
 

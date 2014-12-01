@@ -10,8 +10,6 @@ RM := rm
 -include sources.mk
 -include panel/subdir.mk
 -include auxiliares/subdir.mk
--include ansisop-panel/collections/subdir.mk
--include ansisop-panel/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -28,15 +26,11 @@ endif
 # All Target
 all: Kernel
 
-dependents:
-	-cd /home/utnso/tp-2014-2c-game-of-codes/commons/Debug && $(MAKE) clean all
-	-cd /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug && $(MAKE) clean all
-
 # Tool invocations
-Kernel: $(OBJS) $(USER_OBJS) /home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so /home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so
+Kernel: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/tp-2014-2c-game-of-codes/commons/Debug" -L"/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug" -o "Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc  -o "Kernel" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -47,7 +41,5 @@ clean:
 
 .PHONY: all clean dependents
 .SECONDARY:
-/home/utnso/tp-2014-2c-game-of-codes/commons/Debug/libcommons.so:
-/home/utnso/tp-2014-2c-game-of-codes/Sockets/Debug/libSockets.so:
 
 -include ../makefile.targets

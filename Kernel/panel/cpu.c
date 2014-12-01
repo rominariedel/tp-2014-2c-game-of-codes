@@ -7,12 +7,12 @@ void comienzo_ejecucion(t_hilo* hilo, uint32_t quantum) {
 	string_append_with_format(&mensaje, "Ejecuta hilo { PID: %d, TID: %d }", hilo->pid, hilo->tid);
 	if (hilo->kernel_mode) string_append(&mensaje, " en modo kernel");
 
-	log_info(logg, mensaje);
+	log_info(logger, mensaje);
 	free(mensaje);
 }
 
 void fin_ejecucion() {
-	log_info(logg, "Empieza a estar iddle");
+	log_info(logger, "Empieza a estar iddle");
 }
 
 void ejecucion_instruccion(char* mnemonico, t_list* parametros) {
@@ -30,12 +30,12 @@ void ejecucion_instruccion(char* mnemonico, t_list* parametros) {
 
 	string_append(&mensaje, "]");
 
-	log_info(logg, mensaje);
+	log_info(logger, mensaje);
 	free(mensaje);
 }
 
 void cambio_registros(t_registros_cpu registros) {
-	log_info(logg, "Registros: { A: %d, B: %d, C: %d, D: %d, E: %d, M: %d, P: %d, S: %d, K: %d, I: %d }",
+	log_info(logger, "Registros: { A: %d, B: %d, C: %d, D: %d, E: %d, M: %d, P: %d, S: %d, K: %d, I: %d }",
 		registros.registros_programacion[0],
 		registros.registros_programacion[1],
 		registros.registros_programacion[2],

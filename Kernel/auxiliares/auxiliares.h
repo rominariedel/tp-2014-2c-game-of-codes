@@ -8,19 +8,14 @@
 #ifndef AUXILIARES_H_
 #define AUXILIARES_H_
 
-#include <stdio.h>
 #include <stddef.h>
 #include <commons/config.h>
 #include <sockets.h>
 #include <commons/collections/queue.h>
-#include <commons/collections/list.h>
 #include <sys/select.h>
-#include <commons/string.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <commons/collections/dictionary.h>
-#include <commons/log.h>
-#include "../panel/panel.h"
 #include "../panel/kernel.h"
 
 /*          ESTRUCTURAS          */
