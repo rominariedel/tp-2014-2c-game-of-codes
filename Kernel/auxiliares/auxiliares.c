@@ -161,7 +161,7 @@ void liberar_cpu(int socket) {
 }
 
 void abortar(TCB_struct* tcb) {
-	sacar_de_ejecucion(tcb, true);
+	finalizo_ejecucion(tcb);
 }
 
 void desconecto_cpu(int socket) {

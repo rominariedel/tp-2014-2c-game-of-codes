@@ -168,16 +168,16 @@ void ingresar_numero() {
 		int numero;
 		printf("Ingrese un numero entre 0 y 2147483648\n");
 		scanf("%d", &numero);
-		if ((numero > 0) && (numero <= pow(2, 31))) {
+		//if ((numero > 0) && (numero <= pow(2, 31))) {
 			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, &numero,
 					sizeof(int));
 			enviar_datos(kernelSocket, datos);
 			recibido_not_success = 0;
-		} else {
+		//} else {
 			//Si no se ingreso un numero correcto
-			printf(
-					"El numero ingresado no esta dentro de los rangos permitidos\n");
-		}
+		//	printf(
+		//			"El numero ingresado no esta dentro de los rangos permitidos\n");
+		//}
 	}
 }
 long tamanio_archivo(FILE* archivo) {
