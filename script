@@ -1,9 +1,10 @@
 #!/bin/bash
 cd ..
 git clone https://github.com/sisoputnfrba/so-commons-library
-git clone https://github.com/sisoputnfrba/scripts-eso
+
 
 cd tp-2014-2c-game-of-codes/so-ensamblador
+git clone https://github.com/sisoputnfrba/scripts-eso
 
 make all
 cd build
@@ -28,13 +29,13 @@ cd build
 ./so-ensamblador -o STDIN.bc ../EjemplosESO/systemCalls/STDIN.txt
 ./so-ensamblador -o STDOUT.bc ../EjemplosESO/systemCalls/STDOUT.txt
 
-./so-ensamblador -o prueba_error.bc ../../scripts-eso/prueba_error.txt
-./so-ensamblador -o prueba_hilos.bc ../../scripts-eso/prueba_hilos.txt
-./so-ensamblador -o prueba_forES.bc ../../scripts-eso/prueba_forES.txt
-./so-ensamblador -o prueba_suma_alocada.bc ../../scripts-eso/prueba_suma_alocada.txt
-./so-ensamblador -o prueba_suma.bc ../../scripts-eso/prueba_suma.txt
-./so-ensamblador -o prueba_consumidor.bc ../../scripts-eso/prueba_prodcons/prueba_consumidor.txt
-./so-ensamblador -o prueba_productor.bc ../../scripts-eso/prueba_prodcons/prueba_productor.txt
+./so-ensamblador -o prueba_error.bc ../scripts-eso/prueba_error.txt
+./so-ensamblador -o prueba_hilos.bc ../scripts-eso/prueba_hilos.txt
+./so-ensamblador -o prueba_forES.bc ../scripts-eso/prueba_forES.txt
+./so-ensamblador -o prueba_suma_alocada.bc ../scripts-eso/prueba_suma_alocada.txt
+./so-ensamblador -o prueba_suma.bc ../scripts-eso/prueba_suma.txt
+./so-ensamblador -o prueba_consumidor.bc ../scripts-eso/prueba_prodcons/prueba_consumidor.txt
+./so-ensamblador -o prueba_productor.bc ../scripts-eso/prueba_prodcons/prueba_productor.txt
 
 mv prueba_error.bc ../../Consola/Default
 mv prueba_hilos.bc ../../Consola/Default
