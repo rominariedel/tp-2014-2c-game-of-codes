@@ -56,7 +56,7 @@ int main(int argc, char ** argv) {
 
 	//AUTENTICACION
 	paquete = crear_paquete(soy_consola, NULL, 0);
-	if(enviar_datos(kernelSocket, paquete)>0){
+	if(enviar_datos(kernelSocket, paquete)>=0){
 	printf("SE ENVIARON DATOS\n");
 	}else{
 		printf("NO\n");

@@ -86,7 +86,7 @@ void loader() {
 	fd_set copia_set;
 	while (1) {
 		struct timeval * timeout = malloc(sizeof(struct timeval));
-		timeout->tv_sec = 4;
+		timeout->tv_sec = 2;
 		timeout->tv_usec = 0;
 		copia_set = consola_set;
 
@@ -514,13 +514,13 @@ void finalizo_quantum(TCB_struct* tcb) {
 	bool es_TCB(TCB_struct tcb_comparar) {
 		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
 	}
-	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
-	free(tcb_exec);
-	printf("Se saco el tcb de la cola de ejecucion\n");
 	if (chequear_proceso_abortado(tcb) < 0) {
 		//EL PADRE DE ESE PROCESO TERMINO
 		//exit(0);
 	} else {
+		TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
+		free(tcb_exec);
+		printf("Se saco el tcb de la cola de ejecucion\n");
 		meter_en_ready(1, tcb);
 	}
 

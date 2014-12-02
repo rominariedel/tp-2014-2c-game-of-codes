@@ -73,18 +73,19 @@ bool CPU_esta_libre(struct_CPU * cpu) {
 	return (cpu->bit_estado == 0);
 }
 
-void loguear(t_cola cola, TCB_struct * tcb_log){
+void loguear(t_cola cola, TCB_struct * tcb_log) {
 	printf("KM DEL TCB A LOGUEAR %d\n", tcb_log->KM);
-	bool tiene_tcb(hilo_t * hilo){
-		if(tcb_log->KM ==1){
-			return hilo->tcb.KM ==1;
-		}else{
+	bool tiene_tcb(hilo_t * hilo) {
+		if (tcb_log->KM == 1) {
+			return hilo->tcb.KM == 1;
+		} else {
 
-		return (hilo->tcb.TID == tcb_log->TID)&&(hilo->tcb.KM != 1);}
+			return (hilo->tcb.TID == tcb_log->TID) && (hilo->tcb.KM != 1);
+		}
 	}
 
 	hilo_t * hilo = list_find(HILOS_SISTEMA, (void*) tiene_tcb);
-	if(hilo == NULL){
+	if (hilo == NULL ) {
 		printf("FALLO EN EN LOGUEAR, NO SE ENCONTRO HILO\n");
 	}
 
@@ -101,7 +102,6 @@ void loguear(t_cola cola, TCB_struct * tcb_log){
 	hilo->tcb.registrosProgramacion[2] = tcb_log->registrosProgramacion[2];
 	hilo->tcb.registrosProgramacion[3] = tcb_log->registrosProgramacion[3];
 	hilo->tcb.registrosProgramacion[4] = tcb_log->registrosProgramacion[4];
-
 
 	hilo->cola = cola;
 
@@ -129,7 +129,6 @@ void meter_en_ready(int prioridad, TCB_struct * tcb) {
 TCB_struct * sacar_de_ready(int prioridad) {
 	sem_wait(&sem_READY);
 	TCB_struct * tcb = NULL;
-
 
 	printf("READY ");
 	switch (prioridad) {
@@ -183,7 +182,7 @@ void desconecto_cpu(int socket) {
 		} else {
 			if (tcb->KM) {
 				void abortar_procesos(struct_consola * consola) {
-					t_datosAEnviar * datos = crear_paquete(terminar_conexion,
+					t_datosAEnviar * datos = crear_paquete(se_desconecto_cpu,
 							NULL, 0);
 					enviar_datos(consola->socket_consola, datos);
 					free(datos);
@@ -196,16 +195,18 @@ void desconecto_cpu(int socket) {
 				free(datos);
 
 			}
-			struct_bloqueado * bloqueado = malloc(sizeof(struct_bloqueado));
-			bloqueado->tcb = *tcb;
-			bloqueado->id_recurso = -1;
-			list_add(block.prioridad_1, bloqueado);
+			sacar_de_ejecucion(tcb, false);
+			//struct_bloqueado * bloqueado = malloc(sizeof(struct_bloqueado));
+			//bloqueado->tcb = *tcb;
+			//bloqueado->id_recurso = -1;
+			//list_add(block.prioridad_1, bloqueado);
 
 		}
 	} else {
 		sem_wait(&sem_CPU);
 	}
-	list_remove_and_destroy_by_condition(CPU_list,(void*) tiene_mismo_socket, free);
+	list_remove_and_destroy_by_condition(CPU_list, (void*) tiene_mismo_socket,
+			free);
 }
 
 void planificador() {
@@ -220,7 +221,7 @@ void planificador() {
 
 		copia_set = CPU_set;
 		int i = select(descriptor_mas_alto_cpu + 1, &copia_set, NULL, NULL,
-				timeout );
+				timeout);
 
 		if (i == -1) {
 			//error
@@ -247,7 +248,6 @@ void planificador() {
 				int dirSysCall, tamanio, pid, tid_a_esperar, id_recurso, tid;
 				char * cadena;
 				char * id_tipo;
-
 
 				printf("CODIGO OPERACION : %d\n", codigo_operacion);
 
@@ -278,9 +278,10 @@ void planificador() {
 					printf("\n PID: %d \n", tcb->PID);
 					printf("\n TID: %d \n", tcb->TID);
 					printf("\n KM: %d \n", tcb->KM);
-					printf("\n BASE SEGMENTO CODIGO: %d \n",tcb->M);
-					printf("\n TAMANIO SEGMENTO CODIGO %d \n",tcb->tamanioSegmentoCodigo);
-					printf("\n PUNTERO INSTRUCCION %d \n",tcb->P);
+					printf("\n BASE SEGMENTO CODIGO: %d \n", tcb->M);
+					printf("\n TAMANIO SEGMENTO CODIGO %d \n",
+							tcb->tamanioSegmentoCodigo);
+					printf("\n PUNTERO INSTRUCCION %d \n", tcb->P);
 					printf("\n BASE STACK %d \n", tcb->X);
 					printf("\n CURSOR STACK %d \n", tcb->S);
 					printf("\n A: %d \n", tcb->registrosProgramacion[0]);
@@ -289,17 +290,16 @@ void planificador() {
 					printf("\n D: %d \n", tcb->registrosProgramacion[3]);
 					printf("\n E: %d \n", tcb->registrosProgramacion[4]);
 
-
-
-
 					t_hilo * hilo2 = (t_hilo*) obtener_hilo_asociado(tcb);
-					if(obtener_hilo_asociado(tcb) ==NULL){
+					if (obtener_hilo_asociado(tcb) == NULL ) {
 						printf("\n\n\n NO SE ENCONTRO EL HILOX2 \n\n");
 					}
-					if(hilo2==NULL){
+					if (hilo2 == NULL ) {
 						printf("NO SE ENCONTRO EL HILO!\n");
 						exit(1);
-					}else{instruccion_protegida("Interrupcion", hilo2);}
+					} else {
+						instruccion_protegida("Interrupcion", hilo2);
+					}
 					printf("LLEGO LA DIRECCIONNANANANANANANANANANA: %d\n",
 							dirSysCall);
 					interrumpir(tcb, dirSysCall);
@@ -308,11 +308,12 @@ void planificador() {
 				case creacion_hilo:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					t_hilo * hilo = (t_hilo*) obtener_hilo_asociado(tcb);
-					if(hilo==NULL){
+					if (hilo == NULL ) {
 						printf("NO SE ENCONTRO EL HILO!\n");
-					}else{
+					} else {
 
-					instruccion_protegida("Crear_Hilo", (t_hilo*) obtener_hilo_asociado(tcb));
+						instruccion_protegida("Crear_Hilo",
+								(t_hilo*) obtener_hilo_asociado(tcb));
 					}
 					crear_hilo(*tcb, n_descriptor);
 					break;
@@ -324,8 +325,7 @@ void planificador() {
 					id_tipo = malloc(1);
 					memcpy(&tamanio, datos->datos, sizeof(int));
 					memcpy(&pid, datos->datos + sizeof(int), sizeof(int));
-					memcpy(id_tipo, datos->datos + (2 * sizeof(int)),
-							1);
+					memcpy(id_tipo, datos->datos + (2 * sizeof(int)), 1);
 					producir_entrada_estandar(pid, *id_tipo, n_descriptor,
 							tamanio);
 
@@ -334,7 +334,8 @@ void planificador() {
 					cadena = malloc(datos->tamanio - sizeof(int) - sizeof(int));
 					memcpy(&pid, datos->datos, sizeof(int));
 					memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
-					memcpy(cadena, datos->datos + sizeof(int) + sizeof(int), datos->tamanio - sizeof(int) - sizeof(int));
+					memcpy(cadena, datos->datos + sizeof(int) + sizeof(int),
+							datos->tamanio - sizeof(int) - sizeof(int));
 					producir_salida_estandar(pid, tid, cadena);
 
 					break;
@@ -342,7 +343,8 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
 							sizeof(int));
-					instruccion_protegida("Join", (t_hilo*) obtener_hilo_asociado(tcb));
+					instruccion_protegida("Join",
+							(t_hilo*) obtener_hilo_asociado(tcb));
 					realizar_join(tcb, tid_a_esperar);
 
 					break;
@@ -350,14 +352,16 @@ void planificador() {
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
 					memcpy(&id_recurso, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
-					instruccion_protegida("Bloquear", (t_hilo*) obtener_hilo_asociado(tcb));
+					instruccion_protegida("Bloquear",
+							(t_hilo*) obtener_hilo_asociado(tcb));
 					//liberar_cpu(n_descriptor);
 					realizar_bloqueo(tcb, id_recurso);
 
 					break;
 				case despertar:
 					memcpy(&id_recurso, datos->datos, sizeof(int));
-					instruccion_protegida("Despertar", (t_hilo*) obtener_hilo_asociado(tcb));
+					instruccion_protegida("Despertar",
+							(t_hilo*) obtener_hilo_asociado(tcb));
 					realizar_desbloqueo(id_recurso);
 
 					break;
@@ -401,19 +405,21 @@ struct_bloqueado * obtener_bloqueado(int TID) {
 	return list_find(block.prioridad_1, (void*) tiene_mismo_tid);
 }
 
-void producir_salida_estandar(int pid, int tid,char* cadena) {
-	printf("SALIDA ESTANDAR! \n PID: %d \n TID: %d \n CADENA_ %s\n", pid, tid, cadena);
+void producir_salida_estandar(int pid, int tid, char* cadena) {
+	printf("SALIDA ESTANDAR! \n PID: %d \n TID: %d \n CADENA_ %s\n", pid, tid,
+			cadena);
 	TCB_struct * tcb = obtener_tcbEjecutando(tid);
-	if(tcb != NULL){
-	instruccion_protegida("Salida_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
-	}else{
+	if (tcb != NULL ) {
+		instruccion_protegida("Salida_Estandar",
+				(t_hilo*) obtener_hilo_asociado(tcb));
+	} else {
 		printf("NO se encontro tcb\n");
 	}
 
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
 	t_datosAEnviar * datos = crear_paquete(imprimir_en_pantalla, cadena,
 			string_length(cadena));
-	if(consola_asociada == NULL){
+	if (consola_asociada == NULL ) {
 		printf("NO SE ENCONTRO CONSOLA ASOCIADA");
 	}
 	enviar_datos(consola_asociada->socket_consola, datos); //TODO: BUUUUUGGGG!!!!! NO ENCUENTRA
@@ -431,9 +437,10 @@ void producir_entrada_estandar(int pid, char id_tipo, int socket_CPU,
 		int tamanio) {
 
 	TCB_struct * tcb = obtener_tcbEjecutando(pid);
-	if(tcb != NULL){
-	instruccion_protegida("Entrada_Estandar", (t_hilo*) obtener_hilo_asociado(tcb));
-	}else{
+	if (tcb != NULL ) {
+		instruccion_protegida("Entrada_Estandar",
+				(t_hilo*) obtener_hilo_asociado(tcb));
+	} else {
 		printf("NO se encontro tcb\n");
 	}
 
@@ -499,7 +506,7 @@ void realizar_bloqueo(TCB_struct * tcb, int id_recurso) {
 		dictionary_put(dic_bloqueados, recurso, nuevo_bloqueado);
 		printf("SE AGREGO UN NUEVO RECURSO A BLOQUEAR %d\n", id_recurso);
 	}
-		loguear(BLOCK, tcb);
+	loguear(BLOCK, tcb);
 }
 
 void realizar_desbloqueo(int id_recurso) {
@@ -512,8 +519,7 @@ void realizar_desbloqueo(int id_recurso) {
 		TCB_struct * tcb = queue_pop(bloqueados_por_recurso);
 		meter_en_ready(1, tcb);
 	} else {
-		//NO EXISTEN BLOQUEADOS DE ESE RECURSO
-		exit(-1);
+		//NO EXISTEN BLOQUEADOS DE ESE RECURSO, SIGUE COMO SI NADA
 	}
 }
 
@@ -521,13 +527,25 @@ int chequear_proceso_abortado(TCB_struct * tcb) {
 	struct_consola * consola = obtener_consolaAsociada(tcb->PID);
 	if (consola->termino_ejecucion) {
 		printf("EL PROCESO FUE ABORTADO \n");
-		mandar_a_exit(tcb);
-		return -1;
+		sacar_de_ejecucion(tcb, false);
+		if (consola->cantidad_hilos == 0) {
+
+			destruir_segmento_MSP(consola->PID, consola->M);
+
+			t_datosAEnviar * paquete = crear_paquete(terminar_conexion, NULL,
+					0);
+			if (enviar_datos(consola->socket_consola, paquete) < 0) {
+				return -1;
+			}
+			free(paquete);
+			return -1;
+		}
+		return 0;
 	}
 	return 0;
 }
 
-void destruir_segmento_MSP(int pid, int base_segmento){
+void destruir_segmento_MSP(int pid, int base_segmento) {
 
 	sem_wait(&sem_lecturaEscritura);
 
@@ -535,8 +553,7 @@ void destruir_segmento_MSP(int pid, int base_segmento){
 	void * datos = malloc(tamanio);
 	memcpy(datos, &pid, sizeof(int));
 	memcpy(datos + sizeof(int), &base_segmento, sizeof(int));
-	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos,
-			tamanio);
+	t_datosAEnviar * paquete = crear_paquete(destruir_segmento, datos, tamanio);
 	printf(
 			"Se va a solicitar que se destruya el codigo base %d proceso %d tamanio %d\n",
 			base_segmento, pid, tamanio);
@@ -547,7 +564,6 @@ void destruir_segmento_MSP(int pid, int base_segmento){
 	free(datos);
 	free(paquete->datos);
 	free(paquete);
-
 
 	sem_post(&sem_lecturaEscritura);
 
@@ -576,7 +592,7 @@ void mandar_a_exit(TCB_struct * tcb) {
 	sem_post(&sem_exit);
 }
 
-TCB_struct * obtener_tcbEjecutando(int TID){
+TCB_struct * obtener_tcbEjecutando(int TID) {
 
 	bool tiene_mismo_tid(TCB_struct * tcb) {
 		return tcb->TID == TID;
@@ -585,18 +601,18 @@ TCB_struct * obtener_tcbEjecutando(int TID){
 	return list_find(exec, (void*) tiene_mismo_tid);
 }
 
-hilo_t * obtener_hilo_asociado(TCB_struct * tcb_h){
+hilo_t * obtener_hilo_asociado(TCB_struct * tcb_h) {
 	printf("tid del tcb a buscar %d\n", tcb_h->TID);
-	bool es_hilo(hilo_t * hilo){
+	bool es_hilo(hilo_t * hilo) {
 		printf("buscar hilo %d\n", hilo->tcb.TID);
 		return hilo->tcb.TID == tcb_h->TID;
 	}
 
-	return list_find(HILOS_SISTEMA, (void*)es_hilo);
+	return list_find(HILOS_SISTEMA, (void*) es_hilo);
 
 }
 
-void copiar_tcb(TCB_struct * tcb_destino, TCB_struct * tcb_origen){
+void copiar_tcb(TCB_struct * tcb_destino, TCB_struct * tcb_origen) {
 
 	tcb_destino->PID = tcb_origen->PID;
 	tcb_destino->TID = tcb_origen->TID;
@@ -606,10 +622,15 @@ void copiar_tcb(TCB_struct * tcb_destino, TCB_struct * tcb_origen){
 	tcb_destino->P = tcb_origen->P;
 	tcb_destino->X = tcb_origen->X;
 	tcb_destino->S = tcb_origen->S;
-	tcb_destino->registrosProgramacion[0] = tcb_origen->registrosProgramacion[0];
-	tcb_destino->registrosProgramacion[1] = tcb_origen->registrosProgramacion[1];
-	tcb_destino->registrosProgramacion[2] = tcb_origen->registrosProgramacion[2];
-	tcb_destino->registrosProgramacion[3] = tcb_origen->registrosProgramacion[3];
-	tcb_destino->registrosProgramacion[4] = tcb_origen->registrosProgramacion[4];
+	tcb_destino->registrosProgramacion[0] =
+			tcb_origen->registrosProgramacion[0];
+	tcb_destino->registrosProgramacion[1] =
+			tcb_origen->registrosProgramacion[1];
+	tcb_destino->registrosProgramacion[2] =
+			tcb_origen->registrosProgramacion[2];
+	tcb_destino->registrosProgramacion[3] =
+			tcb_origen->registrosProgramacion[3];
+	tcb_destino->registrosProgramacion[4] =
+			tcb_origen->registrosProgramacion[4];
 
 }
