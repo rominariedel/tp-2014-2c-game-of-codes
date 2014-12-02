@@ -5,7 +5,8 @@ funciones/funcionesKernel.d: ../funciones/funcionesKernel.c \
  ../funciones/../variablesGlobales.h \
  ../funciones/../funciones/funcionesMSP.h \
  ../funciones/../funciones/funcionesKernel.h \
- ../funciones/../funciones/instruccionesESO.h ../funciones/../cpu.h
+ ../funciones/../funciones/instruccionesESO.h \
+ ../funciones/../logsObligatorios.h
 
 ../funciones/../CPU.h:
 
@@ -23,4 +24,4 @@ funciones/funcionesKernel.d: ../funciones/funcionesKernel.c \
 
 ../funciones/../funciones/instruccionesESO.h:
 
-../funciones/../cpu.h:
+../funciones/../logsObligatorios.h:

@@ -4,7 +4,7 @@
 /*Funciones MSP*/
 
 t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, int codOperacion){
-	if(KMactual == 0){
+	if(KMactual == 1){
 		PID = 0;
 	}
 
@@ -20,9 +20,6 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 }
 
 t_datosAEnviar* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
-	if(KMactual == 0){
-		PID = 0;
-	}
 
 	int tamanio = 4;
 	log_info(LOGCPU, "  Envio paquete a MSP  ");
@@ -38,7 +35,7 @@ t_datosAEnviar* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroIns
 }
 
 t_datosAEnviar* MSP_SolicitarParametros(int PID,int punteroInstruccion, int tamanioParametros){
-	if(KMactual == 0){
+	if(KMactual == 1){
 		PID = 0;
 	}
 

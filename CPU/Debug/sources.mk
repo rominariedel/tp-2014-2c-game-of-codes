@@ -13,11 +13,6 @@ EXECUTABLES :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
-panel \
-panel/commons \
-panel/commons/collections \
-funciones \
-commons \
-commons/collections \
 . \
+funciones \
 

@@ -12,7 +12,7 @@ int main(int cantArgs, char** args){
 
 	LOGCPU = log_create(args[2], "CPU", 0, LOG_LEVEL_TRACE);
 
-	//inicializar_panel(CPU, "LOGOBLIGATORIOS");
+	inicializar_panel(CPU, "LOGOBLIGATORIOS");
 
 	log_info(LOGCPU, "\n -------------  -------------  Bienvenido al CPU  -------------  ------------- \n");
 	printf(" \n\n  -------------  Bienvenido al CPU  -------------\n\n");
@@ -50,7 +50,7 @@ int main(int cantArgs, char** args){
 	free(paqueteMSP);
 
 	log_info(LOGCPU,"Conectando con el Kernel ...");
-	printf("\n \n CONECTANDO CON EL KERNEL \n\n\n");
+	printf("\n CONECTANDO CON EL KERNEL \n");
 
 	conectarConKernel();
 
@@ -80,11 +80,25 @@ int main(int cantArgs, char** args){
 
 		//1.Cargar todos los datos del TCB actual y sus registros de programacion.
 		quantum = recibirTCByQuantum(datosKernel);
-/*		hilo_t* hiloAEjecutar;
-		hiloAEjecutar->tcb = TCBactual;
+
+
+		t_hilo* hiloAEjecutar = malloc(sizeof(t_hilo));
+		hiloAEjecutar->pid = PIDactual;
+		hiloAEjecutar->tid = TIDactual;
+		hiloAEjecutar->kernel_mode = KMactual;
+		hiloAEjecutar->segmento_codigo = baseSegmentoCodigoActual;
+		hiloAEjecutar->segmento_codigo_size = tamanioSegmentoCodigoActual;
+		hiloAEjecutar->puntero_instruccion = punteroInstruccionActual;
+		hiloAEjecutar->segmento_codigo_size = baseStackActual;
+		hiloAEjecutar->cursor_stack = cursorStackActual;
+		hiloAEjecutar->registros[0] = A;
+		hiloAEjecutar->registros[1] = B;
+		hiloAEjecutar->registros[2] = C;
+		hiloAEjecutar->registros[3] = D;
+		hiloAEjecutar->registros[4] = E;
 		hiloAEjecutar->cola = EXEC;
 		comienzo_ejecucion(hiloAEjecutar, quantum);
-*/
+
 
 		free(datosKernel);
 
@@ -159,8 +173,8 @@ int main(int cantArgs, char** args){
 				}else{
 					log_info(LOGCPU, "Recibo Instruccion a ejecutar  ");
 					log_info(LOGCPU, "Proxima Instruccion A Ejecutar: %p ", proximaInstruccionAEjecutar);
-					printf("Recibo Instruccion a ejecutar \n");
-					printf("Proxima Instruccion A Ejecutar: %s \n", proximaInstruccionAEjecutar);
+					//printf("Recibo Instruccion a ejecutar \n");
+					//printf("Proxima Instruccion A Ejecutar: %s \n", proximaInstruccionAEjecutar);
 					memcpy(proximaInstruccionAEjecutar, respuesta -> datos, 4);
 					proximaInstruccionAEjecutar[4] = '\0';
 			}
@@ -196,7 +210,7 @@ int main(int cantArgs, char** args){
 				}
 				if(finalizarEjecucion == -3){
 					printf("SE MANDO INTERRUPCION ");
-					//fin_ejecucion();
+					fin_ejecucion();
 					break;
 				}
 			}
@@ -415,7 +429,7 @@ void devolverTCBactual(int codOperacion){
 	free(mensaje);
 	log_info(LOGCPU, "Se devolvio TCB al Kernel");
 
-//	fin_ejecucion();
+	fin_ejecucion();
 
 	limpiarRegistros();
 }
@@ -459,7 +473,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 	printf("\n INSTRUCCION A EJECUTAR: %s \n", instruccion);
 	log_info(LOGCPU, "\n INSTRUCCION A EJECUTAR: %s \n", instruccion);
 
-	//t_list* list_parametros = list_create();
+	t_list* list_parametros = list_create();
 
 	if(0 == strcmp(instruccion,"LOAD")){
 		t_datosAEnviar* respuesta = MSP_SolicitarParametros(PIDactual,punteroInstruccionActual + 4, sizeof(tparam_load));
@@ -471,8 +485,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				free(respuesta);
 				log_info(LOGCPU, "LOAD(%c,%d)",parametros->reg1, parametros->num);
 				printf( "LOAD(%c,%d)",parametros->reg1, parametros->num);
-				//list_add(list_parametros, (void*)&parametros->reg1);
-				//list_add(list_parametros,  (void*)&parametros->num);
+				list_add(list_parametros, (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->num);
 				LOAD(parametros);
 				return sizeof(tparam_load);
 			}
@@ -489,8 +503,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 					log_info(LOGCPU, "GETM(%c,%c)",parametros->reg1, parametros->reg2);
 					printf(  "GETM(%c,%c)",parametros->reg1, parametros->reg2);
 
-					////list_add(list_parametros,  (void*)&parametros->reg1);
-					////list_add(list_parametros,  (void*)&parametros->reg2);
+					list_add(list_parametros,  (void*)&parametros->reg1);
+					list_add(list_parametros,  (void*)&parametros->reg2);
 
 					GETM(parametros);
 					return sizeof(tparam_getm);
@@ -522,9 +536,9 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 					parametros->reg2 = reg2SETM[0];
 					log_info(LOGCPU, "SETM(%d,%c,%c)",parametros->num, parametros->reg1, parametros->reg2);
 					printf(  "SETM(%d,%c,%c)",parametros->num, parametros->reg1, parametros->reg2);
-					////list_add(list_parametros,  (void*)&parametros->num);
-					////list_add(list_parametros,  (void*)&parametros->reg1);
-					////list_add(list_parametros,  (void*)&parametros->reg2);
+					list_add(list_parametros,  (void*)&parametros->num);
+					list_add(list_parametros,  (void*)&parametros->reg1);
+					list_add(list_parametros,  (void*)&parametros->reg2);
 
 					SETM(parametros);
 					return sizeof(tparam_setm);
@@ -551,8 +565,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 					tparam_movr * parametros = (tparam_movr *) procesarRespuestaMSP(respuesta);
 					log_info(LOGCPU, "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
 					printf( "MOVR(%c,%c)",parametros->reg1, parametros->reg2);
-					////list_add(list_parametros,  (void*)&parametros->reg1);
-					////list_add(list_parametros,  (void*)&parametros->reg2);
+					list_add(list_parametros,  (void*)&parametros->reg1);
+					list_add(list_parametros,  (void*)&parametros->reg2);
 
 					MOVR(parametros);
 					return sizeof(tparam_movr);
@@ -567,8 +581,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 						tparam_addr* parametros = (tparam_addr*) procesarRespuestaMSP(respuesta);
 						log_info(LOGCPU, "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
 						printf( "ADDR(%c,%c)",parametros->reg1, parametros->reg2);
-						////list_add(list_parametros,  (void*)(&parametros->reg1));
-						//list_add(list_parametros,  (void*)&parametros->reg2);
+						list_add(list_parametros,  (void*)(&parametros->reg1));
+						list_add(list_parametros,  (void*)&parametros->reg2);
 
 						ADDR(parametros);
 						return sizeof(tparam_addr);
@@ -583,8 +597,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 					tparam_subr* parametros = (tparam_subr *) procesarRespuestaMSP(respuesta);
 					log_info(LOGCPU, "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
 					printf(  "SUBR(%c,%c)",parametros->reg1, parametros->reg2);
-					//list_add(list_parametros,  (void*)&parametros->reg1);
-					//list_add(list_parametros,  (void*)&parametros->reg2);
+					list_add(list_parametros,  (void*)&parametros->reg1);
+					list_add(list_parametros,  (void*)&parametros->reg2);
 
 					SUBR(parametros);
 					return sizeof(tparam_subr);
@@ -600,8 +614,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 					log_info(LOGCPU, "MULR(%c,%c)",parametros->reg1, parametros->reg2);
 					printf(  "MULR(%c,%c)",parametros->reg1, parametros->reg2);
 
-					//list_add(list_parametros,  (void*)&parametros->reg1);
-					//list_add(list_parametros,  (void*)&parametros->reg2);
+					list_add(list_parametros,  (void*)&parametros->reg1);
+					list_add(list_parametros,  (void*)&parametros->reg2);
 
 					MULR(parametros);
 					return sizeof(tparam_mulr);
@@ -616,8 +630,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 					tparam_modr * parametros = (tparam_modr *)  procesarRespuestaMSP(respuesta);
 					log_info(LOGCPU, "MODR(%c,%c)",parametros->reg1, parametros->reg2);
 					printf( "MODR(%c,%c)",parametros->reg1, parametros->reg2);
-					//list_add(list_parametros,  (void*)&parametros->reg1);
-					//list_add(list_parametros,  (void*)&parametros->reg2);
+					list_add(list_parametros,  (void*)&parametros->reg1);
+					list_add(list_parametros,  (void*)&parametros->reg2);
 
 					MODR(parametros);
 					return  sizeof(tparam_modr);
@@ -632,8 +646,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 							tparam_divr* parametros = (tparam_divr *) procesarRespuestaMSP(respuesta);
 							log_info(LOGCPU, "DIVR(%c,%c)",parametros->reg1, parametros->reg2);
 							printf("DIVR(%c,%c)",parametros->reg1, parametros->reg2);
-							//list_add(list_parametros,  (void*)&parametros->reg1);
-							//list_add(list_parametros,  (void*)&parametros->reg2);
+							list_add(list_parametros,  (void*)&parametros->reg1);
+							list_add(list_parametros,  (void*)&parametros->reg2);
 
 							DIVR(parametros);
 							return sizeof(tparam_divr);
@@ -648,7 +662,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				tparam_incr* parametros = (tparam_incr *) procesarRespuestaMSP(respuesta);
 				log_info(LOGCPU, "INCR(%c)",parametros->reg1);
 				printf("INCR(%c)",parametros->reg1);
-				//list_add(list_parametros,  (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->reg1);
 
 				INCR(parametros);
 				return sizeof(tparam_incr);
@@ -663,7 +677,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				tparam_decr* parametros = (tparam_decr *) procesarRespuestaMSP(respuesta);
 				log_info(LOGCPU, "DECR(%c)",parametros->reg1);
 				printf("DECR(%c)",parametros->reg1);
-				//list_add(list_parametros,  (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->reg1);
 
 
 				DECR(parametros);
@@ -679,8 +693,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				tparam_comp* parametros = (tparam_comp *) procesarRespuestaMSP(respuesta);
 				log_info(LOGCPU, "COMP(%c,%c)",parametros->reg1, parametros->reg2);
 				printf( "COMP(%c,%c)",parametros->reg1, parametros->reg2);
-				//list_add(list_parametros,  (void*)&parametros->reg1);
-				//list_add(list_parametros,  (void*)&parametros->reg2);
+				list_add(list_parametros,  (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->reg2);
 
 				COMP(parametros);
 				return sizeof(tparam_comp);
@@ -696,8 +710,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				log_info(LOGCPU, "CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
 				printf("CGEQ(%c,%c)",parametros->reg1, parametros->reg2);
 
-				//list_add(list_parametros,  (void*)&parametros->reg1);
-				//list_add(list_parametros,  (void*)&parametros->reg2);
+				list_add(list_parametros,  (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->reg2);
 
 				CGEQ(parametros);
 				return  sizeof(tparam_cgeq);
@@ -712,8 +726,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				tparam_cleq* parametros = (tparam_cleq *) procesarRespuestaMSP(respuesta);
 				log_info(LOGCPU, "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
 				printf( "CLEQ(%c,%c)",parametros->reg1, parametros->reg2);
-				//list_add(list_parametros,  (void*)&parametros->reg1);
-				//list_add(list_parametros,  (void*)&parametros->reg2);
+				list_add(list_parametros,  (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->reg2);
 
 				CLEQ(parametros);
 				return sizeof(tparam_cleq);
@@ -730,7 +744,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				printf( "GOTO(%c)",parametros->reg1);
 				aumentoPuntero = -1;
 
-				//list_add(list_parametros,  (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->reg1);
 
 				GOTO(parametros);
 				return 0;
@@ -746,7 +760,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				log_info(LOGCPU, "JMPZ(%d)",parametros->direccion);
 				printf( "JMPZ(%d)",parametros->direccion);
 
-				//list_add(list_parametros,  (void*)&parametros->direccion);
+				list_add(list_parametros,  (void*)&parametros->direccion);
 
 				JMPZ(parametros);
 				return sizeof(tparam_jmpz);
@@ -761,7 +775,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				tparam_jpnz* parametros = (tparam_jpnz *) procesarRespuestaMSP(respuesta);
 				log_info(LOGCPU, "JPNZ(%d)",parametros->direccion);
 				printf("JPNZ(%d)",parametros->direccion);
-				//list_add(list_parametros,  (void*)&parametros->direccion);
+				list_add(list_parametros,  (void*)&parametros->direccion);
 
 				JPNZ(parametros);
 				return sizeof(tparam_jpnz);
@@ -777,7 +791,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		log_info(LOGCPU, "INTE(%d)",parametros->direccion);
 		printf("INTE(%d)",parametros->direccion);
 
-		//list_add(list_parametros,  (void*)&parametros->direccion);
+		list_add(list_parametros,  (void*)&parametros->direccion);
 
  		INTE(parametros);
  		return  sizeof(tparam_inte);
@@ -806,8 +820,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				parametros->registro = reg1SHIF[0];
 				log_info(LOGCPU, "SHIF(%d,%c)", parametros->numero,parametros->registro);
 				printf("SHIF(%d,%c)", parametros->numero,parametros->registro);
-				//list_add(list_parametros,  (void*)&parametros->numero);
-				//list_add(list_parametros,  (void*)&parametros->registro);
+				list_add(list_parametros,  (void*)&parametros->numero);
+				list_add(list_parametros,  (void*)&parametros->registro);
 
 				SHIF(parametros);
 				return sizeof(tparam_shif);
@@ -854,8 +868,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				log_info(LOGCPU, "PUSH(%d,%c)", parametros->numero,	parametros->registro);
 				printf("PUSH(%d,%c)", parametros->numero,	parametros->registro);
 
-				//list_add(list_parametros,  (void*)&parametros->numero);
-				//list_add(list_parametros,  (void*)&parametros->registro);
+				list_add(list_parametros,  (void*)&parametros->numero);
+				list_add(list_parametros,  (void*)&parametros->registro);
 
 				PUSH(parametros);
 		}
@@ -910,8 +924,8 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				log_info(LOGCPU, "TAKE(%d,%c)", parametros->numero,	parametros->registro);
 				printf("TAKE(%d,%c)", parametros->numero,	parametros->registro);
 
-				//list_add(list_parametros,  (void*)&parametros->numero);
-				//list_add(list_parametros,  (void*)&parametros->registro);
+				list_add(list_parametros,  (void*)&parametros->numero);
+				list_add(list_parametros,  (void*)&parametros->registro);
 
 				TAKE(parametros);
 			}
@@ -1016,6 +1030,7 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 			printf("no tiene permiso para ejecutar esta instruccion");
 			return -12;}}
 
+	ejecucion_instruccion(instruccion, list_parametros);
 	return -12;
 
 }

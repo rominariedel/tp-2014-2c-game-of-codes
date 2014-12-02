@@ -1,0 +1,123 @@
+[INFO] 11:29:27:616 cpu/(7876:7876): Inicializando panel para cpu, en "LOGOBLIGATORIOScpu.log"
+[INFO] 11:29:34:644 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:34:711 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:34:716 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:34:755 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:34:777 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:34:852 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:34:871 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:34:916 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:34:932 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:34:957 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:34:974 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:35:52 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:35:174 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:35:240 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:35:251 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:35:279 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:35:402 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:35:524 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:35:533 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:35:588 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:35:608 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:35:627 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:35:821 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:35:929 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:35:945 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:35:999 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:9 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:36:33 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:52 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:36:138 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:156 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:36:207 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:222 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:36:259 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:530 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:36:648 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:677 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:36:729 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:740 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:36:763 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:777 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:36:868 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:889 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:36:943 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:36:955 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:36:982 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:37:233 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:37:350 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:37:364 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:37:418 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:37:427 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:37:453 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:37:468 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:37:547 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:37:575 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:37:628 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:37:637 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:37:664 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:37:973 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:38:94 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:110 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:38:170 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:172 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:38:198 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:210 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:38:297 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:314 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:38:367 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:380 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:38:406 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:662 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:38:771 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:778 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:38:834 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:842 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:38:870 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:890 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:38:964 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:38:992 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:39:42 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:55 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:39:83 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:380 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:39:486 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:505 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:39:560 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:566 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:39:597 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:612 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:39:689 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:833 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:39:887 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:895 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:39:926 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:39:944 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:40:21 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:50 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:40:106 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:121 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:40:148 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:323 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:40:417 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:438 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:40:492 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:499 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:40:525 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:539 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:40:632 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:660 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:40:711 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:718 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:40:746 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:764 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:40:839 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:40:868 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:40:997 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:41:14 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:41:36 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:41:92 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 } en modo kernel
+[INFO] 11:29:41:179 cpu/(7876:7876): Empieza a estar iddle
+[INFO] 11:29:41:199 cpu/(7876:7876): Ejecuta hilo { PID: 2, TID: 2 }
+[INFO] 11:29:41:237 cpu/(7876:7876): Empieza a estar iddle

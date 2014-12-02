@@ -5,7 +5,8 @@ funciones/funcionesMSP.d: ../funciones/funcionesMSP.c \
  ../funciones/../variablesGlobales.h \
  ../funciones/../funciones/funcionesMSP.h \
  ../funciones/../funciones/funcionesKernel.h \
- ../funciones/../funciones/instruccionesESO.h ../funciones/../cpu.h
+ ../funciones/../funciones/instruccionesESO.h \
+ ../funciones/../logsObligatorios.h
 
 ../funciones/../CPU.h:
 
@@ -23,4 +24,4 @@ funciones/funcionesMSP.d: ../funciones/funcionesMSP.c \
 
 ../funciones/../funciones/instruccionesESO.h:
 
-../funciones/../cpu.h:
+../funciones/../logsObligatorios.h:
