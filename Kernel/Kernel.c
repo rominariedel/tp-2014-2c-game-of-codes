@@ -287,7 +287,7 @@ void boot() {
 
 	sem_post(&sem_kmDisponible);
 
-	t_log * logger = log_create("../panel/lg", "KERNEL", 1, LOG_LEVEL_DEBUG);
+	logger = log_create("../panel/lg", "KERNEL", 1, LOG_LEVEL_DEBUG);
 
 	printf("Esperando conexiones...\n");
 	log_debug(logger, "ESPERANDO CONEXIONES");
@@ -693,22 +693,29 @@ void fijarse_joins(int tid) {
 	printf("Me fijo joins\n");
 
 	bool esta_esperando_tid(struct_join *estructura) {
+		log_debug(logger, "ME ESTOY FIJANDO EL JOIN.\n \n TID del bloqueado: %d \n TID a esperar: %d \n", tid, estructura->tid_a_esperar);
 		return estructura->tid_a_esperar == tid;
 	}
+
 	void desbloquear_por_join(struct_join * estructura) {
 		if (esta_esperando_tid(estructura)) {
+			bool espera_a_alguien_mas(struct_join * estructura2){
+				return estructura2->tcb_llamador->TID == estructura->tcb_llamador->TID;
+			}
+			if(!list_any_satisfy(hilos_join, (void*)espera_a_alguien_mas)){
 			TCB_struct * tcb_bloqueado = malloc(sizeof(TCB_struct));
 			copiar_tcb(tcb_bloqueado, estructura->tcb_llamador);
 			meter_en_ready(1, tcb_bloqueado);
+			}
 		}
 	}
 
-	//list_remove_and_destroy_by_condition(hilos_join, (void*) esta_esperando_tid,
-	//		free);
 	//Como el filter contiene referencias a estructuras que contiene hilos_join, con liberar los elementos del
 	//filter tendrían que dejar de estar los elementos en hilos_join
 
 	list_map(hilos_join, (void*) desbloquear_por_join);
+	list_remove_and_destroy_by_condition(hilos_join, (void*) esta_esperando_tid,
+			free);
 }
 
 void finalizo_ejecucion(TCB_struct *tcb_fin) {

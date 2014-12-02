@@ -140,7 +140,7 @@ TCB_struct * sacar_de_ready(int prioridad) {
 		tcb = queue_pop(ready.prioridad_1);
 		break;
 	}
-	loguear(READY, tcb);
+	//loguear(READY, tcb);
 	sem_post(&sem_READY);
 	return tcb;
 }
@@ -246,6 +246,7 @@ void planificador() {
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
+				struct_CPU * cpu;
 				int dirSysCall, tamanio, pid, tid_a_esperar, id_recurso, tid, base_segmento;
 				char * cadena;
 				char * id_tipo;
@@ -327,25 +328,31 @@ void planificador() {
 					memcpy(&tamanio, datos->datos, sizeof(int));
 					memcpy(&pid, datos->datos + sizeof(int), sizeof(int));
 					memcpy(id_tipo, datos->datos + (2 * sizeof(int)), 1);
-					producir_entrada_estandar(pid, *id_tipo, n_descriptor,
+
+					cpu = obtener_CPUAsociada(n_descriptor);
+
+					producir_entrada_estandar(cpu->PID, *id_tipo, n_descriptor,
 							tamanio);
 
 					break;
 				case salida_estandar:
 					cadena = malloc(datos->tamanio - sizeof(int) - sizeof(int));
-					memcpy(&pid, datos->datos, sizeof(int));
-					memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
+					//memcpy(&pid, datos->datos, sizeof(int));
+					//memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
 					memcpy(cadena, datos->datos + sizeof(int) + sizeof(int),
 							datos->tamanio - sizeof(int) - sizeof(int));
-					producir_salida_estandar(pid, tid, cadena);
+					cpu = obtener_CPUAsociada(n_descriptor);
+
+					producir_salida_estandar(cpu->PID, cpu->TID, cadena);
 
 					break;
 				case join:
 					memcpy(tcb, datos->datos, sizeof(TCB_struct));
-					memcpy(&tid_a_esperar, datos->datos + sizeof(int),
+					memcpy(&tid_a_esperar, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
 					instruccion_protegida("Join",
 							(t_hilo*) obtener_hilo_asociado(tcb));
+					log_debug(logger, "SE SOLICITO JOIN. SE BLOQUEA TID %d, ESPERANDO A TID %d", tcb->TID, tid_a_esperar);
 					realizar_join(tcb, tid_a_esperar);
 
 					break;

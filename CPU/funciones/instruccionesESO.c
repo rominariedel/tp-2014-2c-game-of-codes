@@ -221,10 +221,18 @@ void MALC(){
 	//almacena en el registro A. Crea en la MSP un nuevo segmento del tamaño especificado asociado
 	//al programa en ejecución.
 	int respuesta = MSP_CrearNuevoSegmento(PIDactual, A);
+
+
 	if(respuesta < 0){
 		finalizarEjecucion = -1;
 	}else{
 		A = respuesta;
+		void * datos = malloc(3 * sizeof(int));
+		memcpy(datos, &PIDactual, sizeof(int));
+		memcpy(datos + sizeof(int), &TIDactual, sizeof(int));
+		memcpy(datos + (2*sizeof(int)), &respuesta, sizeof(int));
+		t_datosAEnviar * paquete = crear_paquete(33, datos, 3 * sizeof(int));
+		enviar_datos(socketKernel, paquete);
 	}
 }
 
@@ -237,6 +245,14 @@ void FREE(){
 		int respuesta = MSP_DestruirSegmento(PIDactual,  A);
 		if(respuesta < 0){
 				finalizarEjecucion = -1;
+		}else{
+			void * datos = malloc(3 * sizeof(int));
+			memcpy(datos, &PIDactual, sizeof(int));
+			memcpy(datos + sizeof(int), &TIDactual, sizeof(int));
+			memcpy(datos + (2*sizeof(int)), &respuesta, sizeof(int));
+			t_datosAEnviar * paquete = crear_paquete(34, datos, 3 * sizeof(int));
+			enviar_datos(socketKernel, paquete);
+
 		}
 	}
 }

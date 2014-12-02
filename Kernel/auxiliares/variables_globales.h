@@ -30,6 +30,8 @@ t_list * CPU_list;
 t_list * consola_list;
 t_config * configuracion;
 
+t_log * logger;
+
 typedef struct {
 	int socket_CPU; //El Socket pertenece a la CPU que hizo la solicitud de entrada/salida
 	void * cadena;
