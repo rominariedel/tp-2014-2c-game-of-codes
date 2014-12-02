@@ -1,5 +1,5 @@
-[INFO] 22:07:57:904 kernel/(4965:4965): Inicializando panel para kernel, en "../logskernel.log"
-[INFO] 22:07:57:917 kernel/(4965:4966): Hilos ejecutando:
+[INFO] 00:58:44:300 kernel/(6462:6462): Inicializando panel para kernel, en "../logskernel.log"
+[INFO] 00:58:44:305 kernel/(6462:6463): Hilos ejecutando:
   NEW:
 
   READY:
@@ -11,13 +11,13 @@
       { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 22:08:01:809 kernel/(4965:4966): Nueva CPU (7) => [7]
-[INFO] 22:08:06:895 kernel/(4965:4966): Nueva Consola (8) => [8]
-[INFO] 22:08:06:896 kernel/(4965:4974): Hilos ejecutando:
+[INFO] 00:58:51:24 kernel/(6462:6463): Nueva CPU (7) => [7]
+[INFO] 00:59:03:762 kernel/(6462:6463): Nueva Consola (8) => [8]
+[INFO] 00:59:03:763 kernel/(6462:6473): Hilos ejecutando:
   NEW:
 
   READY:
-    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (88b) }
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (40b) }
       { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXEC:
 
@@ -26,11 +26,11 @@
       { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 22:08:06:896 kernel/(4965:4967): Hilos ejecutando:
+[INFO] 00:59:03:763 kernel/(6462:6464): Hilos ejecutando:
   NEW:
 
   READY:
-    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (88b) }
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (40b) }
       { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXEC:
 
@@ -39,99 +39,21 @@
       { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 22:08:06:896 kernel/(4965:4967): Hilos ejecutando:
+[INFO] 00:59:03:763 kernel/(6462:6464): Hilos ejecutando:
   NEW:
 
   READY:
 
   EXEC:
-    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (88b) }
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (40b) }
       { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
   BLOCK:
     { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
       { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 
-[INFO] 22:08:10:905 kernel/(4965:4971): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 30, M: 0 (88b) }
-      { X: 1048576, S: 1048576, A: 12, B: 73, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 22:08:10:905 kernel/(4965:4967): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 30, M: 0 (88b) }
-      { X: 1048576, S: 1048576, A: 12, B: 73, C: 0, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 22:08:10:906 kernel/(4965:4967): Hilos ejecutando:
-  NEW:
-
-  READY:
-
-  EXEC:
-    { PID: 1, TID: 1, KM: 0, PC: 30, M: 0 (88b) }
-      { X: 1048576, S: 1048576, A: 12, B: 73, C: 0, D: 0, E: 0 }
-  BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 22:08:14:920 kernel/(4965:4971): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 56, M: 0 (88b) }
-      { X: 1048576, S: 1048577, A: 12, B: 74, C: 72, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 22:08:14:920 kernel/(4965:4967): Hilos ejecutando:
-  NEW:
-
-  READY:
-    { PID: 1, TID: 1, KM: 0, PC: 56, M: 0 (88b) }
-      { X: 1048576, S: 1048577, A: 12, B: 74, C: 72, D: 0, E: 0 }
-  EXEC:
-
-  BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 22:08:14:920 kernel/(4965:4967): Hilos ejecutando:
-  NEW:
-
-  READY:
-
-  EXEC:
-    { PID: 1, TID: 1, KM: 0, PC: 56, M: 0 (88b) }
-      { X: 1048576, S: 1048577, A: 12, B: 74, C: 72, D: 0, E: 0 }
-  BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
-  EXIT:
-
-[INFO] 22:08:16:159 kernel/(4965:4971): Desconexión CPU (7) => []
-[INFO] 22:08:16:159 kernel/(4965:4971): Hilos ejecutando:
+[INFO] 00:59:05:769 kernel/(6462:6470): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Interrupcion
+[INFO] 00:59:05:769 kernel/(6462:6470): Hilos ejecutando:
   NEW:
 
   READY:
@@ -140,8 +62,86 @@
 
   BLOCK:
     { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (40b) }
+      { X: 1048576, S: 1048576, A: 4, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
-    { PID: 1, TID: 1, KM: 0, PC: 56, M: 0 (88b) }
-      { X: 1048576, S: 1048577, A: 12, B: 74, C: 72, D: 0, E: 0 }
-[INFO] 22:08:16:164 kernel/(4965:4974): Desconexión Consola (8) => []
+
+[INFO] 00:59:05:769 kernel/(6462:6464): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+    { PID: 1, TID: 1, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 4, B: 0, C: 0, D: 0, E: 0 }
+  BLOCK:
+    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (40b) }
+      { X: 1048576, S: 1048576, A: 4, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 00:59:12:793 kernel/(6462:6470): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 28, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (40b) }
+      { X: 1048576, S: 1048576, A: 4, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 00:59:12:794 kernel/(6462:6470): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (40b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 28, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 00:59:12:794 kernel/(6462:6464): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (40b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 28, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 00:59:12:794 kernel/(6462:6464): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (40b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 28, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 00:59:15:803 kernel/(6462:6470): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 28, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+    { PID: 1, TID: 1, KM: 0, PC: 40, M: 0 (40b) }
+      { X: 1048576, S: 1048576, A: 2097152, B: 300, C: 0, D: 0, E: 0 }
+[INFO] 00:59:15:805 kernel/(6462:6473): Desconexión Consola (8) => []

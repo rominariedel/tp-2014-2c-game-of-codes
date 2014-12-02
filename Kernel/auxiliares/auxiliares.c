@@ -53,6 +53,7 @@ void crear_colas() {
 	dic_bloqueados = dictionary_create();
 
 	HILOS_SISTEMA = list_create();
+	mallocs = list_create();
 }
 
 void free_listas() {
@@ -245,7 +246,7 @@ void planificador() {
 				int codigo_operacion = datos->codigo_operacion;
 
 				TCB_struct* tcb = malloc(sizeof(TCB_struct));
-				int dirSysCall, tamanio, pid, tid_a_esperar, id_recurso, tid;
+				int dirSysCall, tamanio, pid, tid_a_esperar, id_recurso, tid, base_segmento;
 				char * cadena;
 				char * id_tipo;
 
@@ -274,7 +275,7 @@ void planificador() {
 					memcpy(&dirSysCall, datos->datos + sizeof(TCB_struct),
 							sizeof(int));
 
-					printf("\n TCB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+					printf("\n INTERRUPCION TCB \n");
 					printf("\n PID: %d \n", tcb->PID);
 					printf("\n TID: %d \n", tcb->TID);
 					printf("\n KM: %d \n", tcb->KM);
@@ -360,10 +361,22 @@ void planificador() {
 					break;
 				case despertar:
 					memcpy(&id_recurso, datos->datos, sizeof(int));
-					instruccion_protegida("Despertar",
-							(t_hilo*) obtener_hilo_asociado(tcb));
+					//instruccion_protegida("Despertar",
+					//		(t_hilo*) obtener_hilo_asociado(tcb));
 					realizar_desbloqueo(id_recurso);
 
+					break;
+				case hago_malloc:
+					memcpy(&pid, datos->datos, sizeof(int));
+					memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
+					memcpy(&base_segmento, datos->datos + (2* sizeof(int)), sizeof(int));
+					hizo_malloc(pid, tid, base_segmento);
+					break;
+				case hago_free:
+					memcpy(&pid, datos->datos, sizeof(int));
+					memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
+					memcpy(&base_segmento, datos->datos + (2* sizeof(int)), sizeof(int));
+					hizo_free(pid, tid, base_segmento);
 					break;
 				}
 				free(datos->datos);
@@ -374,6 +387,34 @@ void planificador() {
 		}
 
 	}
+}
+
+void hizo_malloc(int pid, int tid, int base_segmento){
+	malc_struct * malc = malloc(sizeof(malc_struct));
+	malc->PID = pid;
+	malc->TID = tid;
+	malc->base_segmento = base_segmento;
+	list_add(mallocs, malc);
+}
+
+void hizo_free(int pid, int tid, int base_segmento){
+	bool find_malloc_struct(malc_struct * malc){
+		return (malc->TID == tid && malc->base_segmento == base_segmento);
+	}
+	list_remove_and_destroy_by_condition(mallocs, (void*) find_malloc_struct, free);
+}
+
+void liberar_mallocs(int tid){
+
+	void liberar_malloc(malc_struct * malc){
+		if (malc->TID == tid){
+			destruir_segmento_MSP(malc->PID, malc->base_segmento);
+			hizo_free(malc->PID, malc->TID, malc->base_segmento);
+		}
+	}
+
+	list_iterate(mallocs, (void*) liberar_malloc);
+
 }
 
 struct_consola * obtener_consolaConectada(int socket_consola) {
@@ -572,7 +613,7 @@ void destruir_segmento_MSP(int pid, int base_segmento) {
 void mandar_a_exit(TCB_struct * tcb) {
 
 	sem_wait(&sem_exit);
-
+	liberar_mallocs(tcb->TID);
 	destruir_segmento_MSP(tcb->PID, tcb->X);
 
 	struct_consola * consola_asociada = obtener_consolaAsociada(tcb->PID);

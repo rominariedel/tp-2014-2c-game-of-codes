@@ -18,7 +18,7 @@ t_queue * e_exit;
 t_dictionary * dic_bloqueados;
 t_list * hilos_join;
 
-
+t_list * mallocs;
 t_list * HILOS_SISTEMA;
 
 

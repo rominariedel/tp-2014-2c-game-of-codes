@@ -558,6 +558,7 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		free(paquete);
 		printf("DESCONECTE LA CONSOLA ASOCIADA\n");
 	}
+
 	mandar_a_exit(tcb);
 
 	//if (consola_asociada->cantidad_hilos == 0) {
