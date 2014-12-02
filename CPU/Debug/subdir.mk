@@ -3,11 +3,6 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-O_SRCS += \
-../dictionary.o \
-../list.o \
-../queue.o 
-
 C_SRCS += \
 ../CPU.c 
 

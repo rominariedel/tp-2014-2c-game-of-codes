@@ -3,11 +3,6 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-O_SRCS += \
-../commons/collections/dictionary.o \
-../commons/collections/list.o \
-../commons/collections/queue.o 
-
 C_SRCS += \
 ../commons/collections/dictionary.c \
 ../commons/collections/list.c \

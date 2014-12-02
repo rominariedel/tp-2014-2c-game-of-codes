@@ -4,6 +4,10 @@
 /*Funciones MSP*/
 
 t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, int codOperacion){
+	if(KMactual == 0){
+		PID = 0;
+	}
+
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &direccionALeer, sizeof(int));
@@ -16,6 +20,10 @@ t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, i
 }
 
 t_datosAEnviar* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroInstruccion){
+	if(KMactual == 0){
+		PID = 0;
+	}
+
 	int tamanio = 4;
 	log_info(LOGCPU, "  Envio paquete a MSP  ");
 	char * datos = malloc(3 * sizeof (int));
@@ -29,7 +37,11 @@ t_datosAEnviar* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroIns
 	return respuesta;
 }
 
-t_datosAEnviar* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){
+t_datosAEnviar* MSP_SolicitarParametros(int PID,int punteroInstruccion, int tamanioParametros){
+	if(KMactual == 0){
+		PID = 0;
+	}
+
 	int tamanio = tamanioParametros;
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PIDactual, sizeof(int));

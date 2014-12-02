@@ -3,15 +3,6 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-O_SRCS += \
-../commons/config.o \
-../commons/error.o \
-../commons/log.o \
-../commons/process.o \
-../commons/string.o \
-../commons/temporal.o \
-../commons/txt.o 
-
 C_SRCS += \
 ../commons/config.c \
 ../commons/error.c \
