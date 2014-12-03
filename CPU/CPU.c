@@ -63,6 +63,7 @@ int main(int cantArgs, char** args){
 	paqueteKERNEL = crear_paquete(soy_CPU,NULL,0);
 	enviar_datos(socketKernel,paqueteKERNEL);
 	free(paqueteKERNEL);
+	PIDkm = 1;
 
 	while(1)
 	{
@@ -148,17 +149,16 @@ int main(int cantArgs, char** args){
 		while((quantumActual<quantum || KMactual==1 ) && finalizarEjecucion)
 		{
 			aumentoPuntero = 1;
-			log_info(LOGCPU, "\n \n \n -------------QUANTUM ACTUAL: %d-------------\n \n \n", quantumActual);
+			log_info(LOGCPU, "\n\n -------------QUANTUM ACTUAL: %d-------------\n\n", quantumActual);
 			printf("\n -------------------------- %d ------------------------------------------------- \n", quantumActual);
 
 			//2. Usando el registro Puntero de Instrucción, le solicitará a la MSP la próxima instrucción a ejecutar.
 			log_info(LOGCPU, "Solicito a MSP proximaInstruccionAEJecutar ");
 			log_info(LOGCPU, "Puntero Instruccion Actual: %d", punteroInstruccionActual);
-
 			t_datosAEnviar* respuesta = malloc(sizeof(t_datosAEnviar));
 			if(KMactual == 1){
 				log_info(LOGCPU, "Leo el archivo de SYSCALL");
-				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(0, punteroInstruccionActual); //TODO aca harcodee PID = 0
+				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(PIDkm, punteroInstruccionActual); //TODO aca harcodee PID = 0
 			}else{
 				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
 			}
@@ -166,7 +166,7 @@ int main(int cantArgs, char** args){
 			char* proximaInstruccionAEjecutar = malloc(5);
 			int status = procesarRespuesta(respuesta);
 			if(status < 0){
-				printf("Error al Solicitar Proxima Instruccion a Ejecutar \n");
+				printf("ERROR: al Solicitar Proxima Instruccion a Ejecutar \n");
 				log_error(LOGCPU,"Error al Solicitar Proxima Instruccion a Ejecutar");
 				abortar(ejecucion_erronea);
 				break;
@@ -188,6 +188,7 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU, "Interpretar y Ejecutar Instruccion");
 
 			int statusEjecutar = interpretarYEjecutarInstruccion(proximaInstruccionAEjecutar);
+
 			if(statusEjecutar < 0 || finalizarEjecucion == -1){
 				abortar(ejecucion_erronea);
 				break;
@@ -197,7 +198,9 @@ int main(int cantArgs, char** args){
 				log_info(LOGCPU, "Incrementar los 4 + respuesta : %d", statusEjecutar);
 				printf( "Puntero Instruccion Actual: %d \n", punteroInstruccionActual);
 				printf("Aumentar %d al puntero de instruccion \n", statusEjecutar);
+
 				punteroInstruccionActual += (statusEjecutar + 4);
+
 				printf( "AUMENTAR Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
 				log_info(LOGCPU, "Puntero Instruccion Actual: %d\n", punteroInstruccionActual);
 				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);

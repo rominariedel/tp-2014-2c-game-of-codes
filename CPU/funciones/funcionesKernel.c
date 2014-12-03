@@ -59,7 +59,7 @@ t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 	return respuesta;
 }
 
-void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
+void KERNEL_MostrarNumeroPorConsola(int PID, int nro){            //TODO PREGUNTAR ROMI SI VA PID TID O NOOOOOOOOO!!!!!!
 	char * toia = string_itoa(nro);
 	char * datos = malloc(sizeof (int) *2 + string_length(toia));
 	memcpy(datos,&PIDactual, sizeof(int));
@@ -153,13 +153,13 @@ void KERNEL_CrearHilo(t_TCB * TCB, int registro){
 	t_TCB* hiloNuevo = KERNEL_CrearNuevoHilo(TCB);
 	A = hiloNuevo->TID;
 	hiloNuevo->P = registro;
-	printf("TAMANIO CREAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %d",TCB->S - TCB->X );
+	printf("\n TAMANIO CREA: %d \n",TCB->S - TCB->X );
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(TCB->PID, TCB->X, TCB->S - TCB->X, solicitarMemoria);
 	int status= procesarRespuesta(respuesta);
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
-		printf("STACK A COPIAR TAMANIO %d", cursorStackActual - baseStackActual);
+		printf("STACK A COPIAR TAMANIO %d \n", cursorStackActual - baseStackActual);
 		void* stackACopiar = malloc(cursorStackActual - baseStackActual);
 		memcpy(stackACopiar, respuesta->datos , cursorStackActual - baseStackActual);
 		MSP_EscribirEnMemoria(hiloNuevo->PID,hiloNuevo->X, stackACopiar, TCB->S - TCB->X);

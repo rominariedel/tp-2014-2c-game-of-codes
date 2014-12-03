@@ -20,7 +20,12 @@ void SETM(tparam_setm* parametrosSetm){
 
 	void* bytesAEnviar = malloc(parametrosSetm->num);
 	memcpy(bytesAEnviar, devolverRegistro(parametrosSetm->reg2),parametrosSetm->num);
-	int status = MSP_EscribirEnMemoria(PIDactual,*devolverRegistro(parametrosSetm->reg1), bytesAEnviar,	parametrosSetm->num);
+	int status = 0;
+	if (KMactual == 1){
+		status = MSP_EscribirEnMemoria(PIDkm,*devolverRegistro(parametrosSetm->reg1), bytesAEnviar,	parametrosSetm->num);
+	}else{
+		status = MSP_EscribirEnMemoria(PIDactual,*devolverRegistro(parametrosSetm->reg1), bytesAEnviar,	parametrosSetm->num);
+	}
 	if (status < 0) {
 		finalizarEjecucion = -1;
 
@@ -29,7 +34,13 @@ void SETM(tparam_setm* parametrosSetm){
 
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
-	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)),1, solicitarMemoria);
+	t_datosAEnviar* respuesta;
+	if(KMactual == 1){
+		respuesta = MSP_SolicitarMemoria(PIDkm, *(devolverRegistro(parametrosGetm->reg2)),1, solicitarMemoria);
+	}else{
+		respuesta = MSP_SolicitarMemoria(PIDactual, *(devolverRegistro(parametrosGetm->reg2)),1, solicitarMemoria);
+	}
+
 	int status= procesarRespuesta(respuesta);
 
 	int* valorMemoria = malloc(1);
@@ -167,18 +178,31 @@ void NOPP(){
 
 void PUSH(tparam_push* parametrosPush){
 	//Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del registro cursor de stack de forma acorde.
-	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, *devolverRegistro(parametrosPush->registro), parametrosPush->numero, solicitarMemoria);
+	t_datosAEnviar* paquete ;
+	if(KMactual == 1){
+		paquete = MSP_SolicitarMemoria(PIDkm, *devolverRegistro(parametrosPush->registro), parametrosPush->numero, solicitarMemoria);
+	}else{
+		paquete = MSP_SolicitarMemoria(PIDactual, *devolverRegistro(parametrosPush->registro), parametrosPush->numero, solicitarMemoria);
+	}
+
 	int status = procesarRespuesta(paquete);
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
 		void* bytesAEnviar = malloc(paquete->tamanio);
 		memcpy(bytesAEnviar, paquete->datos, paquete->tamanio);
+
 		printf("bytesAEnviar %p", bytesAEnviar);
 		printf("tamanio bytesAEnviar %d", paquete->tamanio);
 
-		int respuestaMSP = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,bytesAEnviar,paquete->tamanio);
-		printf("respuestaMSP %d", respuestaMSP);
+
+		int respuestaMSP;
+		if(KMactual == 1){
+			respuestaMSP = MSP_EscribirEnMemoria(PIDkm,cursorStackActual,bytesAEnviar,paquete->tamanio);
+		}else{
+			respuestaMSP = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,bytesAEnviar,paquete->tamanio);
+		}
+
 		if(respuestaMSP < 0){
 			finalizarEjecucion = -1;
 		}else{
@@ -190,13 +214,26 @@ void PUSH(tparam_push* parametrosPush){
 
 void TAKE(tparam_take* parametrosTake){
 	//Desapila los primeros bytes, indicado por el número, del stack hacia el registro. Modifica el valor del registro de stack de forma acorde.
-	t_datosAEnviar* paquete = MSP_SolicitarMemoria(PIDactual, parametrosTake->registro, parametrosTake->numero, solicitarMemoria);
+	t_datosAEnviar* paquete;
+
+	if(KMactual == 1){
+		paquete = MSP_SolicitarMemoria(PIDkm, parametrosTake->registro, parametrosTake->numero, solicitarMemoria);
+	}else{
+		paquete = MSP_SolicitarMemoria(PIDactual, parametrosTake->registro, parametrosTake->numero, solicitarMemoria);
+	}
+
 	int status= procesarRespuesta(paquete);
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
 	cursorStackActual -= parametrosTake->numero;
-	int status2 = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,paquete->datos,parametrosTake->numero);
+	int status2;
+	if(KMactual == 1){
+		status2 = MSP_EscribirEnMemoria(PIDkm,cursorStackActual,paquete->datos,parametrosTake->numero);
+	}else{
+		status2 = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,paquete->datos,parametrosTake->numero);
+	}
+
 	if(status2 < 0){
 		finalizarEjecucion = -1;
 	}else{
@@ -275,7 +312,7 @@ void INNC(){
 	t_datosAEnviar* respuesta = KERNEL_IngreseCadenaPorConsola(PIDactual, B);
 	char cadena[respuesta->tamanio];
 	memcpy(cadena,&respuesta,respuesta->tamanio);
-	int status = MSP_EscribirEnMemoria(PIDactual,A,cadena,respuesta->tamanio);
+	int status = MSP_EscribirEnMemoria(PIDactual,A,cadena,respuesta->tamanio);    //Se le manda el PID original, no el KM
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}
@@ -291,7 +328,7 @@ void OUTC(){
 	//Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
 	//encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
 	//proceso Kernel.
-	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, A, B, solicitarMemoria);
+	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, A, B, solicitarMemoria);     //Se le manda el PID original, no el KM
 	int status= procesarRespuesta(respuesta);
 		if(status < 0){
 			finalizarEjecucion = -1;

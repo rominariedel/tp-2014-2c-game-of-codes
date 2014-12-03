@@ -5,7 +5,7 @@
 
 t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, int codOperacion){
 	if(KMactual == 1){
-		PID = 0;
+		PID = PIDkm;
 	}
 
 	char * datos = malloc(3 * sizeof (int));
@@ -36,7 +36,7 @@ t_datosAEnviar* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroIns
 
 t_datosAEnviar* MSP_SolicitarParametros(int PID,int punteroInstruccion, int tamanioParametros){
 	if(KMactual == 1){
-		PID = 0;
+		PID = PIDkm;
 	}
 
 	int tamanio = tamanioParametros;

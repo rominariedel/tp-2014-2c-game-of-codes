@@ -61,6 +61,7 @@ int tamanioSegmentoCodigoActual;
 int punteroInstruccionActual;
 int baseStackActual;
 int cursorStackActual;
+int PIDkm;
 
 /*Registros CPU*/
 int A;
