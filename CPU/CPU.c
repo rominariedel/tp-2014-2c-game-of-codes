@@ -65,7 +65,7 @@ int main(int cantArgs, char** args){
 	paqueteKERNEL = crear_paquete(soy_CPU,NULL,0);
 	enviar_datos(socketKernel,paqueteKERNEL);
 	free(paqueteKERNEL);
-	PIDkm = 1;
+	PIDkm = 0;
 
 	while(1)
 	{
@@ -158,10 +158,18 @@ int main(int cantArgs, char** args){
 			log_info(LOGCPU, "Solicito a MSP proximaInstruccionAEJecutar ");
 			log_info(LOGCPU, "Puntero Instruccion Actual: %d", punteroInstruccionActual);
 			t_datosAEnviar* respuesta = malloc(sizeof(t_datosAEnviar));
+
+
 			if(KMactual == 1){
 				log_info(LOGCPU, "Leo el archivo de SYSCALL");
 				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(PIDkm, punteroInstruccionActual); //TODO aca harcodee PID = 0
+				log_info(LOGCPU, "Ejecutando quantum: %d", quantumActual);
+				printf("\n Ejecutando quantum:  %d \n", quantumActual);
+
 			}else{
+
+				log_info(LOGCPU, "Ejecutando %d de %d quantum", quantumActual, quantum);
+				printf("\n Ejecutando %d de %d quantum \n", quantumActual, quantum);
 				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
 			}
 
@@ -208,14 +216,14 @@ int main(int cantArgs, char** args){
 				log_info(LOGCPU, "punteroInstruccion: %d", punteroInstruccionActual);
 				}
 				if(finalizarEjecucion == -2){ //ES PARA CUANDO SE EJECUTA XXXX()
-					abortar(finaliza_ejecucion);
 					printf("\n \n \n -------------FINALIZO EJECUCION TCB-------------\n \n \n");
-					log_info(LOGCPU, "\n -------------EMPIEZO A EJECUTAR TCB-------------\n");
+					log_info(LOGCPU, "\n -------------FINALIZO EJECUCION TCB-------------\n");
+					abortar(finaliza_ejecucion);
 					break;
 				}
 				if(finalizarEjecucion == -3){
-					printf("SE MANDO INTERRUPCION ");
-					fin_ejecucion();
+					printf("\n \n \n -------------SE ENVIO INTERRUPCION-------------\n \n \n");
+					log_info(LOGCPU, "\n -------------SE ENVIO INTERRUPCION-------------\n");
 					break;
 				}
 			}
@@ -267,18 +275,15 @@ int main(int cantArgs, char** args){
 
 			// 5. Incrementar quantum
 			quantumActual++;
-			log_info(LOGCPU, "Ejecutando %d de %d quantum", quantumActual, quantum);
-			printf("\n Ejecutando %d de %d quantum \n", quantumActual, quantum);
 
 		if(quantumActual == quantum && KMactual == 0){
 
 			// 6. En caso que sea el último ciclo de ejecución del Quantum, devolverá el TCB actualizado al
 			//proceso Kernel y esperará a recibir el TCB del próximo hilo a ejecutar. Si el TCB en cuestión
 			//tuviera el flag KM (Kernel Mode) activado, se debe ignorar el valor del Quantum.
-			log_info(LOGCPU, "Se completo el quantum! %d == %d", quantumActual, quantum);
+			printf("\n \n \n -------------SE COMPLETO EL QUANTUM A EJECUTAR-------------\n \n \n");
+			log_info(LOGCPU, "\n -------------SE COMPLETO EL QUANTUM A EJECUTAR-------------\n");
 			devolverTCBactual(finaliza_quantum);
-			limpiarRegistros();
-			actualizarTCB();
 		}
 	  }
 	}
@@ -454,7 +459,7 @@ void limpiarRegistros(){
 	C = 0;
 	D = 0;
 	E = 0;
-	log_info(LOGCPU, "  PID actual: %d  ", PIDactual);
+/*	log_info(LOGCPU, "  PID actual: %d  ", PIDactual);
 	log_info(LOGCPU, "  TID actual: %d  ", TIDactual);
 	log_info(LOGCPU, "  KM actual: %d  ", KMactual);
 	log_info(LOGCPU, "  Base Segmento Codigo actual: %d  ", baseSegmentoCodigoActual);
@@ -469,7 +474,7 @@ void limpiarRegistros(){
 	log_info(LOGCPU, "  Registro E %d   ", E);
 
 
-	log_info(LOGCPU, "Se limpiaron los registros");
+	log_info(LOGCPU, "Se limpiaron los registros");*/
 
 }
 
@@ -486,7 +491,22 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 		if(status < 0){
 			return status;
 			}else{
-				tparam_load* parametros = (tparam_load*) procesarRespuestaMSP(respuesta);
+
+
+
+				t_datosAEnviar* respuesta1 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 4, 1, solicitarMemoria);
+				char* registro = malloc(respuesta1->tamanio);
+				memcpy(registro, respuesta->datos, 1);
+
+				t_datosAEnviar* respuesta2 = MSP_SolicitarMemoria(PIDactual,punteroInstruccionActual + 5, 4, solicitarMemoria);
+				int* numero = malloc(respuesta2->tamanio);
+				memcpy(numero, respuesta2->datos, 4);
+
+
+				tparam_load* parametros = malloc(sizeof(tparam_load));
+				parametros->num = *numero;
+				parametros->reg1 = registro[0];
+
 				free(respuesta);
 				log_info(LOGCPU, "LOAD(%c,%d)",parametros->reg1, parametros->num);
 				printf( "LOAD(%c,%d)",parametros->reg1, parametros->num);
@@ -494,6 +514,16 @@ int interpretarYEjecutarInstruccion(char* instruccion){
 				list_add(list_parametros,  (void*)&parametros->num);
 				LOAD(parametros);
 				return sizeof(tparam_load);
+
+
+				/*tparam_load* parametros = (tparam_load*) procesarRespuestaMSP(respuesta);
+				free(respuesta);
+				log_info(LOGCPU, "LOAD(%c,%d)",parametros->reg1, parametros->num);
+				printf( "LOAD(%c,%d)",parametros->reg1, parametros->num);
+				list_add(list_parametros, (void*)&parametros->reg1);
+				list_add(list_parametros,  (void*)&parametros->num);
+				LOAD(parametros);
+				return sizeof(tparam_load);*/
 			}
 	}
 

@@ -41,7 +41,7 @@ t_datosAEnviar* MSP_SolicitarParametros(int PID,int punteroInstruccion, int tama
 
 	int tamanio = tamanioParametros;
 	char * datos = malloc(3 * sizeof (int));
-	memcpy(datos, &PIDactual, sizeof(int));
+	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
 	memcpy(datos + sizeof(int) + sizeof(int), &tamanio, sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));

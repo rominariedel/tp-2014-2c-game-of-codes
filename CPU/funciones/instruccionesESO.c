@@ -124,7 +124,7 @@ void JMPZ(tparam_jmpz* parametrosJmpz){
 	//El valor es el desplazamiento desde el inicio del programa.
 
 	if(A == 0){
-		punteroInstruccionActual = (parametrosJmpz->direccion);
+		punteroInstruccionActual = (parametrosJmpz->direccion); //+ baseSegmentoCodigoActual;  //TODO esta bien que sea mas la base?????????????????
 		aumentoPuntero = -1;
 	}
 }
@@ -134,7 +134,7 @@ void JPNZ(tparam_jpnz* parametrosJpnz){
 	// El valor es el desplazamiento desde el inicio del programa.
 
 	if(A != 0){
-		punteroInstruccionActual = (parametrosJpnz->direccion);
+		punteroInstruccionActual = (parametrosJpnz->direccion); //+ baseSegmentoCodigoActual;
 		aumentoPuntero = -1;
 	}
 }
@@ -178,70 +178,78 @@ void NOPP(){
 
 void PUSH(tparam_push* parametrosPush){
 	//Apila los primeros bytes, indicado por el número, del registro hacia el stack. Modifica el valor del registro cursor de stack de forma acorde.
-	t_datosAEnviar* paquete ;
-	if(KMactual == 1){
-		paquete = MSP_SolicitarMemoria(PIDkm, *devolverRegistro(parametrosPush->registro), parametrosPush->numero, solicitarMemoria);
-	}else{
-		paquete = MSP_SolicitarMemoria(PIDactual, *devolverRegistro(parametrosPush->registro), parametrosPush->numero, solicitarMemoria);
-	}
 
-	int status = procesarRespuesta(paquete);
-	if(status < 0){
-		finalizarEjecucion = -1;
-	}else{
-		void* bytesAEnviar = malloc(paquete->tamanio);
-		memcpy(bytesAEnviar, paquete->datos, paquete->tamanio);
+		int* bytesAEscribir = malloc(parametrosPush->numero);
+		memcpy(bytesAEscribir, devolverRegistro(parametrosPush->registro), parametrosPush->numero);
 
-		printf("bytesAEnviar %p", bytesAEnviar);
-		printf("tamanio bytesAEnviar %d", paquete->tamanio);
 
+		printf("bytesAEscribir %d \n", *bytesAEscribir);
+		printf("tamanio bytesAEnviar \n %d", parametrosPush->numero);
 
 		int respuestaMSP;
-		if(KMactual == 1){
-			respuestaMSP = MSP_EscribirEnMemoria(PIDkm,cursorStackActual,bytesAEnviar,paquete->tamanio);
-		}else{
-			respuestaMSP = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,bytesAEnviar,paquete->tamanio);
+		if (KMactual == 1) {
+			respuestaMSP = MSP_EscribirEnMemoria(PIDkm, cursorStackActual, bytesAEscribir, parametrosPush->numero);
+		} else {
+		respuestaMSP = MSP_EscribirEnMemoria(PIDactual, cursorStackActual, bytesAEscribir,parametrosPush->numero );
 		}
 
-		if(respuestaMSP < 0){
+
+		if (respuestaMSP < 0) {
 			finalizarEjecucion = -1;
-		}else{
+		} else {
 			cursorStackActual = cursorStackActual + parametrosPush->numero;
 		}
-	}
-	free(paquete);
+	free(bytesAEscribir);
 }
 
 void TAKE(tparam_take* parametrosTake){
 	//Desapila los primeros bytes, indicado por el número, del stack hacia el registro. Modifica el valor del registro de stack de forma acorde.
-	t_datosAEnviar* paquete;
 
-	if(KMactual == 1){
-		paquete = MSP_SolicitarMemoria(PIDkm, parametrosTake->registro, parametrosTake->numero, solicitarMemoria);
-	}else{
-		paquete = MSP_SolicitarMemoria(PIDactual, parametrosTake->registro, parametrosTake->numero, solicitarMemoria);
+
+	t_datosAEnviar* paquete = malloc(sizeof(t_datosAEnviar));
+	cursorStackActual -= parametrosTake->numero;
+	if (KMactual == 1) {
+		paquete = MSP_SolicitarMemoria(PIDkm, cursorStackActual,parametrosTake->numero, solicitarMemoria);
+	} else {
+		paquete = MSP_SolicitarMemoria(PIDactual,  cursorStackActual,parametrosTake->numero, solicitarMemoria);
 	}
 
-	int status= procesarRespuesta(paquete);
-	if(status < 0){
+	int status = procesarRespuesta(paquete);
+	if (status < 0) {
 		finalizarEjecucion = -1;
-	}else{
+	} else {
+		memcpy(devolverRegistro(parametrosTake->registro), paquete->datos, parametrosTake->numero);
+		//cursorStackActual = cursorStackActual + parametrosTake->numero;
+	}
+	free(paquete);
+}
+
+
+/*
+
+
+
+	int* bytesAEscribir = malloc(parametrosTake->numero);
+	memcpy(bytesAEscribir, devolverRegistro(parametrosTake->registro), parametrosTake->numero);
+
+
+	printf("bytesAEscribir %d \n", *bytesAEscribir);
+	printf("tamanio bytesAEnviar \n %d", parametrosTake->numero);
+
 	cursorStackActual -= parametrosTake->numero;
+
 	int status2;
 	if(KMactual == 1){
-		status2 = MSP_EscribirEnMemoria(PIDkm,cursorStackActual,paquete->datos,parametrosTake->numero);
+		status2 = MSP_EscribirEnMemoria(PIDkm,cursorStackActual,bytesAEscribir,parametrosTake->numero);
 	}else{
-		status2 = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,paquete->datos,parametrosTake->numero);
+		status2 = MSP_EscribirEnMemoria(PIDactual,cursorStackActual,bytesAEscribir,parametrosTake->numero);
 	}
 
 	if(status2 < 0){
 		finalizarEjecucion = -1;
 	}else{
 		cursorStackActual = cursorStackActual + parametrosTake->numero;
-		}
-	}
-	free(paquete);
-}
+	}*/
 
 void XXXX(){
 	//Finaliza la ejecucion
