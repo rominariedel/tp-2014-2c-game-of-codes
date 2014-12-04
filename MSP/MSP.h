@@ -93,6 +93,7 @@ T_PAGINA*	swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag);
 int			swapOutPagina(int PID, int SID, T_PAGINA* pag);
 T_MARCO*	algoritmoLRU();
 T_MARCO*	algoritmoClock();
+void		cerrarMSP();
 
 T_DIRECCION_LOG uint32ToDireccionLogica (uint32_t intDireccion);
 uint32_t direccionLogicaToUint32 (T_DIRECCION_LOG direccionLogica);

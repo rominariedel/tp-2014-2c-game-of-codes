@@ -19,6 +19,7 @@
 #include <sys/select.h>
 #include <commons/txt.h>
 #include <semaphore.h>
+#include <signal.h>
 
 //	Variables
 int tamanioMemoria;
@@ -38,6 +39,9 @@ t_list* procesos;
 t_list* marcosVacios;
 t_list* marcosLlenos;
 t_list* paginasEnMemoria;
+
+//Cnfiguracion
+t_config* configuracion;
 
 //	Hilos
 pthread_t hiloConsola;
@@ -63,14 +67,7 @@ int main(int cantArgs, char** args) {
 	inicializar(args);
 	logger = log_create(rutaLog, "Log Programa", false, LOG_LEVEL_INFO);
 	log_info(logger, "Inicio de la MSP \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginacion: %d", tamanioMemoria, tamanioPag);
-
-	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL, (void*) iniciarConexiones, NULL );
-
-	if (hilo_EsperarConexiones == 0) {
-		log_info(logger, "La espera de conexiones se incializo correctamente");
-	} else {
-		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
-	}
+	signal(SIGINT, cerrarMSP);
 
 	int hilo_Consola = pthread_create(&hiloConsola, NULL, (void*) inicializarConsola, NULL );
 
@@ -80,8 +77,16 @@ int main(int cantArgs, char** args) {
 		log_error(logger, "Ha ocurrido un error en la inicializacion de la Consola de MSP");
 	}
 
-	pthread_join(hiloEsperarConexiones, NULL );
-	pthread_join(hiloConsola, NULL );
+	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL, (void*) iniciarConexiones, NULL );
+
+	if (hilo_EsperarConexiones == 0) {
+		log_info(logger, "La espera de conexiones se incializo correctamente");
+	} else {
+		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
+	}
+
+	pthread_join(hiloEsperarConexiones, NULL);
+	pthread_join(hiloConsola, NULL);
 
 	sem_destroy(&mutex_MemoriaDisponible);
 	sem_destroy(&mutex_cantSwap);
@@ -199,7 +204,7 @@ void interpretarComando(char* comando) {
 }
 
 void cargarArchivoConfiguracion(char** args) {
-	t_config* configuracion = config_create(args[1]);
+	configuracion = config_create(args[1]);
 
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA") * pow(2, 10);
@@ -1172,7 +1177,7 @@ void iniciarConexiones() {
 
 	log_info(logger, "Se ha creado el servidor exitosamente");
 
-	printf("\nEsperando conexiones...\n");
+	printf("\n\nEsperando conexiones...\n");
 
 	pthread_t hiloKernel;
 	pthread_t hiloCPU;
@@ -1536,4 +1541,15 @@ T_MARCO* algoritmoClock() {
 
 	sem_post(&mutex_marcosLlenos);
 	return marcoVictima;
+}
+
+void cerrarMSP(){
+
+	pthread_cancel(hiloConsola);
+	pthread_cancel(hiloEsperarConexiones);
+
+	log_info(logger,"Se ha finalizado la MSP");
+
+	config_destroy(configuracion);
+	log_destroy(logger);
 }
