@@ -69,13 +69,13 @@ void obtenerDatosConfig(char ** argv) {
 void liberar_recursos(struct_consola * consola_conectada) {
 
 	//SI LA CONSOLA TIENE HILOS PLANIFICANDOSE O EJECUTANDOSE Y SE DESCONECTA, ABORTAN Y SE ELIMINAN SUS
-	//SEGMENTOS DE STACK
+	//SEGMENTOS DE STACK TODO
 	consola_conectada->termino_ejecucion = true;
 	if (consola_conectada->cantidad_hilos > 0) {
 		printf("Entre acaaaaa!\n");
 		matar_hijos(consola_conectada->PID);
 	}
-	if (consola_conectada->cantidad_hilos == 0) {
+	if ((consola_conectada->cantidad_hilos == 0)&&(consola_conectada->M >= 0)) {
 
 		destruir_segmento_MSP(consola_conectada->PID, consola_conectada->M);
 	}
@@ -93,7 +93,7 @@ void loader() {
 		int i = select(descriptor_mas_alto_consola + 1, &copia_set, NULL, NULL,
 				timeout);
 		if (i == -1) {
-			//ERROR
+			printf("ERROR EN EL SELECT!!!\n");
 			exit(-1);
 		}
 		free(timeout);
@@ -127,36 +127,56 @@ void loader() {
 					nuevoTCB->PID = consola_conectada->PID;
 					nuevoTCB->TID = obtener_TID();
 					consola_conectada->TID_padre = nuevoTCB->TID;
-					printf("ESTOY SOLICITANDO SEGMENTO \n");
-					int segmento_codigo = solicitar_crear_segmento(nuevoTCB,
-							datos->tamanio);
-					printf("ME MANDO UNA BASE %d\n", segmento_codigo);
-					if (segmento_codigo < 0) {
-						exit(0);
-					}
-					consola_conectada->M = segmento_codigo;
-					int segmento_stack = solicitar_crear_segmento(nuevoTCB,
-							TAMANIO_STACK);
-					if (segmento_stack < 0) {
-						exit(-1);
-					}
-
-					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
-							datos->datos);
-
 					nuevoTCB->KM = 0;
-					nuevoTCB->M = segmento_codigo;
-					nuevoTCB->tamanioSegmentoCodigo = datos->tamanio;
-					nuevoTCB->P = segmento_codigo;
-					nuevoTCB->X = segmento_stack;
-					nuevoTCB->S = segmento_stack;
 					nuevoTCB->registrosProgramacion[0] = 0;
 					nuevoTCB->registrosProgramacion[1] = 0;
 					nuevoTCB->registrosProgramacion[2] = 0;
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
-					printf("\nSe inicializo el TCB PADRE\n");
+					printf("ESTOY SOLICITANDO SEGMENTO \n");
 					consola_conectada->cantidad_hilos = 1;
+					int segmento_codigo = solicitar_crear_segmento(nuevoTCB,
+							datos->tamanio);
+					printf("ME MANDO UNA BASE %d\n", segmento_codigo);
+					if (segmento_codigo < 0) {
+						printf("ERROR AL SOLICITAR SEGMENTO DE CODIGO\n");
+						nuevoTCB->M = -1;
+						nuevoTCB->tamanioSegmentoCodigo = -1;
+						nuevoTCB->P = -1;
+						nuevoTCB->X = -1;
+						nuevoTCB->S = -1;
+						t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL,
+								0);
+						enviar_datos(n_descriptor, datos);
+						consola_conectada->M = -1;
+						free(datos);
+						break;
+					}
+						consola_conectada->M = segmento_codigo;
+					int segmento_stack = solicitar_crear_segmento(nuevoTCB,
+							TAMANIO_STACK);
+					if (segmento_stack < 0) {
+						printf("ERROR AL SOLICITAR SEGMENTO DE STACK\n");
+						nuevoTCB->M = -1;
+						nuevoTCB->tamanioSegmentoCodigo = -1;
+						nuevoTCB->P = -1;
+						nuevoTCB->X = -1;
+						nuevoTCB->S = -1;
+						t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL,
+								0);
+						enviar_datos(n_descriptor, datos);
+						break;
+					}
+
+					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
+							datos->datos);
+
+					nuevoTCB->M = segmento_codigo;
+					nuevoTCB->tamanioSegmentoCodigo = datos->tamanio;
+					nuevoTCB->P = segmento_codigo;
+					nuevoTCB->X = segmento_stack;
+					nuevoTCB->S = segmento_stack;
+					printf("\nSe inicializo el TCB PADRE\n");
 
 					hilo_t * nuevo = malloc(sizeof(hilo_t));
 
@@ -376,22 +396,34 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	sem_post(&sem_procesoListo);
 }
 
+TCB_struct obtener_tcb_bloqueado(TCB_struct tcb){
+	bool es_bloqueado(struct_bloqueado * bloq){
+		return bloq->tcb.TID == tcb.TID;
+	}
+
+	struct_bloqueado * bloqueado = list_find(block.prioridad_1, (void*)es_bloqueado);
+	return bloqueado->tcb;
+}
+
 void crear_hilo(TCB_struct tcb, int socketCPU) {
+
+	TCB_struct tcb_bloqueado = obtener_tcb_bloqueado(tcb);
+
 
 	TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
 	printf("Por solicitarle segmento a la msp\n");
-	int base_stack = solicitar_crear_segmento(&tcb, TAMANIO_STACK);
+	int base_stack = solicitar_crear_segmento(&tcb_bloqueado, TAMANIO_STACK);
 	printf("Me devolvio base %d\n", base_stack);
-	nuevoTCB->PID = tcb.PID;
+	nuevoTCB->PID = tcb_bloqueado.PID;
 	int tid = obtener_TID();
 	nuevoTCB->X = base_stack;
 	nuevoTCB->S = base_stack;
 	nuevoTCB->KM = 0;
-	nuevoTCB->PID = tcb.PID;
+	nuevoTCB->PID = tcb_bloqueado.PID;
 	nuevoTCB->TID = tid;
-	nuevoTCB->M = tcb.M;
-	nuevoTCB->tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
-	nuevoTCB->P = tcb.P;
+	nuevoTCB->M = tcb_bloqueado.M;
+	nuevoTCB->tamanioSegmentoCodigo = tcb_bloqueado.tamanioSegmentoCodigo;
+	nuevoTCB->P = tcb_bloqueado.P;
 	copiarRegistros(nuevoTCB->registrosProgramacion, tcb.registrosProgramacion);
 
 	t_datosAEnviar * datos = crear_paquete(0, nuevoTCB, sizeof(TCB_struct));
@@ -779,7 +811,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	list_add(exec, tcb);
 	loguear(EXEC, tcb);
 
-	printf("\n TCB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+	printf("\n TCB PARA MANDAR A EJECUCION \n");
 	printf("\n PID: %d \n", tcb->PID);
 	printf("\n TID: %d \n", tcb->TID);
 	printf("\n KM: %d \n", tcb->KM);

@@ -164,7 +164,10 @@ void abortar(TCB_struct* tcb) {
 	finalizo_ejecucion(tcb);
 }
 
-void desconecto_cpu(int socket) {
+void desconecto_cpu(int sock) {
+	int * aux =  malloc(sizeof(int));
+	int socket = *aux;
+	memcpy(&socket, &sock, sizeof(int));
 	struct_CPU * cpu = obtener_CPUAsociada(socket);
 	if (cpu == NULL ) {
 		printf("No se encontro la CPU\n");
@@ -189,6 +192,7 @@ void desconecto_cpu(int socket) {
 					free(datos);
 				}
 				list_iterate(consola_list, (void*) abortar_procesos);
+				exit(0);
 			} else {
 				t_datosAEnviar * datos = crear_paquete(se_desconecto_cpu, NULL,
 						0);
@@ -601,7 +605,7 @@ int chequear_proceso_abortado(TCB_struct * tcb) {
 }
 
 void destruir_segmento_MSP(int pid, int base_segmento) {
-
+	if(base_segmento>= 0){
 	sem_wait(&sem_lecturaEscritura);
 
 	int tamanio = 2 * sizeof(int);
@@ -621,6 +625,7 @@ void destruir_segmento_MSP(int pid, int base_segmento) {
 	free(paquete);
 
 	sem_post(&sem_lecturaEscritura);
+	}
 
 }
 
