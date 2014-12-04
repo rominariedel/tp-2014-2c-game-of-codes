@@ -19,6 +19,7 @@
 #include <sys/select.h>
 #include <commons/txt.h>
 #include <semaphore.h>
+#include <signal.h>
 
 //	Variables
 int tamanioMemoria;
@@ -38,6 +39,9 @@ t_list* procesos;
 t_list* marcosVacios;
 t_list* marcosLlenos;
 t_list* paginasEnMemoria;
+
+//Cnfiguracion
+t_config* configuracion;
 
 //	Hilos
 pthread_t hiloConsola;
@@ -61,16 +65,10 @@ int main(int cantArgs, char** args) {
 	printf("\nIniciando...\n");
 
 	inicializar(args);
-	logger = log_create(rutaLog, "Log Programa", false, LOG_LEVEL_INFO);
+	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
+	log_debug(logger,"Memoria disponible: %d", memoriaDisponible);
 	log_info(logger, "Inicio de la MSP \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginacion: %d", tamanioMemoria, tamanioPag);
-
-	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL, (void*) iniciarConexiones, NULL );
-
-	if (hilo_EsperarConexiones == 0) {
-		log_info(logger, "La espera de conexiones se incializo correctamente");
-	} else {
-		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
-	}
+	//signal(SIGINT, cerrarMSP);
 
 	int hilo_Consola = pthread_create(&hiloConsola, NULL, (void*) inicializarConsola, NULL );
 
@@ -80,8 +78,16 @@ int main(int cantArgs, char** args) {
 		log_error(logger, "Ha ocurrido un error en la inicializacion de la Consola de MSP");
 	}
 
-	pthread_join(hiloEsperarConexiones, NULL );
-	pthread_join(hiloConsola, NULL );
+	int hilo_EsperarConexiones = pthread_create(&hiloEsperarConexiones, NULL, (void*) iniciarConexiones, NULL );
+
+	if (hilo_EsperarConexiones == 0) {
+		log_info(logger, "La espera de conexiones se incializo correctamente");
+	} else {
+		log_error(logger, "Ha ocurrido un error en la espera de conexioness");
+	}
+
+	pthread_join(hiloEsperarConexiones, NULL);
+	pthread_join(hiloConsola, NULL);
 
 	sem_destroy(&mutex_MemoriaDisponible);
 	sem_destroy(&mutex_cantSwap);
@@ -199,7 +205,7 @@ void interpretarComando(char* comando) {
 }
 
 void cargarArchivoConfiguracion(char** args) {
-	t_config* configuracion = config_create(args[1]);
+	configuracion = config_create(args[1]);
 
 	if (config_has_property(configuracion, "CANTIDAD_MEMORIA")) {
 		tamanioMemoria = config_get_int_value(configuracion, "CANTIDAD_MEMORIA") * pow(2, 10);
@@ -311,7 +317,8 @@ uint32_t crearSegmento(int PID, int tamanio) {
 	log_info(logger, "La direccion base del segmento creado es %d", segmentoVacio->baseSegmento);
 
 	sem_wait(&mutex_MemoriaDisponible);
-	memoriaDisponible = memoriaDisponible - sizeof(segmentoVacio->tamanio);
+	memoriaDisponible = memoriaDisponible - (segmentoVacio->tamanio);
+	log_debug(logger,"Memoria disponible: %d", memoriaDisponible);
 	sem_post(&mutex_MemoriaDisponible);
 
 	sem_post(&mutex_procesos);
@@ -441,7 +448,7 @@ void destruirSegmento(int PID, uint32_t baseSegmento) {
 			log_debug(logger, "Se elimino el segmento de la lista de segmentos del proceso, ahora tiene %d segmentos", list_size(proceso->segmentos));
 
 			sem_wait(&mutex_MemoriaDisponible);
-			memoriaDisponible = memoriaDisponible + sizeof(seg->tamanio);
+			memoriaDisponible = memoriaDisponible + (seg->tamanio);
 			sem_post(&mutex_MemoriaDisponible);
 
 			free(seg);
@@ -583,7 +590,7 @@ char* solicitarMemoria(int PID, uint32_t direccion, int tamanio) {
 					if (resultado < 0) {
 						log_error(logger, "No se ha podido solicitar memoria ya que no se pudo asignar un marco a la pagina");
 						sem_post(&mutex_procesos);
-						return (char*) resultado;
+						return "error_memoria_llena";
 					}
 				}
 
@@ -1172,7 +1179,7 @@ void iniciarConexiones() {
 
 	log_info(logger, "Se ha creado el servidor exitosamente");
 
-	printf("\nEsperando conexiones...\n");
+	printf("\n\nEsperando conexiones...\n");
 
 	pthread_t hiloKernel;
 	pthread_t hiloCPU;
@@ -1278,6 +1285,7 @@ void interpretarOperacion(int* sock_conectado) {
 				log_info(logger,"Los parametros que se recibieron son: %d, %d, %d", pid, direccion, tamanio);
 
 				char* resultado = solicitarMemoria(pid, direccion, tamanio);
+				log_debug(logger, "salio de solicitar, resultado = %s",resultado);
 
 				int codigo_operacion = 0;
 
@@ -1290,6 +1298,7 @@ void interpretarOperacion(int* sock_conectado) {
 					liberarRespuesta = 0;
 				}
 				if(strcmp(resultado,"error_memoria_llena") == 0){
+					log_debug(logger, "fue memoria llena");
 					codigo_operacion = error_memoria_llena;
 					liberarRespuesta = 0;
 				}
@@ -1536,4 +1545,15 @@ T_MARCO* algoritmoClock() {
 
 	sem_post(&mutex_marcosLlenos);
 	return marcoVictima;
+}
+
+void cerrarMSP(){
+
+	pthread_cancel(hiloConsola);
+	pthread_cancel(hiloEsperarConexiones);
+
+	log_info(logger,"Se ha finalizado la MSP");
+
+	config_destroy(configuracion);
+	log_destroy(logger);
 }
