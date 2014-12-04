@@ -341,6 +341,7 @@ void OUTC(){
 	//Imprime por consola del programa una cadena de tamaño indicado por el registro B que se
 	//encuentra en la direccion apuntada por el registro A. Invoca al servicio correspondiente en el
 	//proceso Kernel.
+	noPIDkm = -1;
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(PIDactual, A, B, solicitarMemoria);     //Se le manda el PID original, no el KM
 	int status= procesarRespuesta(respuesta);
 		if(status < 0){

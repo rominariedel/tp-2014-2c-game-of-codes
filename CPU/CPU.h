@@ -41,11 +41,6 @@
 
 /* Estructuras */
 
-
-
-
-
-
 typedef struct{
 	t_TCB* TCB;
 	t_cola cola;
@@ -87,6 +82,7 @@ t_log* LOGCPU;
 int finalizarEjecucion;
 int ejecutoInterrupcion;
 int aumentoPuntero;
+int noPIDkm;
 
 //int errorOperacionesConMemoria;
 //int errorMemoria;

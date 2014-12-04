@@ -156,6 +156,7 @@ void KERNEL_CrearHilo(t_TCB * TCB, int registro){
 	A = hiloNuevo->TID;
 	hiloNuevo->P = registro;
 	printf("\n TAMANIO CREA: %d \n",TCB->S - TCB->X );
+	noPIDkm = -1;
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(TCB->PID, TCB->X, TCB->S - TCB->X, solicitarMemoria);
 	int status= procesarRespuesta(respuesta);
 	if(status < 0){

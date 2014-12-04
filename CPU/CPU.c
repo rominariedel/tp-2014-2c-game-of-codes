@@ -16,7 +16,10 @@ int main(int cantArgs, char** args){
 
 	inicializar_panel(CPU, "LOGOBLIGATORIOS");
 
+	printf("\n --------------------------------------------------------------------------- \n");
+	log_info(LOGCPU,"\n\n\n\n\n --------------------------------------------------------------------------- \n");
 	log_info(LOGCPU, "\n -------------  -------------  Bienvenido al CPU  -------------  ------------- \n");
+	log_info(LOGCPU,"\n--------------------------------------------------------------------------- \n\n\n\n");
 	printf(" \n\n  -------------  Bienvenido al CPU  -------------\n\n");
 	log_info(LOGCPU, "CARGAR ARCHIVOS CONFIGURACION");
 	printf("\n CARGAR ARCHIVOS CONFIGURACION \n");
@@ -57,7 +60,7 @@ int main(int cantArgs, char** args){
 	conectarConKernel();
 
 
-	printf("\n -------------------------------------- \n ");
+	printf("\n -------------------------------------- \n");
 
 	log_info(LOGCPU, "Aviso al Kernel que soy_CPU");
 
@@ -66,9 +69,11 @@ int main(int cantArgs, char** args){
 	enviar_datos(socketKernel,paqueteKERNEL);
 	free(paqueteKERNEL);
 	PIDkm = 0;
+	noPIDkm = 1;
 
 	while(1)
 	{
+		printf("\n -------------------------- ESPERANDO TCB ------------------------------------------------- \n");
 		log_info(LOGCPU, "\n \n \n -------------ESPERANDO DATOS DEL KERNEL-------------\n \n \n");
 		log_info(LOGCPU, "recibir TCB y quantum del Kernel");
 		printf("\n Estoy a la espera de que el Kernel me mande el TCB y el quantum correspondiente \n");
@@ -139,7 +144,7 @@ int main(int cantArgs, char** args){
 
 		int quantumActual = 0;
 		printf("\n Quantum a ejecutar para PID: %d es: %d \n",PIDactual, quantum);
-		log_info(LOGCPU, "Quantum a ejecutar para PID : %d es: %d",PIDactual, quantum);
+		log_info(LOGCPU, "Quantum a ejecutar para PID : %d, TID: %d es: %d",PIDactual, TIDactual, quantum);
 
 		printf("\n \n \n -------------EMPIEZO A EJECUTAR TCB-------------\n \n \n");
 		log_info(LOGCPU, "\n -------------EMPIEZO A EJECUTAR TCB-------------\n");
@@ -162,12 +167,12 @@ int main(int cantArgs, char** args){
 
 			if(KMactual == 1){
 				log_info(LOGCPU, "Leo el archivo de SYSCALL");
-				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(PIDkm, punteroInstruccionActual); //TODO aca harcodee PID = 0
+				printf("Leo el archivo de SYSCALL");
+				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(0, punteroInstruccionActual); //TODO aca harcodee PID = 0
 				log_info(LOGCPU, "Ejecutando quantum: %d", quantumActual);
 				printf("\n Ejecutando quantum:  %d \n", quantumActual);
 
 			}else{
-
 				log_info(LOGCPU, "Ejecutando %d de %d quantum", quantumActual, quantum);
 				printf("\n Ejecutando %d de %d quantum \n", quantumActual, quantum);
 				respuesta = MSP_SolicitarProximaInstruccionAEJecutar(PIDactual, punteroInstruccionActual);
