@@ -1,5 +1,5 @@
-[INFO] 17:33:59:267 kernel/(9225:9225): Inicializando panel para kernel, en "../logskernel.log"
-[INFO] 17:33:59:269 kernel/(9225:9226): Hilos ejecutando:
+[INFO] 22:06:12:759 kernel/(5469:5469): Inicializando panel para kernel, en "../logskernel.log"
+[INFO] 22:06:12:785 kernel/(5469:5470): Hilos ejecutando:
   NEW:
 
   READY:

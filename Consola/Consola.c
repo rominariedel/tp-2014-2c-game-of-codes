@@ -87,7 +87,7 @@ int main(int argc, char ** argv) {
 		case imprimir_en_pantalla:
 			datos_a_imprimir = malloc(paquete->tamanio + 1 );
 			memcpy(datos_a_imprimir, paquete->datos, paquete->tamanio);
-			datos_a_imprimir[paquete->tamanio + 1] = '\0';
+			datos_a_imprimir[paquete->tamanio] = '\0';
 			printf(
 					"Se ha solicitado salida estandar de los siguientes datos:\n %s\n",
 					datos_a_imprimir);
@@ -139,19 +139,21 @@ void evaluar_ingreso(void * solicitud) {
 }
 
 void ingresar_cadena_menorA(int tamanio) {
-	printf("6 ingresar cadena menor \n");
+	printf("\n ingresar cadena menor \n");
 	int recibido_not_success = 1;
 
 	while (recibido_not_success) {
 
-		char * cadena = malloc(tamanio);
+		char * cadena = malloc(tamanio + 1);
 		printf("Ingrese una cadena con menos de %d caracteres\n", tamanio);
 		scanf("%s", cadena);
+		printf("\n\n\n CADENAAAAAAAAAAAAA: %s", cadena);
+		cadena[tamanio] = '\0';
 		int largo_cadena = string_length(cadena);
 		if ((largo_cadena <= tamanio) && (largo_cadena > 0)) {
-			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, cadena,
+			t_datosAEnviar * datos = crear_paquete(se_produjo_entrada, (void*)cadena,
 					largo_cadena);
-			printf("Se ingresaron datos de tamanio %d\n", largo_cadena);
+			printf("Se ingresaron datos de tamanio %d\n ", largo_cadena);
 			enviar_datos(kernelSocket, datos);
 			recibido_not_success = 0;
 		} else {

@@ -44,9 +44,7 @@ int KERNEL_IngreseNumeroPorConsola(int PID){
 
 t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 	//codOperacion = solicitarCadena
-	printf("TAMANIO MAXIMO = %d \n", tamanioMaxCadena);
 	char codigo = 'C';
-	printf("CODIGO: %c \n", codigo);
 	char * datos = malloc(2* sizeof (int) + sizeof(char));
 	memcpy(datos, &tamanioMaxCadena, sizeof(int));
 	memcpy(datos + sizeof(int),&PIDactual, sizeof(int));
@@ -73,11 +71,14 @@ void KERNEL_MostrarNumeroPorConsola(int PID, int nro){            //TODO PREGUNT
 
 
 void KERNEL_MostrarCadenaPorConsola(int PID, char* cadena){
-	char * datos = malloc(sizeof (int) * 2 + string_length(cadena));
+
+	printf("\n\n\n\n CADENAAAAAAAAAAAAA: %s\n\n\n\n",cadena);
+	char * datos = malloc(sizeof (int) * 2 + string_length(cadena) + 1);
 	memcpy(datos, &PIDactual, sizeof(int));
 	memcpy(datos+sizeof(int), &TIDactual, sizeof(int));
 	memcpy(datos + sizeof(int)*2, cadena, string_length(cadena));
-	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(cadena) + 2* sizeof(int));
+	datos[sizeof (int) * 2 + string_length(cadena)] = '\0';
+	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(cadena) + 2* sizeof(int) + 1);
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	free(paquete);
@@ -105,6 +106,7 @@ t_TCB* KERNEL_CrearNuevoHilo(t_TCB* TCB){
 
 	t_TCB* hiloNuevo = (t_TCB *) buffer;
 */
+
 	free(paquete);
 	free(respuesta);
 	free(respuesta->datos);

@@ -341,6 +341,8 @@ void planificador() {
 					//memcpy(&tid, datos->datos + sizeof(int), sizeof(int));
 					memcpy(cadena, datos->datos + sizeof(int) + sizeof(int),
 							datos->tamanio - sizeof(int) - sizeof(int));
+
+					printf("\n\n\n\nCADENNAAAAAAAAAAAAAAAAAAAAAAAAAA: %s \n\n\n\n",cadena);
 					cpu = obtener_CPUAsociada(n_descriptor);
 
 					producir_salida_estandar(cpu->PID, cpu->TID, cadena);
@@ -517,10 +519,15 @@ void producir_entrada_estandar(int pid, char id_tipo, int socket_CPU,
 /*Esta funcion es invocada cuando la consola manda el mensaje de que ya se ingresaron los datos*/
 void devolver_entrada_aCPU(int tamanio_datos) {
 	struct_CPU * CPU_asociada = obtener_CPUAsociada(entrada->socket_CPU);
-	t_datosAEnviar * datos = crear_paquete(devolucion_cadena, entrada->cadena,
+	char* entradaAmostrar = malloc(tamanio_datos + 1);
+	memcpy(entradaAmostrar, (char*)entrada->cadena, tamanio_datos );
+	entradaAmostrar[tamanio_datos] = '\0';
+
+
+	t_datosAEnviar * datos = crear_paquete(devolucion_cadena, entradaAmostrar,
 			tamanio_datos + 1);
 	printf("Devolviendo la cadena que es: %s y tiene largo %d\n",
-			(char*) entrada->cadena, tamanio_datos);
+			(char*) entradaAmostrar, tamanio_datos);
 	enviar_datos(CPU_asociada->socket_CPU, datos);
 	free(datos);
 	free(entrada->cadena);

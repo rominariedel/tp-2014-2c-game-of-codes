@@ -318,12 +318,17 @@ void INNC(){
 	//Invoca al servicio correspondiente en el proceso Kernel.
 	log_info(LOGCPU, "\n PEDIRLE AL KERNEL QUE INGRESE CADENA\n");
 	t_datosAEnviar* respuesta = KERNEL_IngreseCadenaPorConsola(PIDactual, B);
-	char cadena[respuesta->tamanio];
-	memcpy(cadena,&respuesta,respuesta->tamanio);
-	int status = MSP_EscribirEnMemoria(PIDactual,A,cadena,respuesta->tamanio);    //Se le manda el PID original, no el KM
+	char* cadena = malloc(respuesta->tamanio);
+	memcpy(cadena,&respuesta->datos,respuesta->tamanio);
+
+	printf("\n\n\nCADENAAAAAAAAAAAAAAA %s \n\n\n\n", cadena);
+
+	int status = MSP_EscribirEnMemoria(PIDactual,A,(void*)cadena,respuesta->tamanio);    //Se le manda el PID original, no el KM
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}
+	free(respuesta);
+	free(cadena);
 }
 
 void OUTN(){
