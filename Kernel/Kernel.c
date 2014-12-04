@@ -134,48 +134,46 @@ void loader() {
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
 					printf("ESTOY SOLICITANDO SEGMENTO \n");
-					consola_conectada->cantidad_hilos = 1;
+
+					consola_conectada->cantidad_hilos = 0;
+					consola_conectada->termino_ejecucion = false;
+
 					int segmento_codigo = solicitar_crear_segmento(nuevoTCB,
 							datos->tamanio);
 					printf("ME MANDO UNA BASE %d\n", segmento_codigo);
+					int segmento_stack = solicitar_crear_segmento(nuevoTCB,
+							TAMANIO_STACK);
+
+					nuevoTCB->M = segmento_codigo;
+					consola_conectada->M = segmento_codigo;
+					nuevoTCB->tamanioSegmentoCodigo = datos->tamanio;
+					nuevoTCB->P = segmento_codigo;
+
+					nuevoTCB->X = segmento_stack;
+					nuevoTCB->S = segmento_stack;
+
 					if (segmento_codigo < 0) {
 						printf("ERROR AL SOLICITAR SEGMENTO DE CODIGO\n");
-						nuevoTCB->M = -1;
-						nuevoTCB->tamanioSegmentoCodigo = -1;
-						nuevoTCB->P = -1;
-						nuevoTCB->X = -1;
-						nuevoTCB->S = -1;
 						t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL,
 								0);
 						enviar_datos(n_descriptor, datos);
-						consola_conectada->M = -1;
 						free(datos);
 						break;
 					}
-						consola_conectada->M = segmento_codigo;
-					int segmento_stack = solicitar_crear_segmento(nuevoTCB,
-							TAMANIO_STACK);
+					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
+							datos->datos);
 					if (segmento_stack < 0) {
 						printf("ERROR AL SOLICITAR SEGMENTO DE STACK\n");
-						nuevoTCB->M = -1;
-						nuevoTCB->tamanioSegmentoCodigo = -1;
-						nuevoTCB->P = -1;
-						nuevoTCB->X = -1;
-						nuevoTCB->S = -1;
 						t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL,
 								0);
 						enviar_datos(n_descriptor, datos);
+						free(datos);
+						free(nuevoTCB);
 						break;
 					}
+					consola_conectada->cantidad_hilos = 1;
 
-					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
-							datos->datos);
 
-					nuevoTCB->M = segmento_codigo;
-					nuevoTCB->tamanioSegmentoCodigo = datos->tamanio;
-					nuevoTCB->P = segmento_codigo;
-					nuevoTCB->X = segmento_stack;
-					nuevoTCB->S = segmento_stack;
 					printf("\nSe inicializo el TCB PADRE\n");
 
 					hilo_t * nuevo = malloc(sizeof(hilo_t));
@@ -614,7 +612,7 @@ void matar_hijos(int PID) {
 	printf("cantidad elementos ready %d\n", queue_size(ready.prioridad_1));
 	matar_hijos_en_lista(PID, ready.prioridad_1->elements, READY);
 	matar_hijos_en_lista(PID, block.prioridad_1, BLOCK);
-	matar_hijos_en_lista(PID, SYS_CALL->elements, 8);		//TODO
+	matar_hijos_en_lista(PID, SYS_CALL->elements, 8);
 	matar_hijos_en_lista(PID, hilos_join, 10);
 	matar_hijo_en_diccionario(PID);
 }

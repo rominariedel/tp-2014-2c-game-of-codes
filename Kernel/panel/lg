@@ -65568,3 +65568,415 @@
 [INFO] 16:17:43:469 KERNEL/(4178:4183): Desconexión Consola (10) => []
 [INFO] 16:18:11:14 KERNEL/(4178:4181): Desconexión CPU (8) => [7]
 [INFO] 16:18:11:534 KERNEL/(4178:4181): Desconexión CPU (7) => []
+[DEBUG] 18:55:45:486 KERNEL/(4601:4602): ESPERANDO CONEXIONES
+[DEBUG] 18:55:45:490 KERNEL/(4601:4602): Se esta esperando recibir la conexion!!!!
+[DEBUG] 18:56:25:708 KERNEL/(4613:4614): ESPERANDO CONEXIONES
+[DEBUG] 18:56:25:708 KERNEL/(4613:4614): Se esta esperando recibir la conexion!!!!
+[DEBUG] 18:56:33:869 KERNEL/(4613:4614): SE RECIBIO UNA CONEXION! SOCKET: 7
+
+[INFO] 18:56:33:869 KERNEL/(4613:4614): Nueva Consola (7) => [7]
+[DEBUG] 18:56:33:869 KERNEL/(4613:4614): Se esta esperando recibir la conexion!!!!
+[INFO] 18:56:33:889 KERNEL/(4613:4618): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[DEBUG] 18:56:40:237 KERNEL/(4613:4614): SE RECIBIO UNA CONEXION! SOCKET: 8
+
+[INFO] 18:56:40:237 KERNEL/(4613:4614): Nueva Consola (8) => [7-8]
+[DEBUG] 18:56:40:237 KERNEL/(4613:4614): Se esta esperando recibir la conexion!!!!
+[INFO] 18:56:41:909 KERNEL/(4613:4618): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[DEBUG] 18:56:49:406 KERNEL/(4613:4614): SE RECIBIO UNA CONEXION! SOCKET: 9
+
+[INFO] 18:56:49:406 KERNEL/(4613:4614): Nueva Consola (9) => [7-8-9]
+[DEBUG] 18:56:49:406 KERNEL/(4613:4614): Se esta esperando recibir la conexion!!!!
+[INFO] 18:56:49:930 KERNEL/(4613:4618): Desconexión Consola (9) => [7-8]
+[DEBUG] 18:57:56:498 KERNEL/(4613:4614): SE RECIBIO UNA CONEXION! SOCKET: 10
+
+[INFO] 18:57:56:498 KERNEL/(4613:4614): Nueva Consola (10) => [7-8-10]
+[DEBUG] 18:57:56:498 KERNEL/(4613:4614): Se esta esperando recibir la conexion!!!!
+[INFO] 18:57:58:74 KERNEL/(4613:4618): Desconexión Consola (10) => [7-8]
+[DEBUG] 19:29:37:977 KERNEL/(4677:4678): ESPERANDO CONEXIONES
+[DEBUG] 19:29:37:977 KERNEL/(4677:4678): Se esta esperando recibir la conexion!!!!
+[DEBUG] 19:29:40:537 KERNEL/(4677:4678): SE RECIBIO UNA CONEXION! SOCKET: 7
+
+[INFO] 19:29:40:537 KERNEL/(4677:4678): Nueva Consola (7) => [7]
+[DEBUG] 19:29:40:537 KERNEL/(4677:4678): Se esta esperando recibir la conexion!!!!
+[INFO] 19:29:40:541 KERNEL/(4677:4682): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 19:29:43:781 KERNEL/(4677:4682): Desconexión Consola (7) => []
+[DEBUG] 19:30:38:273 KERNEL/(4689:4690): ESPERANDO CONEXIONES
+[DEBUG] 19:30:38:273 KERNEL/(4689:4690): Se esta esperando recibir la conexion!!!!
+[DEBUG] 19:31:31:316 KERNEL/(4689:4690): SE RECIBIO UNA CONEXION! SOCKET: 7
+
+[INFO] 19:31:31:316 KERNEL/(4689:4690): Nueva CPU (7) => [7]
+[DEBUG] 19:31:31:316 KERNEL/(4689:4690): Se esta esperando recibir la conexion!!!!
+[DEBUG] 19:31:40:252 KERNEL/(4689:4690): SE RECIBIO UNA CONEXION! SOCKET: 8
+
+[INFO] 19:31:40:252 KERNEL/(4689:4690): Nueva Consola (8) => [8]
+[DEBUG] 19:31:40:252 KERNEL/(4689:4690): Se esta esperando recibir la conexion!!!!
+[INFO] 19:31:40:256 KERNEL/(4689:4702): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 19:31:40:256 KERNEL/(4689:4691): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 19:31:42:261 KERNEL/(4689:4699): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Interrupcion
+[INFO] 19:31:42:261 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 19:31:42:261 KERNEL/(4689:4691): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+  BLOCK:
+    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 19:31:51:281 KERNEL/(4689:4699): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Bloquear
+[INFO] 19:31:51:281 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 176, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 19:31:52:281 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 244, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 47, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[INFO] 19:31:52:281 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 244, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }
+  EXIT:
+
+[INFO] 19:31:52:281 KERNEL/(4689:4691): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+    { PID: 1, TID: 1, KM: 0, PC: 17, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 244, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }
+  EXIT:
+
+[INFO] 19:31:56:289 KERNEL/(4689:4699): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Interrupcion
+[INFO] 19:31:56:289 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 244, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 1, B: 1048623, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXIT:
+
+[INFO] 19:31:56:289 KERNEL/(4689:4691): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+    { PID: 1, TID: 1, KM: 1, PC: 108, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  BLOCK:
+    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXIT:
+
+[INFO] 19:31:57:293 KERNEL/(4689:4699): El hilo { PID: 1, TID: 1 } ejecutó la instrucción Salida_Estandar
+[INFO] 19:32:02:294 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 132, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXIT:
+
+[INFO] 19:32:02:294 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 132, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXIT:
+
+[INFO] 19:32:02:294 KERNEL/(4689:4691): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+    { PID: 1, TID: 1, KM: 0, PC: 49, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 132, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXIT:
+
+[INFO] 19:32:03:298 KERNEL/(4689:4699): Hilos ejecutando:
+  NEW:
+
+  READY:
+
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 132, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXIT:
+    { PID: 1, TID: 1, KM: 0, PC: 53, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+[INFO] 19:32:03:302 KERNEL/(4689:4702): Desconexión Consola (8) => []
+[INFO] 19:33:34:564 KERNEL/(4689:4699): Desconexión CPU (7) => []
+[DEBUG] 19:33:37:112 KERNEL/(4689:4690): SE RECIBIO UNA CONEXION! SOCKET: 9
+
+[INFO] 19:33:37:112 KERNEL/(4689:4690): Nueva Consola (9) => [9]
+[DEBUG] 19:33:37:112 KERNEL/(4689:4690): Se esta esperando recibir la conexion!!!!
+[INFO] 19:33:37:504 KERNEL/(4689:4702): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 1, TID: 1, KM: 1, PC: 132, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+  EXIT:
+    { PID: 1, TID: 1, KM: 0, PC: 53, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 53, B: 10, C: 0, D: -1, E: 0 }
+[INFO] 19:33:44:368 KERNEL/(4689:4702): Desconexión Consola (9) => []
+[DEBUG] 19:43:10:952 KERNEL/(4689:4690): SE RECIBIO UNA CONEXION! SOCKET: 10
+
+[INFO] 19:43:10:952 KERNEL/(4689:4690): Nueva Consola (10) => [10]
+[DEBUG] 19:43:10:952 KERNEL/(4689:4690): Se esta esperando recibir la conexion!!!!
+[DEBUG] 19:43:14:96 KERNEL/(4689:4690): SE RECIBIO UNA CONEXION! SOCKET: 11
+
+[INFO] 19:43:14:100 KERNEL/(4689:4690): Nueva Consola (11) => [10-11]
+[DEBUG] 19:43:14:100 KERNEL/(4689:4690): Se esta esperando recibir la conexion!!!!
+[DEBUG] 19:43:29:781 KERNEL/(4781:4782): ESPERANDO CONEXIONES
+[DEBUG] 19:43:29:785 KERNEL/(4781:4782): Se esta esperando recibir la conexion!!!!
+[DEBUG] 19:43:36:373 KERNEL/(4781:4782): SE RECIBIO UNA CONEXION! SOCKET: 7
+
+[INFO] 19:43:36:377 KERNEL/(4781:4782): Nueva Consola (7) => [7]
+[DEBUG] 19:43:36:377 KERNEL/(4781:4782): Se esta esperando recibir la conexion!!!!
+[INFO] 19:43:36:389 KERNEL/(4781:4786): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[DEBUG] 19:43:40:285 KERNEL/(4781:4782): SE RECIBIO UNA CONEXION! SOCKET: 8
+
+[INFO] 19:43:40:285 KERNEL/(4781:4782): Nueva Consola (8) => [7-8]
+[DEBUG] 19:43:40:285 KERNEL/(4781:4782): Se esta esperando recibir la conexion!!!!
+[INFO] 19:43:40:401 KERNEL/(4781:4786): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[DEBUG] 19:43:43:566 KERNEL/(4781:4782): SE RECIBIO UNA CONEXION! SOCKET: 9
+
+[INFO] 19:43:43:566 KERNEL/(4781:4782): Nueva Consola (9) => [7-8-9]
+[DEBUG] 19:43:43:566 KERNEL/(4781:4782): Se esta esperando recibir la conexion!!!!
+[INFO] 19:43:44:410 KERNEL/(4781:4786): Desconexión Consola (9) => [7-8]
+[DEBUG] 19:49:09:26 KERNEL/(4997:4998): ESPERANDO CONEXIONES
+[DEBUG] 19:49:09:26 KERNEL/(4997:4998): Se esta esperando recibir la conexion!!!!
+[DEBUG] 19:49:12:478 KERNEL/(4997:4998): SE RECIBIO UNA CONEXION! SOCKET: 7
+
+[INFO] 19:49:12:478 KERNEL/(4997:4998): Nueva Consola (7) => [7]
+[DEBUG] 19:49:12:478 KERNEL/(4997:4998): Se esta esperando recibir la conexion!!!!
+[INFO] 19:49:12:486 KERNEL/(4997:5002): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[DEBUG] 19:49:15:10 KERNEL/(4997:4998): SE RECIBIO UNA CONEXION! SOCKET: 8
+
+[INFO] 19:49:15:14 KERNEL/(4997:4998): Nueva Consola (8) => [7-8]
+[DEBUG] 19:49:15:14 KERNEL/(4997:4998): Se esta esperando recibir la conexion!!!!
+[INFO] 19:49:16:498 KERNEL/(4997:5002): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+
+[DEBUG] 19:49:18:78 KERNEL/(4997:4998): SE RECIBIO UNA CONEXION! SOCKET: 9
+
+[INFO] 19:49:18:78 KERNEL/(4997:4998): Nueva Consola (9) => [7-8-9]
+[DEBUG] 19:49:18:78 KERNEL/(4997:4998): Se esta esperando recibir la conexion!!!!
+[INFO] 19:49:18:507 KERNEL/(4997:5002): Desconexión Consola (9) => [7-8]
+[INFO] 19:49:50:705 KERNEL/(4997:5002): Desconexión Consola (8) => [7]
+[INFO] 19:49:50:705 KERNEL/(4997:5002): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+[DEBUG] 19:53:24:670 KERNEL/(4997:4998): SE RECIBIO UNA CONEXION! SOCKET: 10
+
+[INFO] 19:53:24:670 KERNEL/(4997:4998): Nueva Consola (10) => [7-10]
+[DEBUG] 19:53:24:670 KERNEL/(4997:4998): Se esta esperando recibir la conexion!!!!
+[INFO] 19:53:25:150 KERNEL/(4997:5002): Hilos ejecutando:
+  NEW:
+
+  READY:
+    { PID: 1, TID: 1, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }    { PID: 4, TID: 4, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXEC:
+
+  BLOCK:
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+  EXIT:
+    { PID: 2, TID: 2, KM: 0, PC: 0, M: 0 (63b) }
+      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
