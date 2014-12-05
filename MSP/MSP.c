@@ -474,8 +474,8 @@ static void destruirPag(T_PAGINA* pagina) {
 		return marco->pagina == pagina;
 	}
 
-	bool paginaPorId(T_PAGINA* pag) {
-		return pag->paginaID == pagina->paginaID;
+	bool paginaPorIdentidad(T_PAGINA* pag) {
+		return pag == pagina;
 	}
 
 	//busco en la lista de marcos el marco con esa pagina si esta asignado
@@ -492,7 +492,7 @@ static void destruirPag(T_PAGINA* pagina) {
 
 		log_info(logger, "Se desasigna el marco de id %d de la pagina de id %d para destruirla", marco->marcoID, pagina->paginaID);
 		sem_wait(&mutex_paginasEnMemoria);
-		list_remove_by_condition(paginasEnMemoria, (void*) paginaPorId);
+		list_remove_by_condition(paginasEnMemoria, (void*) paginaPorIdentidad);
 		sem_post(&mutex_paginasEnMemoria);
 
 		sem_wait(&mutex_marcosVacios);
@@ -962,8 +962,19 @@ int asignoMarcoAPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 	marcoAsignado->empty = false;
 
 	sem_wait(&mutex_paginasEnMemoria);
-	list_add(paginasEnMemoria, pag);
 	log_debug(logger,"EL tamanio de pagsEnMemoria es: %d", list_size(paginasEnMemoria));
+
+	list_add(paginasEnMemoria, pag);
+	log_debug(logger, "SE AGREGO UNA PAGINA EN MEMORIA CON MARCO ID = %d", pag->marcoID);
+	log_debug(logger,"EL tamanio de pagsEnMemoria es: %d", list_size(paginasEnMemoria));
+
+	int i;
+	for (i=0; i < list_size(paginasEnMemoria); i++){
+		T_PAGINA* pagina = list_get(paginasEnMemoria, i);
+		log_debug(logger, "Pagina %d tiene marcoID %d", i, pagina->marcoID);
+	}
+
+
 	sem_post(&mutex_paginasEnMemoria);
 
 	sem_wait(&mutex_marcosLlenos);
@@ -1392,8 +1403,8 @@ T_PAGINA* swapInPagina(int PID, T_SEGMENTO* seg, T_PAGINA* pag) {
 int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 	log_debug(logger, "Entre a swapOut");
 
-	bool pagPorId(T_PAGINA* pagina) {
-			return pagina->paginaID == pag->paginaID;
+	bool pagPorMarcoId(T_PAGINA* pagina) {
+			return pagina->marcoID == -1;
 	}
 
 	char* filePath = obtenerFilePath(PID, SID, pag->paginaID);
@@ -1426,8 +1437,11 @@ int swapOutPagina(int PID, int SID, T_PAGINA* pag) {
 		return error_general; //todo chequear
 	}
 
-	list_remove_by_condition(paginasEnMemoria,(void*) pagPorId);
+	T_PAGINA* paginaTEST = list_remove_by_condition(paginasEnMemoria,(void*) pagPorMarcoId);
+	log_debug(logger, "Se saco de paginas en memoria la pagina que deberia tener marco id -1, y es = %d", paginaTEST->marcoID);
+	//todo provisorio
 	log_info(logger, "SwapOut: se realizo el intercambio de la pagina de id %d hacia disco", pag->paginaID);
+
 	return operacion_exitosa;
 }
 
@@ -1454,8 +1468,11 @@ T_MARCO* seleccionarMarcoVictima() {
 	} else if (strcmp(sust_pags, "LRU") == 0) {
 		log_debug(logger,"El algoritmo a implementar es lru");
 		marcoVictima = algoritmoLRU();
+		log_debug(logger, "volvio de algoritmoLRU");
 	}
-
+	if (marcoVictima == NULL){
+		log_debug(logger, "marco victima null");
+	}
 	log_debug(logger,"El marco seleccionado tiene id: %d", marcoVictima->marcoID);
 	return marcoVictima;
 }
@@ -1472,21 +1489,29 @@ T_MARCO* algoritmoLRU() {
 	}
 
 	int i;
+	log_debug(logger, "antes del semaforo");
 	sem_wait(&mutex_paginasEnMemoria);
 	int cantidadPaginasEnMemoria = list_size(paginasEnMemoria);
-
+	log_debug(logger, "CAntidad de paginas en memoria = %d", cantidadPaginasEnMemoria);
 	for (i = 0; i < cantidadPaginasEnMemoria; i++) {
 
 		T_PAGINA* pagina = list_get(paginasEnMemoria, i);
+		log_debug(logger, "entro al for con i = %d", i);
 
 		if (pagina->contadorLRU < contador) {
 			contador = pagina->contadorLRU;
+			log_debug(logger, "El contador LRU es menor, es %d y su marco id: %d", pagina->contadorLRU, pagina->marcoID);
+
 			marcoId = pagina->marcoID;
 		}
 	}
+
+	log_debug(logger, "salio del for");
+
 	sem_post(&mutex_paginasEnMemoria);
 	sem_wait(&mutex_marcosLlenos);
 	marcoVictima = list_remove_by_condition(marcosLlenos, (void*) marcoPorId);
+	log_debug(logger, "seteo el marco victima");
 	sem_post(&mutex_marcosLlenos);
 	return marcoVictima;
 }
