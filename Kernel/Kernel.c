@@ -6,12 +6,19 @@
  */
 
 #include "auxiliares/variables_globales.h"
+#include <signal.h>
 
 #define pid_KM_boot 0
 
-/*VARIABLES GLOBALES*/
+void despedida(){
+	printf("\n\nSE HA INTERRUMPIDO LA EJECUCION DEL KERNEL.\n\n");
+	free_listas();
+	raise(SIGTERM);
+}
 
 int main(int argc, char ** argv) {
+
+	signal(SIGINT, despedida);
 
 	printf("\n -------------  KERNEL  -------------\n");
 	printf("    Iniciando...\n");
@@ -27,8 +34,6 @@ int main(int argc, char ** argv) {
 	pthread_create(&thread_dispatcher, NULL, (void*) &dispatcher, NULL );
 	pthread_join(thread_boot, NULL );
 	pthread_join(thread_dispatcher, NULL );
-	config_destroy(configuracion);
-	free_listas();
 	return 0;
 }
 
@@ -75,7 +80,7 @@ void liberar_recursos(struct_consola * consola_conectada) {
 		printf("Entre acaaaaa!\n");
 		matar_hijos(consola_conectada->PID);
 	}
-	if ((consola_conectada->cantidad_hilos == 0)&&(consola_conectada->M >= 0)) {
+	if (consola_conectada->cantidad_hilos == 0) {
 
 		destruir_segmento_MSP(consola_conectada->PID, consola_conectada->M);
 	}
@@ -114,6 +119,11 @@ void loader() {
 					desconexion_consola(n_descriptor);
 					liberar_recursos(consola_conectada);
 					FD_CLR(n_descriptor, &consola_set);
+					close(n_descriptor);
+					if(datos != NULL){
+						free(datos->datos);
+						free(datos);
+					}
 					break;
 				}
 				TCB_struct * nuevoTCB;
@@ -158,6 +168,7 @@ void loader() {
 								0);
 						enviar_datos(n_descriptor, datos);
 						free(datos);
+						free(nuevoTCB);
 						break;
 					}
 					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
@@ -180,7 +191,7 @@ void loader() {
 
 					nuevo->tcb.PID = nuevoTCB->PID;
 					nuevo->tcb.TID = nuevoTCB->TID;
-					nuevo->tcb.KM = nuevoTCB->KM;
+					nuevo->tcb.KM = 0;
 					nuevo->tcb.M = nuevoTCB->M;
 					nuevo->tcb.tamanioSegmentoCodigo =
 							nuevoTCB->tamanioSegmentoCodigo;
@@ -213,6 +224,7 @@ void loader() {
 
 					break;
 				}
+				free(datos->datos);
 				free(datos);
 			}
 			n_descriptor = n_descriptor + 1;
@@ -224,6 +236,7 @@ void loader() {
 void handshake_MSP(int socketMSP) {
 	t_datosAEnviar * datos = crear_paquete(soy_kernel, NULL, 0);
 	enviar_datos(socketMSP, datos);
+	free(datos->datos);
 	free(datos);
 }
 
@@ -283,19 +296,19 @@ void boot() {
 	hilo_t * nuevo = malloc(sizeof(hilo_t));
 
 	copiar_tcb(&nuevo->tcb, tcb_km);
-	nuevo->tcb.PID = tcb_km->PID;
-	nuevo->tcb.TID = tcb_km->TID;
-	nuevo->tcb.KM = tcb_km->KM;
-	nuevo->tcb.M = tcb_km->M;
-	nuevo->tcb.tamanioSegmentoCodigo = tcb_km->tamanioSegmentoCodigo;
-	nuevo->tcb.P = tcb_km->P;
-	nuevo->tcb.X = tcb_km->X;
-	nuevo->tcb.S = tcb_km->S;
-	nuevo->tcb.registrosProgramacion[0] = tcb_km->registrosProgramacion[0];
-	nuevo->tcb.registrosProgramacion[1] = tcb_km->registrosProgramacion[1];
-	nuevo->tcb.registrosProgramacion[2] = tcb_km->registrosProgramacion[2];
-	nuevo->tcb.registrosProgramacion[3] = tcb_km->registrosProgramacion[3];
-	nuevo->tcb.registrosProgramacion[4] = tcb_km->registrosProgramacion[4];
+//	nuevo->tcb.PID = tcb_km->PID;
+//	nuevo->tcb.TID = tcb_km->TID;
+//	nuevo->tcb.KM = tcb_km->KM;
+//	nuevo->tcb.M = tcb_km->M;
+//	nuevo->tcb.tamanioSegmentoCodigo = tcb_km->tamanioSegmentoCodigo;
+//	nuevo->tcb.P = tcb_km->P;
+//	nuevo->tcb.X = tcb_km->X;
+//	nuevo->tcb.S = tcb_km->S;
+//	nuevo->tcb.registrosProgramacion[0] = tcb_km->registrosProgramacion[0];
+//	nuevo->tcb.registrosProgramacion[1] = tcb_km->registrosProgramacion[1];
+//	nuevo->tcb.registrosProgramacion[2] = tcb_km->registrosProgramacion[2];
+//	nuevo->tcb.registrosProgramacion[3] = tcb_km->registrosProgramacion[3];
+//	nuevo->tcb.registrosProgramacion[4] = tcb_km->registrosProgramacion[4];
 
 	nuevo->cola = BLOCK;
 
@@ -438,7 +451,7 @@ void crear_hilo(TCB_struct tcb, int socketCPU) {
 void planificar_hilo_creado(TCB_struct * nuevoTCB) {
 
 	hilo_t * nuevo = malloc(sizeof(hilo_t));
-
+	nuevoTCB->KM = 0;
 	copiar_tcb(&nuevo->tcb, nuevoTCB);
 	nuevo->cola = READY;
 	list_add(HILOS_SISTEMA, nuevo);
@@ -476,15 +489,18 @@ int solicitar_crear_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 			paquete->codigo_operacion, paquete->tamanio);
 
 	enviar_datos(socket_MSP, paquete);
+	free(paquete->datos);
+	free(paquete);
 	free(datos);
+
 	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
 	printf("RECIBI ALGO!\n");
 	if (respuesta == NULL ) {
 		printf("no se recibio una respuesta\n");
 	}
-	int * dir_base = malloc(sizeof(int));
-	memcpy(dir_base, respuesta->datos, sizeof(int));
+	int dir_base;
+	memcpy(&dir_base, respuesta->datos, sizeof(int));
 	int codop = respuesta->codigo_operacion;
 	free(respuesta->datos);
 	free(respuesta);
@@ -499,9 +515,9 @@ int solicitar_crear_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 		abortar(tcb);
 		return -1;
 	}
-	printf("Se recibio la direccion base: %d\n", *dir_base);
+	printf("Se recibio la direccion base: %d\n", dir_base);
 
-	return *dir_base;
+	return dir_base;
 }
 
 void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
@@ -521,12 +537,13 @@ void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
+	free(paquete->datos);
 	free(paquete);
+
 	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
 
 	paquete = recibir_datos(socket_MSP);
 
-	sem_post(&sem_lecturaEscritura);
 
 	if ((paquete->codigo_operacion == error_segmentationFault)
 			|| (paquete->codigo_operacion == error_general)) {
@@ -536,17 +553,19 @@ void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 		tcb->TID = consola_asociada->TID_padre;
 		abortar(tcb);
 	}
+	free(paquete->datos);
+	free(paquete);
+	sem_post(&sem_lecturaEscritura);
 
 }
 
 void finalizo_quantum(TCB_struct* tcb) {
 
-	bool es_TCB(TCB_struct tcb_comparar) {
-		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
+	bool es_TCB(TCB_struct * tcb_comparar) {
+		return (tcb_comparar->PID == PID) && (tcb_comparar->TID == TID)&&(tcb_comparar->KM == 0); //TODO: CAMBIE ESTO, OJO
 	}
-	if (chequear_proceso_abortado(tcb) < 0) {
-		//EL PADRE DE ESE PROCESO TERMINO
-		//exit(0);
+	if(chequear_proceso_abortado(tcb) < 0) {
+		printf("LALA EL PROCESO FUE ABORTADO !!!!!! \n\n\n\n");
 	} else {
 		TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
 		free(tcb_exec);
@@ -585,6 +604,7 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		if (enviar_datos(consola_asociada->socket_consola, paquete) < 0) {
 
 		}
+		free(paquete->datos);
 		free(paquete);
 		printf("DESCONECTE LA CONSOLA ASOCIADA\n");
 	}
@@ -843,8 +863,8 @@ void dispatcher() {
 		printf("\nSe detectó un nuevo proceso!\n");
 		if (!queue_is_empty(SYS_CALL)) {
 
-			printf("ENTRE A EJECUTAR UNA INTERRUPCION!!!!!!!\n");
 			sem_wait(&sem_kmDisponible);
+			printf("ENTRE A EJECUTAR UNA INTERRUPCION!!!!!!!\n");
 			tcb_ejecutandoSysCall = (TCB_struct*) queue_pop(SYS_CALL);
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
@@ -865,12 +885,18 @@ void dispatcher() {
 		} else {
 			TCB_struct * tcb;
 
-			if (!queue_is_empty(ready.prioridad_0)) {
-				tcb = sacar_de_ready(0);
-			} else {
+			//if (!queue_is_empty(ready.prioridad_0)) {
+				//tcb = sacar_de_ready(0);
+			//} else {
 				tcb = sacar_de_ready(1);
-			}
+				if(tcb->KM){
+					printf("\n\n\nNOOOOOooOOoOoOOoOo QUE HACE ESTO ACAAAA?!!!!!\n\n\n\n");
+					queue_push(block.prioridad_0, tcb);
+				}else{
 			enviar_a_ejecucion(tcb);
+
+				}
+			//}
 		}
 	}
 

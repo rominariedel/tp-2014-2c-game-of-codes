@@ -57,17 +57,26 @@ void crear_colas() {
 }
 
 void free_listas() {
-	queue_destroy(e_exit);
+	config_destroy(configuracion);
 
-	queue_destroy(ready.prioridad_0);
-	queue_destroy(ready.prioridad_1);
-	queue_destroy(SYS_CALL);
-	queue_destroy(block.prioridad_0);
-	list_destroy_and_destroy_elements(block.prioridad_1, &free);
-	list_destroy_and_destroy_elements(exec, &free);
-	list_destroy_and_destroy_elements(CPU_list, &free);
-	list_destroy_and_destroy_elements(consola_list, &free);
+	void destroyer_diccionario(t_queue * cola){
+		queue_destroy_and_destroy_elements(cola, free);
+	}
+	queue_destroy_and_destroy_elements(e_exit, free);
+	queue_destroy_and_destroy_elements(ready.prioridad_0, free);
+	queue_destroy_and_destroy_elements(ready.prioridad_1, free);
+	queue_destroy_and_destroy_elements(SYS_CALL, free);
+	queue_destroy_and_destroy_elements(block.prioridad_0, free);
+	list_destroy_and_destroy_elements(block.prioridad_1, free);
+	list_destroy_and_destroy_elements(exec, free);
+	list_destroy_and_destroy_elements(CPU_list, free);
+	list_destroy_and_destroy_elements(consola_list, free);
+	list_destroy_and_destroy_elements(mallocs, free);
+	dictionary_destroy_and_destroy_elements(dic_bloqueados, (void*)destroyer_diccionario);
+	list_destroy_and_destroy_elements(HILOS_SISTEMA, free);
+	list_destroy_and_destroy_elements(hilos_join, free);
 
+	log_destroy(logger);
 }
 
 bool CPU_esta_libre(struct_CPU * cpu) {
@@ -110,6 +119,10 @@ void loguear(t_cola cola, TCB_struct * tcb_log) {
 }
 
 void meter_en_ready(int prioridad, TCB_struct * tcb) {
+	if(tcb->KM){
+		printf("\n\n\n\nKE ASES ACA?!!!!\n\n\n\n\n\n");
+		queue_push(block.prioridad_0, tcb);
+	}else{
 	sem_wait(&sem_READY);
 
 	switch (prioridad) {
@@ -125,6 +138,7 @@ void meter_en_ready(int prioridad, TCB_struct * tcb) {
 	sem_post(&sem_READY);
 	sem_post(&sem_procesoListo);
 	sem_post(&sem_procesoListo);
+	}
 }
 
 TCB_struct * sacar_de_ready(int prioridad) {
@@ -192,6 +206,7 @@ void desconecto_cpu(int sock) {
 					free(datos);
 				}
 				list_iterate(consola_list, (void*) abortar_procesos);
+				printf("SE ELIMINO EL TCB KM\n");
 				exit(0);
 			} else {
 				t_datosAEnviar * datos = crear_paquete(se_desconecto_cpu, NULL,
@@ -476,9 +491,7 @@ void producir_salida_estandar(int pid, int tid, char* cadena) {
 	if (consola_asociada == NULL ) {
 		printf("NO SE ENCONTRO CONSOLA ASOCIADA");
 	}
-	enviar_datos(consola_asociada->socket_consola, datos); //TODO: BUUUUUGGGG!!!!! NO ENCUENTRA
-	//LA CPU ME ESTA MANDANDO PID 0 Y FIJARSE SI ME ESTA MANDANDO LA CADENA COMO UN INT O UN CHAR
-	//SI ES UN NRO
+	enviar_datos(consola_asociada->socket_consola, datos);
 	free(datos->datos);
 	free(datos);
 }
@@ -575,8 +588,10 @@ void realizar_desbloqueo(int id_recurso) {
 	if (dictionary_has_key(dic_bloqueados, recurso)) {
 		t_queue * bloqueados_por_recurso = dictionary_get(dic_bloqueados,
 				recurso);
+		if(!queue_is_empty(bloqueados_por_recurso)){
 		TCB_struct * tcb = queue_pop(bloqueados_por_recurso);
 		meter_en_ready(1, tcb);
+		}
 	} else {
 		//NO EXISTEN BLOQUEADOS DE ESE RECURSO, SIGUE COMO SI NADA
 	}
@@ -584,22 +599,30 @@ void realizar_desbloqueo(int id_recurso) {
 
 int chequear_proceso_abortado(TCB_struct * tcb) {
 	struct_consola * consola = obtener_consolaAsociada(tcb->PID);
+	if(consola == NULL){
+		printf("LA CONSOLA ES NULAAA AL CHEQUEAR SI UN PROCESO FUE ABORTADO\n");
+		return -1;
+	}
 	if (consola->termino_ejecucion) {
 		printf("EL PROCESO FUE ABORTADO \n");
 		sacar_de_ejecucion(tcb, false);
 		if (consola->cantidad_hilos == 0) {
-
-			destruir_segmento_MSP(consola->PID, consola->M);
-
-			t_datosAEnviar * paquete = crear_paquete(terminar_conexion, NULL,
-					0);
-			if (enviar_datos(consola->socket_consola, paquete) < 0) {
-				return -1;
+			if(consola->M >= 0){
+				destruir_segmento_MSP(consola->PID, consola->M);
+				printf("SE DESTRUYO SEGMENTO UEUEUEUE\n");
 			}
+			printf("1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+			t_datosAEnviar * paquete = crear_paquete(terminar_conexion, NULL, 0);
+			printf("2!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+			//if (enviar_datos(consola->socket_consola, paquete) < 0) {
+			//	printf("LA CONSOLA YA ESTABA DESCONECTADA \n");
+			//}
+			printf("3!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 			free(paquete);
+			printf("SE FINALIZO CONEXION\n");
 			return -1;
 		}
-		return 0;
+		return -1;
 	}
 	return 0;
 }
