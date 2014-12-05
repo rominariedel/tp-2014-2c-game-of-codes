@@ -58,6 +58,7 @@ t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 }
 
 void KERNEL_MostrarNumeroPorConsola(int PID, int nro){            //TODO PREGUNTAR ROMI SI VA PID TID O NOOOOOOOOO!!!!!!
+	log_info(LOGCPU, "----------------------------------------------------------------------------------------numero a mostrar: %d", nro);
 	char * toia = string_itoa(nro);
 	char * datos = malloc(sizeof (int) *2 + string_length(toia));
 	memcpy(datos,&PIDactual, sizeof(int));
@@ -133,6 +134,7 @@ void KERNEL_JoinTCB(t_TCB* TCB, int TIDabloquear){
 }
 
 void KERNEL_BloquearTCB(t_TCB* TCB, int recursoABloquear){
+	actualizarTCB();
 	char * datos = malloc(sizeof(t_TCB) + sizeof(int));
 	memcpy(datos, TCB, sizeof(t_TCB));
 	memcpy(datos + sizeof(t_TCB) , &recursoABloquear, sizeof(int));

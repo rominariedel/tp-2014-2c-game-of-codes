@@ -35,6 +35,7 @@ void SETM(tparam_setm* parametrosSetm){
 
 void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado por el segundo registro. El valor obtenido lo asigna en el primer registro.
 	t_datosAEnviar* respuesta;
+
 	if(KMactual == 1){
 		respuesta = MSP_SolicitarMemoria(PIDkm, *(devolverRegistro(parametrosGetm->reg2)),1, solicitarMemoria);
 	}else{
@@ -44,7 +45,9 @@ void GETM(tparam_getm* parametrosGetm){ //Obtiene el valor de memoria apuntado p
 	int status= procesarRespuesta(respuesta);
 
 	int* valorMemoria = malloc(1);
-	*valorMemoria = *((int*) respuesta->datos);
+	/**valorMemoria = *((int*) respuesta->datos);*/
+	memcpy(valorMemoria, respuesta->datos,1 );
+
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
@@ -190,9 +193,8 @@ void PUSH(tparam_push* parametrosPush){
 		if (KMactual == 1) {
 			respuestaMSP = MSP_EscribirEnMemoria(PIDkm, cursorStackActual, bytesAEscribir, parametrosPush->numero);
 		} else {
-		respuestaMSP = MSP_EscribirEnMemoria(PIDactual, cursorStackActual, bytesAEscribir,parametrosPush->numero );
+			respuestaMSP = MSP_EscribirEnMemoria(PIDactual, cursorStackActual, bytesAEscribir,parametrosPush->numero );
 		}
-
 
 		if (respuestaMSP < 0) {
 			finalizarEjecucion = -1;
@@ -267,7 +269,6 @@ void MALC(){
 	//al programa en ejecución.
 	int respuesta = MSP_CrearNuevoSegmento(PIDactual, A);
 
-
 	if(respuesta < 0){
 		finalizarEjecucion = -1;
 	}else{
@@ -288,6 +289,7 @@ void FREE(){
 
 	if((A =! baseSegmentoCodigoActual) && (A =! baseStackActual)){
 		int respuesta = MSP_DestruirSegmento(PIDactual,  A);
+
 		if(respuesta < 0){
 				finalizarEjecucion = -1;
 		}else{
@@ -319,11 +321,11 @@ void INNC(){
 	log_info(LOGCPU, "\n PEDIRLE AL KERNEL QUE INGRESE CADENA\n");
 	t_datosAEnviar* respuesta = KERNEL_IngreseCadenaPorConsola(PIDactual, B);
 	char* cadena = malloc(respuesta->tamanio);
-	memcpy(cadena,&respuesta->datos,respuesta->tamanio);
+	memcpy(cadena,respuesta->datos,respuesta->tamanio);
 
 	printf("\n\n\nCADENAAAAAAAAAAAAAAA %s \n\n\n\n", cadena);
-
-	int status = MSP_EscribirEnMemoria(PIDactual,A,(void*)cadena,respuesta->tamanio);    //Se le manda el PID original, no el KM
+	noPIDkm = -1;
+	int status = MSP_EscribirEnMemoria(PIDactual,A,cadena,respuesta->tamanio);    //Se le manda el PID original, no el KM
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}
