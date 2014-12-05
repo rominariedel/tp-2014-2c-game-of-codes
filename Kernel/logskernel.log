@@ -1,5 +1,5 @@
-[INFO] 14:13:36:87 kernel/(7469:7469): Inicializando panel para kernel, en "../logskernel.log"
-[INFO] 14:13:36:106 kernel/(7469:7470): Hilos ejecutando:
+[INFO] 19:56:55:60 kernel/(4467:4467): Inicializando panel para kernel, en "../logskernel.log"
+[INFO] 19:56:55:289 kernel/(4467:4468): Hilos ejecutando:
   NEW:
 
   READY:
@@ -7,7 +7,7 @@
   EXEC:
 
   BLOCK:
-    { PID: 0, TID: 0, KM: 1, PC: 0, M: 0 (332b) }
-      { X: 1048576, S: 1048576, A: 0, B: 0, C: 0, D: 0, E: 0 }
+    { PID: 0, TID: 0, KM: 1, PC: 0, M: 2097152 (332b) }
+      { X: 3145728, S: 3145728, A: 0, B: 0, C: 0, D: 0, E: 0 }
   EXIT:
 

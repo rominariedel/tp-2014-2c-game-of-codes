@@ -120,7 +120,6 @@ void loguear(t_cola cola, TCB_struct * tcb_log) {
 
 void meter_en_ready(int prioridad, TCB_struct * tcb) {
 	if(tcb->KM){
-		printf("\n\n\n\nKE ASES ACA?!!!!\n\n\n\n\n\n");
 		queue_push(block.prioridad_0, tcb);
 	}else{
 	sem_wait(&sem_READY);
@@ -384,8 +383,13 @@ void planificador() {
 					instruccion_protegida("Bloquear",
 							(t_hilo*) obtener_hilo_asociado(tcb));
 					//liberar_cpu(n_descriptor);
-					realizar_bloqueo(tcb, id_recurso);
-
+					//TODO
+					bool tiene_mismo_tid(TCB_struct * tcb_busqueda) {
+						return tcb_busqueda->TID == tcb->TID;
+					}
+					TCB_struct * tcb_aux = list_remove_by_condition(exec, (void*) tiene_mismo_tid);
+					realizar_bloqueo(tcb_aux, id_recurso);
+					free(tcb);
 					break;
 				case despertar:
 					memcpy(&id_recurso, datos->datos, sizeof(int));
@@ -514,18 +518,18 @@ void producir_entrada_estandar(int pid, char id_tipo, int socket_CPU,
 	sem_wait(&mutex_entradaSalida);
 	printf("DESPUES DEL SEMAFORO DE ENTRADA SALIDA \n");
 	entrada = malloc(sizeof(entrada_salida));
-	entrada->cadena = malloc(tamanio);
+	//entrada->cadena = malloc(tamanio + 1);
 	memcpy(&entrada->socket_CPU, &socket_CPU, sizeof(int));
 
-	void * buffer = malloc(1 + sizeof(int));
+	void * buffer = malloc(2* sizeof(int));
 	memcpy(buffer, &id_tipo, sizeof(int));
-	memcpy(buffer + 1, &tamanio, sizeof(int));
+	memcpy(buffer + sizeof(int), &tamanio, sizeof(int));
 	//Enviando la solicitud a la consola para el ingreso de datos
 
 	printf("ENVIANDO DATOS A LA CONSOLA PARA ENTRADA ESTANDAR \n");
 	struct_consola * consola_asociada = obtener_consolaAsociada(pid);
 	t_datosAEnviar * datos_consola = crear_paquete(ingresar_cadena, buffer,
-			tamanio);
+			2 * sizeof(int));
 	enviar_datos(consola_asociada->socket_consola, datos_consola);
 	printf("DATOS ENVIADDOS a socket %d\n", consola_asociada->socket_consola);
 	free(datos_consola);
@@ -536,15 +540,8 @@ void producir_entrada_estandar(int pid, char id_tipo, int socket_CPU,
 /*Esta funcion es invocada cuando la consola manda el mensaje de que ya se ingresaron los datos*/
 void devolver_entrada_aCPU(int tamanio_datos) {
 	struct_CPU * CPU_asociada = obtener_CPUAsociada(entrada->socket_CPU);
-	char* entradaAmostrar = malloc(tamanio_datos + 1);
-	memcpy(entradaAmostrar, (char*)entrada->cadena, tamanio_datos );
-	entradaAmostrar[tamanio_datos] = '\0';
-
-
-	t_datosAEnviar * datos = crear_paquete(devolucion_cadena, entradaAmostrar,
-			tamanio_datos + 1);
-	printf("Devolviendo la cadena que es: %s y tiene largo %d\n",
-			(char*) entradaAmostrar, tamanio_datos);
+	t_datosAEnviar * datos= crear_paquete(devolucion_cadena, entrada->cadena, tamanio_datos);
+	printf("Devolviendo la cadena: %s que tiene de largo %d\n", entrada->cadena, tamanio_datos);
 	enviar_datos(CPU_asociada->socket_CPU, datos);
 	free(datos);
 	free(entrada->cadena);
