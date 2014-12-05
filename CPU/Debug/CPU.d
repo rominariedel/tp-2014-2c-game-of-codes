@@ -2,7 +2,7 @@ CPU.d: ../CPU.c ../CPU.h \
  /home/utnso/tp-2014-2c-game-of-codes/Sockets/sockets.h \
  ../funciones/bibliotecas.h ../t_parametros.h ../variablesGlobales.h \
  ../funciones/funcionesMSP.h ../funciones/funcionesKernel.h \
- ../funciones/instruccionesESO.h ../cpu.h
+ ../funciones/instruccionesESO.h ../logsObligatorios.h
 
 ../CPU.h:
 
@@ -20,4 +20,4 @@ CPU.d: ../CPU.c ../CPU.h \
 
 ../funciones/instruccionesESO.h:
 
-../cpu.h:
+../logsObligatorios.h:

@@ -330,3 +330,683 @@
 [INFO] 00:14:40:964 Consola/(13152:13152): Tamanio codigo 97.
 [INFO] 00:14:40:966 Consola/(13152:13152): Se realizo la conexion con el kernel.
 [INFO] 00:14:40:966 Consola/(13152:13152): Se enviaron los primeros datos exitosamente.
+[INFO] 04:44:09:389 Consola/(6166:6166): Tamanio codigo 49.
+[INFO] 04:44:09:390 Consola/(6166:6166): Se realizo la conexion con el kernel.
+[INFO] 04:44:09:393 Consola/(6166:6166): Se enviaron los primeros datos exitosamente.
+[INFO] 04:44:09:752 Consola/(6168:6168): Tamanio codigo 36.
+[INFO] 04:44:09:753 Consola/(6168:6168): Se realizo la conexion con el kernel.
+[INFO] 04:44:09:754 Consola/(6168:6168): Se enviaron los primeros datos exitosamente.
+[INFO] 04:45:02:714 Consola/(6175:6175): Tamanio codigo 69.
+[INFO] 04:45:02:715 Consola/(6175:6175): Se realizo la conexion con el kernel.
+[INFO] 04:45:02:715 Consola/(6175:6175): Se enviaron los primeros datos exitosamente.
+[INFO] 04:45:48:656 Consola/(6199:6199): Tamanio codigo 69.
+[INFO] 04:45:48:658 Consola/(6199:6199): Se realizo la conexion con el kernel.
+[INFO] 04:45:48:666 Consola/(6199:6199): Se enviaron los primeros datos exitosamente.
+[INFO] 04:53:48:432 Consola/(6456:6456): Tamanio codigo 69.
+[INFO] 04:53:48:435 Consola/(6456:6456): Se realizo la conexion con el kernel.
+[INFO] 04:53:48:437 Consola/(6456:6456): Se enviaron los primeros datos exitosamente.
+[INFO] 05:01:56:866 Consola/(6556:6556): Tamanio codigo 69.
+[INFO] 05:01:56:868 Consola/(6556:6556): Se realizo la conexion con el kernel.
+[INFO] 05:01:56:871 Consola/(6556:6556): Se enviaron los primeros datos exitosamente.
+[INFO] 05:05:05:188 Consola/(6596:6596): Tamanio codigo 210.
+[INFO] 05:05:05:190 Consola/(6596:6596): Se realizo la conexion con el kernel.
+[INFO] 05:05:05:194 Consola/(6596:6596): Se enviaron los primeros datos exitosamente.
+[INFO] 05:06:47:562 Consola/(6617:6617): Tamanio codigo 34.
+[ERROR] 05:06:47:563 Consola/(6617:6617): FALLO en la conexion con el kernel.
+[INFO] 05:07:05:984 Consola/(6633:6633): Tamanio codigo 34.
+[INFO] 05:07:05:985 Consola/(6633:6633): Se realizo la conexion con el kernel.
+[INFO] 05:07:05:989 Consola/(6633:6633): Se enviaron los primeros datos exitosamente.
+[INFO] 05:16:40:270 Consola/(2344:2344): Tamanio codigo 69.
+[INFO] 05:16:40:284 Consola/(2344:2344): Se realizo la conexion con el kernel.
+[INFO] 05:16:40:286 Consola/(2344:2344): Se enviaron los primeros datos exitosamente.
+[INFO] 05:17:13:582 Consola/(2362:2362): Tamanio codigo 69.
+[INFO] 05:17:13:583 Consola/(2362:2362): Se realizo la conexion con el kernel.
+[INFO] 05:17:13:586 Consola/(2362:2362): Se enviaron los primeros datos exitosamente.
+[INFO] 05:18:06:475 Consola/(2426:2426): Tamanio codigo 69.
+[INFO] 05:18:06:476 Consola/(2426:2426): Se realizo la conexion con el kernel.
+[INFO] 05:18:06:479 Consola/(2426:2426): Se enviaron los primeros datos exitosamente.
+[INFO] 21:44:59:456 Consola/(4078:4078): Tamanio codigo 88.
+[INFO] 21:44:59:456 Consola/(4078:4078): Se realizo la conexion con el kernel.
+[INFO] 21:44:59:459 Consola/(4078:4078): Se enviaron los primeros datos exitosamente.
+[INFO] 21:54:00:388 Consola/(4493:4493): Tamanio codigo 88.
+[INFO] 21:54:00:388 Consola/(4493:4493): Se realizo la conexion con el kernel.
+[INFO] 21:54:00:397 Consola/(4493:4493): Se enviaron los primeros datos exitosamente.
+[INFO] 21:55:01:53 Consola/(4523:4523): Tamanio codigo 88.
+[INFO] 21:55:01:54 Consola/(4523:4523): Se realizo la conexion con el kernel.
+[INFO] 21:55:01:56 Consola/(4523:4523): Se enviaron los primeros datos exitosamente.
+[INFO] 21:55:53:699 Consola/(4540:4540): Tamanio codigo 88.
+[INFO] 21:55:53:699 Consola/(4540:4540): Se realizo la conexion con el kernel.
+[INFO] 21:55:53:700 Consola/(4540:4540): Se enviaron los primeros datos exitosamente.
+[INFO] 21:56:54:868 Consola/(4562:4562): Tamanio codigo 88.
+[INFO] 21:56:54:869 Consola/(4562:4562): Se realizo la conexion con el kernel.
+[INFO] 21:56:54:871 Consola/(4562:4562): Se enviaron los primeros datos exitosamente.
+[INFO] 22:00:14:313 Consola/(4695:4695): Tamanio codigo 88.
+[INFO] 22:00:14:314 Consola/(4695:4695): Se realizo la conexion con el kernel.
+[INFO] 22:00:14:316 Consola/(4695:4695): Se enviaron los primeros datos exitosamente.
+[INFO] 22:04:04:97 Consola/(4896:4896): Tamanio codigo 88.
+[INFO] 22:04:04:97 Consola/(4896:4896): Se realizo la conexion con el kernel.
+[INFO] 22:04:04:100 Consola/(4896:4896): Se enviaron los primeros datos exitosamente.
+[INFO] 22:08:06:894 Consola/(4973:4973): Tamanio codigo 88.
+[INFO] 22:08:06:895 Consola/(4973:4973): Se realizo la conexion con el kernel.
+[INFO] 22:08:06:897 Consola/(4973:4973): Se enviaron los primeros datos exitosamente.
+[INFO] 00:59:03:761 Consola/(6472:6472): Tamanio codigo 40.
+[INFO] 00:59:03:762 Consola/(6472:6472): Se realizo la conexion con el kernel.
+[INFO] 00:59:03:764 Consola/(6472:6472): Se enviaron los primeros datos exitosamente.
+[INFO] 01:21:01:520 Consola/(6905:6905): Tamanio codigo 69.
+[INFO] 01:21:01:527 Consola/(6905:6905): Se realizo la conexion con el kernel.
+[INFO] 01:21:01:530 Consola/(6905:6905): Se enviaron los primeros datos exitosamente.
+[INFO] 01:27:58:539 Consola/(6969:6969): Tamanio codigo 69.
+[INFO] 01:27:58:540 Consola/(6969:6969): Se realizo la conexion con el kernel.
+[INFO] 01:27:58:540 Consola/(6969:6969): Se enviaron los primeros datos exitosamente.
+[INFO] 01:33:03:100 Consola/(7033:7033): Tamanio codigo 210.
+[INFO] 01:33:03:100 Consola/(7033:7033): Se realizo la conexion con el kernel.
+[INFO] 01:33:03:100 Consola/(7033:7033): Se enviaron los primeros datos exitosamente.
+[INFO] 01:50:12:736 Consola/(7141:7141): Tamanio codigo 210.
+[INFO] 01:50:12:737 Consola/(7141:7141): Se realizo la conexion con el kernel.
+[INFO] 01:50:12:739 Consola/(7141:7141): Se enviaron los primeros datos exitosamente.
+[INFO] 02:01:22:726 Consola/(7269:7269): Tamanio codigo 210.
+[INFO] 02:01:22:727 Consola/(7269:7269): Se realizo la conexion con el kernel.
+[INFO] 02:01:22:734 Consola/(7269:7269): Se enviaron los primeros datos exitosamente.
+[INFO] 02:04:39:462 Consola/(7317:7317): Tamanio codigo 210.
+[INFO] 02:04:39:464 Consola/(7317:7317): Se realizo la conexion con el kernel.
+[INFO] 02:04:39:466 Consola/(7317:7317): Se enviaron los primeros datos exitosamente.
+[INFO] 02:07:09:500 Consola/(7405:7405): Tamanio codigo 210.
+[INFO] 02:07:09:501 Consola/(7405:7405): Se realizo la conexion con el kernel.
+[INFO] 02:07:09:504 Consola/(7405:7405): Se enviaron los primeros datos exitosamente.
+[INFO] 02:13:37:232 Consola/(7586:7586): Tamanio codigo 210.
+[INFO] 02:13:37:233 Consola/(7586:7586): Se realizo la conexion con el kernel.
+[INFO] 02:13:37:237 Consola/(7586:7586): Se enviaron los primeros datos exitosamente.
+[INFO] 02:22:35:99 Consola/(7766:7766): Tamanio codigo 210.
+[INFO] 02:22:35:100 Consola/(7766:7766): Se realizo la conexion con el kernel.
+[INFO] 02:22:35:102 Consola/(7766:7766): Se enviaron los primeros datos exitosamente.
+[INFO] 16:32:34:492 Consola/(8185:8185): Tamanio codigo 210.
+[INFO] 16:32:34:497 Consola/(8185:8185): Se realizo la conexion con el kernel.
+[INFO] 16:32:34:500 Consola/(8185:8185): Se enviaron los primeros datos exitosamente.
+[INFO] 16:51:55:572 Consola/(8368:8368): Tamanio codigo 210.
+[INFO] 16:51:55:575 Consola/(8368:8368): Se realizo la conexion con el kernel.
+[INFO] 16:51:55:577 Consola/(8368:8368): Se enviaron los primeros datos exitosamente.
+[INFO] 16:59:07:905 Consola/(8576:8576): Tamanio codigo 210.
+[INFO] 16:59:07:906 Consola/(8576:8576): Se realizo la conexion con el kernel.
+[INFO] 16:59:07:908 Consola/(8576:8576): Se enviaron los primeros datos exitosamente.
+[INFO] 17:03:37:496 Consola/(8741:8741): Tamanio codigo 210.
+[INFO] 17:03:37:498 Consola/(8741:8741): Se realizo la conexion con el kernel.
+[INFO] 17:03:37:502 Consola/(8741:8741): Se enviaron los primeros datos exitosamente.
+[INFO] 17:26:10:803 Consola/(9094:9094): Tamanio codigo 210.
+[INFO] 17:26:10:804 Consola/(9094:9094): Se realizo la conexion con el kernel.
+[INFO] 17:26:10:808 Consola/(9094:9094): Se enviaron los primeros datos exitosamente.
+[INFO] 17:29:42:43 Consola/(9181:9181): Tamanio codigo 210.
+[INFO] 17:29:42:44 Consola/(9181:9181): Se realizo la conexion con el kernel.
+[INFO] 17:29:42:51 Consola/(9181:9181): Se enviaron los primeros datos exitosamente.
+[INFO] 17:31:31:289 Consola/(9202:9202): Tamanio codigo 49.
+[INFO] 17:31:31:290 Consola/(9202:9202): Se realizo la conexion con el kernel.
+[INFO] 17:31:31:290 Consola/(9202:9202): Se enviaron los primeros datos exitosamente.
+[INFO] 17:31:50:135 Consola/(9204:9204): Tamanio codigo 49.
+[INFO] 17:31:50:136 Consola/(9204:9204): Se realizo la conexion con el kernel.
+[INFO] 17:31:50:137 Consola/(9204:9204): Se enviaron los primeros datos exitosamente.
+[INFO] 17:31:55:467 Consola/(9205:9205): Tamanio codigo 49.
+[INFO] 17:31:55:468 Consola/(9205:9205): Se realizo la conexion con el kernel.
+[INFO] 17:31:55:468 Consola/(9205:9205): Se enviaron los primeros datos exitosamente.
+[INFO] 17:34:15:583 Consola/(9237:9237): Tamanio codigo 34.
+[INFO] 17:34:15:583 Consola/(9237:9237): Se realizo la conexion con el kernel.
+[INFO] 17:34:15:583 Consola/(9237:9237): Se enviaron los primeros datos exitosamente.
+[INFO] 17:36:22:181 Consola/(9372:9372): Tamanio codigo 112.
+[INFO] 17:36:22:182 Consola/(9372:9372): Se realizo la conexion con el kernel.
+[INFO] 17:36:22:183 Consola/(9372:9372): Se enviaron los primeros datos exitosamente.
+[INFO] 16:49:46:381 Consola/(4152:4152): Tamanio codigo 130.
+[INFO] 16:49:46:395 Consola/(4152:4152): Se realizo la conexion con el kernel.
+[INFO] 16:49:46:407 Consola/(4152:4152): Se enviaron los primeros datos exitosamente.
+[INFO] 16:51:33:905 Consola/(4214:4214): Tamanio codigo 88.
+[INFO] 16:51:33:909 Consola/(4214:4214): Se realizo la conexion con el kernel.
+[INFO] 16:51:33:914 Consola/(4214:4214): Se enviaron los primeros datos exitosamente.
+[INFO] 16:51:56:896 Consola/(4215:4215): Tamanio codigo 88.
+[INFO] 16:51:56:900 Consola/(4215:4215): Se realizo la conexion con el kernel.
+[INFO] 16:51:56:906 Consola/(4215:4215): Se enviaron los primeros datos exitosamente.
+[INFO] 16:53:41:671 Consola/(4231:4231): Tamanio codigo 88.
+[INFO] 16:53:41:674 Consola/(4231:4231): Se realizo la conexion con el kernel.
+[INFO] 16:53:41:688 Consola/(4231:4231): Se enviaron los primeros datos exitosamente.
+[INFO] 17:04:55:477 Consola/(4482:4482): Tamanio codigo 88.
+[INFO] 17:04:55:484 Consola/(4482:4482): Se realizo la conexion con el kernel.
+[INFO] 17:04:55:496 Consola/(4482:4482): Se enviaron los primeros datos exitosamente.
+[INFO] 17:05:49:469 Consola/(4547:4547): Tamanio codigo 88.
+[INFO] 17:05:49:473 Consola/(4547:4547): Se realizo la conexion con el kernel.
+[INFO] 17:05:49:488 Consola/(4547:4547): Se enviaron los primeros datos exitosamente.
+[INFO] 17:08:27:834 Consola/(4560:4560): Tamanio codigo 98.
+[INFO] 17:08:27:844 Consola/(4560:4560): Se realizo la conexion con el kernel.
+[INFO] 17:08:27:847 Consola/(4560:4560): Se enviaron los primeros datos exitosamente.
+[INFO] 17:08:46:133 Consola/(4574:4574): Tamanio codigo 98.
+[INFO] 17:08:46:137 Consola/(4574:4574): Se realizo la conexion con el kernel.
+[INFO] 17:08:46:149 Consola/(4574:4574): Se enviaron los primeros datos exitosamente.
+[INFO] 17:12:29:543 Consola/(4645:4645): Tamanio codigo 98.
+[INFO] 17:12:29:547 Consola/(4645:4645): Se realizo la conexion con el kernel.
+[INFO] 17:12:29:562 Consola/(4645:4645): Se enviaron los primeros datos exitosamente.
+[INFO] 17:13:00:988 Consola/(4710:4710): Tamanio codigo 98.
+[INFO] 17:13:00:992 Consola/(4710:4710): Se realizo la conexion con el kernel.
+[INFO] 17:13:00:4 Consola/(4710:4710): Se enviaron los primeros datos exitosamente.
+[INFO] 17:17:31:288 Consola/(4785:4785): Tamanio codigo 21.
+[INFO] 17:17:31:293 Consola/(4785:4785): Se realizo la conexion con el kernel.
+[INFO] 17:17:31:309 Consola/(4785:4785): Se enviaron los primeros datos exitosamente.
+[INFO] 17:18:17:607 Consola/(4843:4843): Tamanio codigo 21.
+[INFO] 17:18:17:613 Consola/(4843:4843): Se realizo la conexion con el kernel.
+[INFO] 17:18:17:618 Consola/(4843:4843): Se enviaron los primeros datos exitosamente.
+[INFO] 17:18:26:400 Consola/(4847:4847): Tamanio codigo 21.
+[INFO] 17:18:26:407 Consola/(4847:4847): Se realizo la conexion con el kernel.
+[INFO] 17:18:26:411 Consola/(4847:4847): Se enviaron los primeros datos exitosamente.
+[INFO] 17:18:40:793 Consola/(4858:4858): Tamanio codigo 21.
+[INFO] 17:18:40:798 Consola/(4858:4858): Se realizo la conexion con el kernel.
+[INFO] 17:18:40:809 Consola/(4858:4858): Se enviaron los primeros datos exitosamente.
+[INFO] 17:21:51:157 Consola/(4963:4963): Tamanio codigo 210.
+[INFO] 17:21:51:162 Consola/(4963:4963): Se realizo la conexion con el kernel.
+[INFO] 17:21:51:174 Consola/(4963:4963): Se enviaron los primeros datos exitosamente.
+[INFO] 17:27:16:334 Consola/(5087:5087): Tamanio codigo 210.
+[INFO] 17:27:16:338 Consola/(5087:5087): Se realizo la conexion con el kernel.
+[INFO] 17:27:16:350 Consola/(5087:5087): Se enviaron los primeros datos exitosamente.
+[INFO] 17:28:08:782 Consola/(5111:5111): Tamanio codigo 130.
+[INFO] 17:28:08:786 Consola/(5111:5111): Se realizo la conexion con el kernel.
+[INFO] 17:28:08:802 Consola/(5111:5111): Se enviaron los primeros datos exitosamente.
+[INFO] 17:28:09:129 Consola/(5113:5113): Tamanio codigo 210.
+[INFO] 17:28:09:133 Consola/(5113:5113): Se realizo la conexion con el kernel.
+[INFO] 17:28:09:136 Consola/(5113:5113): Se enviaron los primeros datos exitosamente.
+[INFO] 17:33:54:948 Consola/(5232:5232): Tamanio codigo 130.
+[INFO] 17:33:54:956 Consola/(5232:5232): Se realizo la conexion con el kernel.
+[INFO] 17:33:54:968 Consola/(5232:5232): Se enviaron los primeros datos exitosamente.
+[INFO] 17:33:55:315 Consola/(5234:5234): Tamanio codigo 210.
+[INFO] 17:33:55:318 Consola/(5234:5234): Se realizo la conexion con el kernel.
+[INFO] 17:33:55:321 Consola/(5234:5234): Se enviaron los primeros datos exitosamente.
+[INFO] 17:44:26:740 Consola/(5296:5296): Tamanio codigo 130.
+[INFO] 17:44:26:743 Consola/(5296:5296): Se realizo la conexion con el kernel.
+[INFO] 17:44:26:758 Consola/(5296:5296): Se enviaron los primeros datos exitosamente.
+[INFO] 17:51:01:293 Consola/(5519:5519): Tamanio codigo 130.
+[INFO] 17:51:01:296 Consola/(5519:5519): Se realizo la conexion con el kernel.
+[INFO] 17:51:01:308 Consola/(5519:5519): Se enviaron los primeros datos exitosamente.
+[INFO] 17:54:54:874 Consola/(5569:5569): Tamanio codigo 130.
+[INFO] 17:54:54:892 Consola/(5569:5569): Se realizo la conexion con el kernel.
+[INFO] 17:54:54:900 Consola/(5569:5569): Se enviaron los primeros datos exitosamente.
+[INFO] 17:57:59:469 Consola/(5627:5627): Tamanio codigo 130.
+[INFO] 17:57:59:480 Consola/(5627:5627): Se realizo la conexion con el kernel.
+[INFO] 17:57:59:493 Consola/(5627:5627): Se enviaron los primeros datos exitosamente.
+[INFO] 17:58:42:319 Consola/(5647:5647): Tamanio codigo 130.
+[INFO] 17:58:42:325 Consola/(5647:5647): Se realizo la conexion con el kernel.
+[INFO] 17:58:42:341 Consola/(5647:5647): Se enviaron los primeros datos exitosamente.
+[INFO] 18:07:55:601 Consola/(5802:5802): Tamanio codigo 130.
+[INFO] 18:07:55:607 Consola/(5802:5802): Se realizo la conexion con el kernel.
+[INFO] 18:07:55:620 Consola/(5802:5802): Se enviaron los primeros datos exitosamente.
+[INFO] 18:16:59:212 Consola/(6166:6166): Tamanio codigo 130.
+[INFO] 18:16:59:216 Consola/(6166:6166): Se realizo la conexion con el kernel.
+[INFO] 18:16:59:228 Consola/(6166:6166): Se enviaron los primeros datos exitosamente.
+[INFO] 18:31:17:575 Consola/(6287:6287): Tamanio codigo 130.
+[INFO] 18:31:17:580 Consola/(6287:6287): Se realizo la conexion con el kernel.
+[INFO] 18:31:17:598 Consola/(6287:6287): Se enviaron los primeros datos exitosamente.
+[INFO] 19:12:46:439 Consola/(7207:7207): Tamanio codigo 130.
+[INFO] 19:12:46:443 Consola/(7207:7207): Se realizo la conexion con el kernel.
+[INFO] 19:12:46:454 Consola/(7207:7207): Se enviaron los primeros datos exitosamente.
+[INFO] 19:15:50:396 Consola/(7223:7223): Tamanio codigo 130.
+[INFO] 19:15:50:402 Consola/(7223:7223): Se realizo la conexion con el kernel.
+[INFO] 19:15:50:414 Consola/(7223:7223): Se enviaron los primeros datos exitosamente.
+[INFO] 19:16:33:967 Consola/(7233:7233): Tamanio codigo 130.
+[INFO] 19:16:33:978 Consola/(7233:7233): Se realizo la conexion con el kernel.
+[INFO] 19:16:33:994 Consola/(7233:7233): Se enviaron los primeros datos exitosamente.
+[INFO] 19:23:08:152 Consola/(7483:7483): Tamanio codigo 130.
+[INFO] 19:23:08:161 Consola/(7483:7483): Se realizo la conexion con el kernel.
+[INFO] 19:23:08:174 Consola/(7483:7483): Se enviaron los primeros datos exitosamente.
+[INFO] 19:24:20:468 Consola/(7550:7550): Tamanio codigo 130.
+[INFO] 19:24:20:472 Consola/(7550:7550): Se realizo la conexion con el kernel.
+[INFO] 19:24:20:486 Consola/(7550:7550): Se enviaron los primeros datos exitosamente.
+[INFO] 19:28:03:134 Consola/(7578:7578): Tamanio codigo 130.
+[INFO] 19:28:03:138 Consola/(7578:7578): Se realizo la conexion con el kernel.
+[INFO] 19:28:03:157 Consola/(7578:7578): Se enviaron los primeros datos exitosamente.
+[INFO] 19:34:37:766 Consola/(7651:7651): Tamanio codigo 130.
+[INFO] 19:34:37:772 Consola/(7651:7651): Se realizo la conexion con el kernel.
+[INFO] 19:34:37:789 Consola/(7651:7651): Se enviaron los primeros datos exitosamente.
+[INFO] 19:37:52:203 Consola/(7772:7772): Tamanio codigo 130.
+[INFO] 19:37:52:207 Consola/(7772:7772): Se realizo la conexion con el kernel.
+[INFO] 19:37:52:225 Consola/(7772:7772): Se enviaron los primeros datos exitosamente.
+[INFO] 19:41:26:210 Consola/(7824:7824): Tamanio codigo 130.
+[INFO] 19:41:26:227 Consola/(7824:7824): Se realizo la conexion con el kernel.
+[INFO] 19:41:26:236 Consola/(7824:7824): Se enviaron los primeros datos exitosamente.
+[INFO] 19:41:28:119 Consola/(7826:7826): Tamanio codigo 210.
+[INFO] 19:41:28:124 Consola/(7826:7826): Se realizo la conexion con el kernel.
+[INFO] 19:41:28:126 Consola/(7826:7826): Se enviaron los primeros datos exitosamente.
+[INFO] 20:34:18:299 Consola/(2091:2091): Tamanio codigo 0.
+[INFO] 20:34:18:303 Consola/(2091:2091): Se realizo la conexion con el kernel.
+[INFO] 20:34:18:314 Consola/(2091:2091): Se enviaron los primeros datos exitosamente.
+[INFO] 20:34:33:29 Consola/(2093:2093): Tamanio codigo 0.
+[INFO] 20:34:33:37 Consola/(2093:2093): Se realizo la conexion con el kernel.
+[INFO] 20:34:33:40 Consola/(2093:2093): Se enviaron los primeros datos exitosamente.
+[INFO] 20:34:46:291 Consola/(2104:2104): Tamanio codigo 0.
+[INFO] 20:34:46:301 Consola/(2104:2104): Se realizo la conexion con el kernel.
+[INFO] 20:34:46:313 Consola/(2104:2104): Se enviaron los primeros datos exitosamente.
+[INFO] 20:35:22:991 Consola/(2168:2168): Tamanio codigo 0.
+[ERROR] 20:35:22:994 Consola/(2168:2168): FALLO en la conexion con el kernel.
+[INFO] 20:35:47:339 Consola/(2189:2189): Tamanio codigo 0.
+[INFO] 20:35:47:349 Consola/(2189:2189): Se realizo la conexion con el kernel.
+[INFO] 20:35:47:362 Consola/(2189:2189): Se enviaron los primeros datos exitosamente.
+[INFO] 20:36:58:123 Consola/(2250:2250): Tamanio codigo 76.
+[INFO] 20:36:58:148 Consola/(2250:2250): Se realizo la conexion con el kernel.
+[INFO] 20:36:58:167 Consola/(2250:2250): Se enviaron los primeros datos exitosamente.
+[INFO] 20:44:00:235 Consola/(2331:2331): Tamanio codigo 73.
+[INFO] 20:44:00:240 Consola/(2331:2331): Se realizo la conexion con el kernel.
+[INFO] 20:44:00:242 Consola/(2331:2331): Se enviaron los primeros datos exitosamente.
+[INFO] 20:44:08:759 Consola/(2342:2342): Tamanio codigo 73.
+[INFO] 20:44:08:767 Consola/(2342:2342): Se realizo la conexion con el kernel.
+[INFO] 20:44:08:784 Consola/(2342:2342): Se enviaron los primeros datos exitosamente.
+[INFO] 20:47:03:686 Consola/(2473:2473): Tamanio codigo 73.
+[INFO] 20:47:03:689 Consola/(2473:2473): Se realizo la conexion con el kernel.
+[INFO] 20:47:03:707 Consola/(2473:2473): Se enviaron los primeros datos exitosamente.
+[INFO] 20:49:08:815 Consola/(2521:2521): Tamanio codigo 73.
+[INFO] 20:49:08:823 Consola/(2521:2521): Se realizo la conexion con el kernel.
+[INFO] 20:49:08:838 Consola/(2521:2521): Se enviaron los primeros datos exitosamente.
+[INFO] 20:49:29:96 Consola/(2554:2554): Tamanio codigo 73.
+[INFO] 20:49:29:107 Consola/(2554:2554): Se realizo la conexion con el kernel.
+[INFO] 20:49:29:121 Consola/(2554:2554): Se enviaron los primeros datos exitosamente.
+[INFO] 20:54:58:696 Consola/(2862:2862): Tamanio codigo 73.
+[INFO] 20:54:58:707 Consola/(2862:2862): Se realizo la conexion con el kernel.
+[INFO] 20:54:58:718 Consola/(2862:2862): Se enviaron los primeros datos exitosamente.
+[INFO] 20:58:31:367 Consola/(3061:3061): Tamanio codigo 73.
+[INFO] 20:58:31:377 Consola/(3061:3061): Se realizo la conexion con el kernel.
+[INFO] 20:58:31:391 Consola/(3061:3061): Se enviaron los primeros datos exitosamente.
+[INFO] 21:01:43:370 Consola/(3180:3180): Tamanio codigo 73.
+[INFO] 21:01:43:379 Consola/(3180:3180): Se realizo la conexion con el kernel.
+[INFO] 21:01:43:391 Consola/(3180:3180): Se enviaron los primeros datos exitosamente.
+[INFO] 21:11:46:404 Consola/(3584:3584): Tamanio codigo 73.
+[INFO] 21:11:46:407 Consola/(3584:3584): Se realizo la conexion con el kernel.
+[INFO] 21:11:46:425 Consola/(3584:3584): Se enviaron los primeros datos exitosamente.
+[INFO] 21:14:42:677 Consola/(3681:3681): Tamanio codigo 73.
+[INFO] 21:14:42:680 Consola/(3681:3681): Se realizo la conexion con el kernel.
+[INFO] 21:14:42:696 Consola/(3681:3681): Se enviaron los primeros datos exitosamente.
+[INFO] 21:17:14:425 Consola/(3768:3768): Tamanio codigo 73.
+[INFO] 21:17:14:436 Consola/(3768:3768): Se realizo la conexion con el kernel.
+[INFO] 21:17:14:449 Consola/(3768:3768): Se enviaron los primeros datos exitosamente.
+[INFO] 21:17:52:74 Consola/(3833:3833): Tamanio codigo 73.
+[INFO] 21:17:52:85 Consola/(3833:3833): Se realizo la conexion con el kernel.
+[INFO] 21:17:52:98 Consola/(3833:3833): Se enviaron los primeros datos exitosamente.
+[INFO] 21:19:18:495 Consola/(3948:3948): Tamanio codigo 73.
+[INFO] 21:19:18:499 Consola/(3948:3948): Se realizo la conexion con el kernel.
+[INFO] 21:19:18:518 Consola/(3948:3948): Se enviaron los primeros datos exitosamente.
+[INFO] 21:22:54:100 Consola/(4143:4143): Tamanio codigo 73.
+[INFO] 21:22:54:103 Consola/(4143:4143): Se realizo la conexion con el kernel.
+[INFO] 21:22:54:123 Consola/(4143:4143): Se enviaron los primeros datos exitosamente.
+[INFO] 21:27:17:863 Consola/(4230:4230): Tamanio codigo 73.
+[INFO] 21:27:17:873 Consola/(4230:4230): Se realizo la conexion con el kernel.
+[INFO] 21:27:17:885 Consola/(4230:4230): Se enviaron los primeros datos exitosamente.
+[INFO] 21:31:25:993 Consola/(4331:4331): Tamanio codigo 73.
+[INFO] 21:31:26:7 Consola/(4331:4331): Se realizo la conexion con el kernel.
+[INFO] 21:31:26:19 Consola/(4331:4331): Se enviaron los primeros datos exitosamente.
+[INFO] 21:34:55:370 Consola/(4453:4453): Tamanio codigo 73.
+[INFO] 21:34:55:373 Consola/(4453:4453): Se realizo la conexion con el kernel.
+[INFO] 21:34:55:391 Consola/(4453:4453): Se enviaron los primeros datos exitosamente.
+[INFO] 21:37:38:601 Consola/(4613:4613): Tamanio codigo 73.
+[INFO] 21:37:38:613 Consola/(4613:4613): Se realizo la conexion con el kernel.
+[INFO] 21:37:38:625 Consola/(4613:4613): Se enviaron los primeros datos exitosamente.
+[INFO] 21:45:47:977 Consola/(4843:4843): Tamanio codigo 73.
+[INFO] 21:45:47:987 Consola/(4843:4843): Se realizo la conexion con el kernel.
+[INFO] 21:45:47:998 Consola/(4843:4843): Se enviaron los primeros datos exitosamente.
+[INFO] 21:54:16:747 Consola/(5073:5073): Tamanio codigo 73.
+[INFO] 21:54:16:759 Consola/(5073:5073): Se realizo la conexion con el kernel.
+[INFO] 21:54:16:771 Consola/(5073:5073): Se enviaron los primeros datos exitosamente.
+[INFO] 21:55:40:995 Consola/(5153:5153): Tamanio codigo 73.
+[INFO] 21:55:41:4 Consola/(5153:5153): Se realizo la conexion con el kernel.
+[INFO] 21:55:41:19 Consola/(5153:5153): Se enviaron los primeros datos exitosamente.
+[INFO] 21:58:42:807 Consola/(5295:5295): Tamanio codigo 73.
+[INFO] 21:58:42:810 Consola/(5295:5295): Se realizo la conexion con el kernel.
+[INFO] 21:58:42:826 Consola/(5295:5295): Se enviaron los primeros datos exitosamente.
+[INFO] 22:04:52:861 Consola/(5463:5463): Tamanio codigo 73.
+[INFO] 22:04:52:871 Consola/(5463:5463): Se realizo la conexion con el kernel.
+[INFO] 22:04:52:883 Consola/(5463:5463): Se enviaron los primeros datos exitosamente.
+[INFO] 22:06:34:349 Consola/(5477:5477): Tamanio codigo 73.
+[INFO] 22:06:34:352 Consola/(5477:5477): Se realizo la conexion con el kernel.
+[INFO] 22:06:34:364 Consola/(5477:5477): Se enviaron los primeros datos exitosamente.
+[INFO] 00:38:49:669 Consola/(2937:2937): Tamanio codigo 65.
+[INFO] 00:38:49:669 Consola/(2937:2937): Se realizo la conexion con el kernel.
+[INFO] 00:38:49:672 Consola/(2937:2937): Se enviaron los primeros datos exitosamente.
+[INFO] 00:39:36:982 Consola/(2939:2939): Tamanio codigo 73.
+[INFO] 00:39:36:983 Consola/(2939:2939): Se realizo la conexion con el kernel.
+[INFO] 00:39:36:984 Consola/(2939:2939): Se enviaron los primeros datos exitosamente.
+[INFO] 00:47:13:350 Consola/(2951:2951): Tamanio codigo 210.
+[INFO] 00:47:13:351 Consola/(2951:2951): Se realizo la conexion con el kernel.
+[INFO] 00:47:13:351 Consola/(2951:2951): Se enviaron los primeros datos exitosamente.
+[INFO] 00:53:56:24 Consola/(3025:3025): Tamanio codigo 65.
+[INFO] 00:53:56:29 Consola/(3025:3025): Se realizo la conexion con el kernel.
+[INFO] 00:53:56:30 Consola/(3025:3025): Se enviaron los primeros datos exitosamente.
+[INFO] 00:57:03:696 Consola/(3050:3050): Tamanio codigo 65.
+[INFO] 00:57:03:703 Consola/(3050:3050): Se realizo la conexion con el kernel.
+[INFO] 00:57:03:707 Consola/(3050:3050): Se enviaron los primeros datos exitosamente.
+[INFO] 00:57:27:914 Consola/(3062:3062): Tamanio codigo 65.
+[INFO] 00:57:27:915 Consola/(3062:3062): Se realizo la conexion con el kernel.
+[INFO] 00:57:27:917 Consola/(3062:3062): Se enviaron los primeros datos exitosamente.
+[INFO] 01:03:02:515 Consola/(3179:3179): Tamanio codigo 65.
+[INFO] 01:03:02:532 Consola/(3179:3179): Se realizo la conexion con el kernel.
+[INFO] 01:03:02:532 Consola/(3179:3179): Se enviaron los primeros datos exitosamente.
+[INFO] 01:07:25:177 Consola/(3278:3278): Tamanio codigo 65.
+[INFO] 01:07:25:179 Consola/(3278:3278): Se realizo la conexion con el kernel.
+[INFO] 01:07:25:182 Consola/(3278:3278): Se enviaron los primeros datos exitosamente.
+[INFO] 01:21:59:144 Consola/(3487:3487): Tamanio codigo 65.
+[INFO] 01:21:59:147 Consola/(3487:3487): Se realizo la conexion con el kernel.
+[INFO] 01:21:59:151 Consola/(3487:3487): Se enviaron los primeros datos exitosamente.
+[INFO] 01:22:51:166 Consola/(3536:3536): Tamanio codigo 65.
+[INFO] 01:22:51:167 Consola/(3536:3536): Se realizo la conexion con el kernel.
+[INFO] 01:22:51:170 Consola/(3536:3536): Se enviaron los primeros datos exitosamente.
+[INFO] 01:23:12:192 Consola/(3597:3597): Tamanio codigo 65.
+[INFO] 01:23:12:194 Consola/(3597:3597): Se realizo la conexion con el kernel.
+[INFO] 01:23:12:196 Consola/(3597:3597): Se enviaron los primeros datos exitosamente.
+[INFO] 01:24:46:727 Consola/(3617:3617): Tamanio codigo 65.
+[INFO] 01:24:46:730 Consola/(3617:3617): Se realizo la conexion con el kernel.
+[INFO] 01:24:46:734 Consola/(3617:3617): Se enviaron los primeros datos exitosamente.
+[INFO] 01:24:59:804 Consola/(3626:3626): Tamanio codigo 65.
+[INFO] 01:24:59:805 Consola/(3626:3626): Se realizo la conexion con el kernel.
+[INFO] 01:24:59:807 Consola/(3626:3626): Se enviaron los primeros datos exitosamente.
+[INFO] 01:25:36:630 Consola/(3648:3648): Tamanio codigo 65.
+[INFO] 01:25:36:631 Consola/(3648:3648): Se realizo la conexion con el kernel.
+[INFO] 01:25:36:634 Consola/(3648:3648): Se enviaron los primeros datos exitosamente.
+[INFO] 01:29:47:935 Consola/(3766:3766): Tamanio codigo 65.
+[INFO] 01:29:47:937 Consola/(3766:3766): Se realizo la conexion con el kernel.
+[INFO] 01:29:47:940 Consola/(3766:3766): Se enviaron los primeros datos exitosamente.
+[INFO] 01:32:54:339 Consola/(3875:3875): Tamanio codigo 65.
+[INFO] 01:32:54:339 Consola/(3875:3875): Se realizo la conexion con el kernel.
+[INFO] 01:32:54:343 Consola/(3875:3875): Se enviaron los primeros datos exitosamente.
+[INFO] 01:42:19:145 Consola/(4136:4136): Tamanio codigo 65.
+[INFO] 01:42:19:145 Consola/(4136:4136): Se realizo la conexion con el kernel.
+[INFO] 01:42:19:149 Consola/(4136:4136): Se enviaron los primeros datos exitosamente.
+[INFO] 01:43:17:721 Consola/(4306:4306): Tamanio codigo 65.
+[INFO] 01:43:17:723 Consola/(4306:4306): Se realizo la conexion con el kernel.
+[INFO] 01:43:17:726 Consola/(4306:4306): Se enviaron los primeros datos exitosamente.
+[INFO] 11:50:06:640 Consola/(4651:4651): Tamanio codigo 130.
+[INFO] 11:50:06:641 Consola/(4651:4651): Se realizo la conexion con el kernel.
+[INFO] 11:50:06:643 Consola/(4651:4651): Se enviaron los primeros datos exitosamente.
+[INFO] 11:50:07:89 Consola/(4653:4653): Tamanio codigo 210.
+[INFO] 11:50:07:90 Consola/(4653:4653): Se realizo la conexion con el kernel.
+[INFO] 11:50:07:91 Consola/(4653:4653): Se enviaron los primeros datos exitosamente.
+[INFO] 11:54:06:555 Consola/(4665:4665): Tamanio codigo 210.
+[INFO] 11:54:06:556 Consola/(4665:4665): Se realizo la conexion con el kernel.
+[INFO] 11:54:06:557 Consola/(4665:4665): Se enviaron los primeros datos exitosamente.
+[INFO] 11:54:07:925 Consola/(4667:4667): Tamanio codigo 130.
+[INFO] 11:54:07:926 Consola/(4667:4667): Se realizo la conexion con el kernel.
+[INFO] 11:54:07:926 Consola/(4667:4667): Se enviaron los primeros datos exitosamente.
+[INFO] 11:58:13:299 Consola/(4680:4680): Tamanio codigo 130.
+[INFO] 11:58:13:300 Consola/(4680:4680): Se realizo la conexion con el kernel.
+[INFO] 11:58:13:301 Consola/(4680:4680): Se enviaron los primeros datos exitosamente.
+[INFO] 12:00:30:224 Consola/(4685:4685): Tamanio codigo 210.
+[INFO] 12:00:30:226 Consola/(4685:4685): Se realizo la conexion con el kernel.
+[INFO] 12:00:30:227 Consola/(4685:4685): Se enviaron los primeros datos exitosamente.
+[INFO] 12:01:10:184 Consola/(4693:4693): Tamanio codigo 210.
+[INFO] 12:01:10:185 Consola/(4693:4693): Se realizo la conexion con el kernel.
+[INFO] 12:01:10:187 Consola/(4693:4693): Se enviaron los primeros datos exitosamente.
+[INFO] 12:04:26:616 Consola/(4700:4700): Tamanio codigo 130.
+[INFO] 12:04:26:617 Consola/(4700:4700): Se realizo la conexion con el kernel.
+[INFO] 12:04:26:617 Consola/(4700:4700): Se enviaron los primeros datos exitosamente.
+[INFO] 12:04:26:953 Consola/(4701:4701): Tamanio codigo 210.
+[INFO] 12:04:26:954 Consola/(4701:4701): Se realizo la conexion con el kernel.
+[INFO] 12:04:26:954 Consola/(4701:4701): Se enviaron los primeros datos exitosamente.
+[INFO] 12:04:42:449 Consola/(4708:4708): Tamanio codigo 210.
+[ERROR] 12:04:42:450 Consola/(4708:4708): FALLO en la conexion con el kernel.
+[INFO] 12:04:43:704 Consola/(4709:4709): Tamanio codigo 130.
+[ERROR] 12:04:43:705 Consola/(4709:4709): FALLO en la conexion con el kernel.
+[INFO] 12:04:52:298 Consola/(4711:4711): Tamanio codigo 130.
+[INFO] 12:04:52:299 Consola/(4711:4711): Se realizo la conexion con el kernel.
+[INFO] 12:04:52:300 Consola/(4711:4711): Se enviaron los primeros datos exitosamente.
+[INFO] 12:04:53:316 Consola/(4713:4713): Tamanio codigo 210.
+[INFO] 12:04:53:317 Consola/(4713:4713): Se realizo la conexion con el kernel.
+[INFO] 12:04:53:317 Consola/(4713:4713): Se enviaron los primeros datos exitosamente.
+[INFO] 12:12:29:419 Consola/(4730:4730): Tamanio codigo 210.
+[INFO] 12:12:29:419 Consola/(4730:4730): Se realizo la conexion con el kernel.
+[INFO] 12:12:29:420 Consola/(4730:4730): Se enviaron los primeros datos exitosamente.
+[INFO] 12:12:31:193 Consola/(4732:4732): Tamanio codigo 130.
+[INFO] 12:12:31:194 Consola/(4732:4732): Se realizo la conexion con el kernel.
+[INFO] 12:12:31:195 Consola/(4732:4732): Se enviaron los primeros datos exitosamente.
+[INFO] 12:13:57:320 Consola/(4738:4738): Tamanio codigo 210.
+[ERROR] 12:13:57:321 Consola/(4738:4738): FALLO en la conexion con el kernel.
+[INFO] 12:14:36:52 Consola/(4747:4747): Tamanio codigo 210.
+[INFO] 12:14:36:54 Consola/(4747:4747): Se realizo la conexion con el kernel.
+[INFO] 12:14:36:55 Consola/(4747:4747): Se enviaron los primeros datos exitosamente.
+[INFO] 12:14:39:401 Consola/(4749:4749): Tamanio codigo 130.
+[INFO] 12:14:39:402 Consola/(4749:4749): Se realizo la conexion con el kernel.
+[INFO] 12:14:39:402 Consola/(4749:4749): Se enviaron los primeros datos exitosamente.
+[INFO] 12:18:31:974 Consola/(4777:4777): Tamanio codigo 210.
+[INFO] 12:18:31:975 Consola/(4777:4777): Se realizo la conexion con el kernel.
+[INFO] 12:18:31:975 Consola/(4777:4777): Se enviaron los primeros datos exitosamente.
+[INFO] 12:19:30:924 Consola/(4894:4894): Tamanio codigo 210.
+[INFO] 12:19:30:925 Consola/(4894:4894): Se realizo la conexion con el kernel.
+[INFO] 12:19:30:926 Consola/(4894:4894): Se enviaron los primeros datos exitosamente.
+[INFO] 12:26:27:900 Consola/(4908:4908): Tamanio codigo 210.
+[INFO] 12:26:27:902 Consola/(4908:4908): Se realizo la conexion con el kernel.
+[INFO] 12:26:27:903 Consola/(4908:4908): Se enviaron los primeros datos exitosamente.
+[INFO] 12:30:27:774 Consola/(4920:4920): Tamanio codigo 210.
+[INFO] 12:30:27:775 Consola/(4920:4920): Se realizo la conexion con el kernel.
+[INFO] 12:30:27:776 Consola/(4920:4920): Se enviaron los primeros datos exitosamente.
+[INFO] 12:32:09:392 Consola/(4930:4930): Tamanio codigo 210.
+[INFO] 12:32:09:394 Consola/(4930:4930): Se realizo la conexion con el kernel.
+[INFO] 12:32:09:395 Consola/(4930:4930): Se enviaron los primeros datos exitosamente.
+[INFO] 12:38:03:245 Consola/(4949:4949): Tamanio codigo 210.
+[INFO] 12:38:03:245 Consola/(4949:4949): Se realizo la conexion con el kernel.
+[INFO] 12:38:03:246 Consola/(4949:4949): Se enviaron los primeros datos exitosamente.
+[INFO] 12:39:51:133 Consola/(4955:4955): Tamanio codigo 210.
+[INFO] 12:39:51:134 Consola/(4955:4955): Se realizo la conexion con el kernel.
+[INFO] 12:39:51:134 Consola/(4955:4955): Se enviaron los primeros datos exitosamente.
+[INFO] 12:39:55:308 Consola/(4956:4956): Tamanio codigo 130.
+[INFO] 12:39:55:309 Consola/(4956:4956): Se realizo la conexion con el kernel.
+[INFO] 12:39:55:309 Consola/(4956:4956): Se enviaron los primeros datos exitosamente.
+[INFO] 12:40:13:785 Consola/(4965:4965): Tamanio codigo 210.
+[ERROR] 12:40:13:785 Consola/(4965:4965): FALLO en la conexion con el kernel.
+[INFO] 12:41:59:859 Consola/(4990:4990): Tamanio codigo 210.
+[INFO] 12:41:59:861 Consola/(4990:4990): Se realizo la conexion con el kernel.
+[INFO] 12:41:59:861 Consola/(4990:4990): Se enviaron los primeros datos exitosamente.
+[INFO] 12:42:00:193 Consola/(4992:4992): Tamanio codigo 130.
+[INFO] 12:42:00:196 Consola/(4992:4992): Se realizo la conexion con el kernel.
+[INFO] 12:42:00:196 Consola/(4992:4992): Se enviaron los primeros datos exitosamente.
+[INFO] 12:52:22:597 Consola/(5011:5011): Tamanio codigo 210.
+[INFO] 12:52:22:598 Consola/(5011:5011): Se realizo la conexion con el kernel.
+[INFO] 12:52:22:599 Consola/(5011:5011): Se enviaron los primeros datos exitosamente.
+[INFO] 12:52:23:499 Consola/(5013:5013): Tamanio codigo 130.
+[INFO] 12:52:23:499 Consola/(5013:5013): Se realizo la conexion con el kernel.
+[INFO] 12:52:23:499 Consola/(5013:5013): Se enviaron los primeros datos exitosamente.
+[INFO] 13:01:21:410 Consola/(5038:5038): Tamanio codigo 210.
+[INFO] 13:01:21:411 Consola/(5038:5038): Se realizo la conexion con el kernel.
+[INFO] 13:01:21:411 Consola/(5038:5038): Se enviaron los primeros datos exitosamente.
+[INFO] 13:01:24:124 Consola/(5040:5040): Tamanio codigo 130.
+[INFO] 13:01:24:124 Consola/(5040:5040): Se realizo la conexion con el kernel.
+[INFO] 13:01:24:125 Consola/(5040:5040): Se enviaron los primeros datos exitosamente.
+[INFO] 13:17:14:562 Consola/(5408:5408): Tamanio codigo 210.
+[INFO] 13:17:14:562 Consola/(5408:5408): Se realizo la conexion con el kernel.
+[INFO] 13:17:14:564 Consola/(5408:5408): Se enviaron los primeros datos exitosamente.
+[INFO] 13:17:18:182 Consola/(5410:5410): Tamanio codigo 130.
+[INFO] 13:17:18:182 Consola/(5410:5410): Se realizo la conexion con el kernel.
+[INFO] 13:17:18:182 Consola/(5410:5410): Se enviaron los primeros datos exitosamente.
+[INFO] 13:30:54:395 Consola/(5651:5651): Tamanio codigo 63.
+[INFO] 13:30:54:395 Consola/(5651:5651): Se realizo la conexion con el kernel.
+[INFO] 13:30:54:396 Consola/(5651:5651): Se enviaron los primeros datos exitosamente.
+[INFO] 13:30:55:291 Consola/(5652:5652): Tamanio codigo 63.
+[INFO] 13:30:55:293 Consola/(5652:5652): Se realizo la conexion con el kernel.
+[INFO] 13:30:55:295 Consola/(5652:5652): Se enviaron los primeros datos exitosamente.
+[INFO] 13:30:56:72 Consola/(5653:5653): Tamanio codigo 63.
+[INFO] 13:30:56:75 Consola/(5653:5653): Se realizo la conexion con el kernel.
+[INFO] 13:30:56:76 Consola/(5653:5653): Se enviaron los primeros datos exitosamente.
+[INFO] 13:41:58:646 Consola/(5761:5761): Tamanio codigo 63.
+[INFO] 13:41:58:648 Consola/(5761:5761): Se realizo la conexion con el kernel.
+[INFO] 13:41:58:649 Consola/(5761:5761): Se enviaron los primeros datos exitosamente.
+[INFO] 13:41:59:604 Consola/(5764:5764): Tamanio codigo 63.
+[INFO] 13:41:59:605 Consola/(5764:5764): Se realizo la conexion con el kernel.
+[INFO] 13:41:59:606 Consola/(5764:5764): Se enviaron los primeros datos exitosamente.
+[INFO] 13:42:00:529 Consola/(5766:5766): Tamanio codigo 63.
+[INFO] 13:42:00:529 Consola/(5766:5766): Se realizo la conexion con el kernel.
+[INFO] 13:42:00:530 Consola/(5766:5766): Se enviaron los primeros datos exitosamente.
+[INFO] 13:42:40:891 Consola/(5774:5774): Tamanio codigo 63.
+[INFO] 13:42:40:891 Consola/(5774:5774): Se realizo la conexion con el kernel.
+[INFO] 13:42:40:893 Consola/(5774:5774): Se enviaron los primeros datos exitosamente.
+[INFO] 13:43:12:17 Consola/(5787:5787): Tamanio codigo 63.
+[INFO] 13:43:12:18 Consola/(5787:5787): Se realizo la conexion con el kernel.
+[INFO] 13:43:12:18 Consola/(5787:5787): Se enviaron los primeros datos exitosamente.
+[INFO] 13:43:12:523 Consola/(5788:5788): Tamanio codigo 63.
+[INFO] 13:43:12:524 Consola/(5788:5788): Se realizo la conexion con el kernel.
+[INFO] 13:43:12:525 Consola/(5788:5788): Se enviaron los primeros datos exitosamente.
+[INFO] 13:43:13:98 Consola/(5789:5789): Tamanio codigo 63.
+[INFO] 13:43:13:98 Consola/(5789:5789): Se realizo la conexion con el kernel.
+[INFO] 13:43:13:98 Consola/(5789:5789): Se enviaron los primeros datos exitosamente.
+[INFO] 13:50:11:38 Consola/(5938:5938): Tamanio codigo 63.
+[INFO] 13:50:11:39 Consola/(5938:5938): Se realizo la conexion con el kernel.
+[INFO] 13:50:11:41 Consola/(5938:5938): Se enviaron los primeros datos exitosamente.
+[INFO] 13:50:11:830 Consola/(5940:5940): Tamanio codigo 63.
+[INFO] 13:50:11:832 Consola/(5940:5940): Se realizo la conexion con el kernel.
+[INFO] 13:50:11:832 Consola/(5940:5940): Se enviaron los primeros datos exitosamente.
+[INFO] 13:50:15:279 Consola/(5942:5942): Tamanio codigo 63.
+[INFO] 13:50:15:280 Consola/(5942:5942): Se realizo la conexion con el kernel.
+[INFO] 13:50:15:280 Consola/(5942:5942): Se enviaron los primeros datos exitosamente.
+[INFO] 14:05:08:667 Consola/(2338:2338): Tamanio codigo 63.
+[INFO] 14:05:08:675 Consola/(2338:2338): Se realizo la conexion con el kernel.
+[INFO] 14:05:08:679 Consola/(2338:2338): Se enviaron los primeros datos exitosamente.
+[INFO] 14:05:09:196 Consola/(2340:2340): Tamanio codigo 63.
+[INFO] 14:05:09:196 Consola/(2340:2340): Se realizo la conexion con el kernel.
+[INFO] 14:05:09:196 Consola/(2340:2340): Se enviaron los primeros datos exitosamente.
+[INFO] 14:05:09:752 Consola/(2341:2341): Tamanio codigo 63.
+[INFO] 14:05:09:756 Consola/(2341:2341): Se realizo la conexion con el kernel.
+[INFO] 14:05:09:756 Consola/(2341:2341): Se enviaron los primeros datos exitosamente.
+[INFO] 14:14:35:655 Consola/(2347:2347): Tamanio codigo 63.
+[INFO] 14:14:35:655 Consola/(2347:2347): Se realizo la conexion con el kernel.
+[INFO] 14:14:35:655 Consola/(2347:2347): Se enviaron los primeros datos exitosamente.
+[INFO] 14:14:46:980 Consola/(2353:2353): Tamanio codigo 63.
+[INFO] 14:14:46:980 Consola/(2353:2353): Se realizo la conexion con el kernel.
+[INFO] 14:14:46:980 Consola/(2353:2353): Se enviaron los primeros datos exitosamente.
+[INFO] 14:28:30:651 Consola/(2468:2468): Tamanio codigo 63.
+[INFO] 14:28:30:655 Consola/(2468:2468): Se realizo la conexion con el kernel.
+[INFO] 14:28:30:655 Consola/(2468:2468): Se enviaron los primeros datos exitosamente.
+[INFO] 14:28:48:116 Consola/(2473:2473): Tamanio codigo 63.
+[INFO] 14:28:48:120 Consola/(2473:2473): Se realizo la conexion con el kernel.
+[INFO] 14:28:48:120 Consola/(2473:2473): Se enviaron los primeros datos exitosamente.
+[INFO] 14:33:17:673 Consola/(2491:2491): Tamanio codigo 63.
+[INFO] 14:33:17:673 Consola/(2491:2491): Se realizo la conexion con el kernel.
+[INFO] 14:33:17:673 Consola/(2491:2491): Se enviaron los primeros datos exitosamente.
+[INFO] 14:36:50:750 Consola/(2499:2499): Tamanio codigo 63.
+[INFO] 14:36:50:754 Consola/(2499:2499): Se realizo la conexion con el kernel.
+[INFO] 14:36:50:754 Consola/(2499:2499): Se enviaron los primeros datos exitosamente.
+[INFO] 14:36:51:362 Consola/(2501:2501): Tamanio codigo 63.
+[INFO] 14:36:51:362 Consola/(2501:2501): Se realizo la conexion con el kernel.
+[INFO] 14:36:51:366 Consola/(2501:2501): Se enviaron los primeros datos exitosamente.
+[INFO] 14:36:51:886 Consola/(2502:2502): Tamanio codigo 63.
+[INFO] 14:36:51:886 Consola/(2502:2502): Se realizo la conexion con el kernel.
+[INFO] 14:36:51:886 Consola/(2502:2502): Se enviaron los primeros datos exitosamente.
+[INFO] 14:55:11:387 Consola/(2548:2548): Tamanio codigo 63.
+[INFO] 14:55:11:387 Consola/(2548:2548): Se realizo la conexion con el kernel.
+[INFO] 14:55:11:391 Consola/(2548:2548): Se enviaron los primeros datos exitosamente.
+[INFO] 14:56:10:307 Consola/(2569:2569): Tamanio codigo 63.
+[INFO] 14:56:10:307 Consola/(2569:2569): Se realizo la conexion con el kernel.
+[INFO] 14:56:10:307 Consola/(2569:2569): Se enviaron los primeros datos exitosamente.
+[INFO] 14:56:11:211 Consola/(2571:2571): Tamanio codigo 63.
+[INFO] 14:56:11:211 Consola/(2571:2571): Se realizo la conexion con el kernel.
+[INFO] 14:56:11:215 Consola/(2571:2571): Se enviaron los primeros datos exitosamente.
+[INFO] 14:56:12:475 Consola/(2572:2572): Tamanio codigo 63.
+[INFO] 14:56:12:487 Consola/(2572:2572): Se realizo la conexion con el kernel.
+[INFO] 14:56:12:487 Consola/(2572:2572): Se enviaron los primeros datos exitosamente.
+[INFO] 15:01:19:878 Consola/(2587:2587): Tamanio codigo 63.
+[INFO] 15:01:19:878 Consola/(2587:2587): Se realizo la conexion con el kernel.
+[INFO] 15:01:19:878 Consola/(2587:2587): Se enviaron los primeros datos exitosamente.
+[INFO] 15:01:20:546 Consola/(2588:2588): Tamanio codigo 63.
+[INFO] 15:01:20:550 Consola/(2588:2588): Se realizo la conexion con el kernel.
+[INFO] 15:01:20:550 Consola/(2588:2588): Se enviaron los primeros datos exitosamente.
+[INFO] 15:01:21:442 Consola/(2589:2589): Tamanio codigo 63.
+[INFO] 15:01:21:442 Consola/(2589:2589): Se realizo la conexion con el kernel.
+[INFO] 15:01:21:442 Consola/(2589:2589): Se enviaron los primeros datos exitosamente.
+[INFO] 15:07:10:252 Consola/(2610:2610): Tamanio codigo 63.
+[INFO] 15:07:10:252 Consola/(2610:2610): Se realizo la conexion con el kernel.
+[INFO] 15:07:10:252 Consola/(2610:2610): Se enviaron los primeros datos exitosamente.
+[INFO] 15:07:12:308 Consola/(2611:2611): Tamanio codigo 63.
+[INFO] 15:07:12:308 Consola/(2611:2611): Se realizo la conexion con el kernel.
+[INFO] 15:07:12:308 Consola/(2611:2611): Se enviaron los primeros datos exitosamente.
+[INFO] 15:07:14:592 Consola/(2612:2612): Tamanio codigo 63.
+[INFO] 15:07:14:592 Consola/(2612:2612): Se realizo la conexion con el kernel.
+[INFO] 15:07:14:592 Consola/(2612:2612): Se enviaron los primeros datos exitosamente.
+[INFO] 15:13:24:691 Consola/(2641:2641): Tamanio codigo 63.
+[INFO] 15:13:24:691 Consola/(2641:2641): Se realizo la conexion con el kernel.
+[INFO] 15:13:24:691 Consola/(2641:2641): Se enviaron los primeros datos exitosamente.
+[INFO] 15:13:26:436 Consola/(2642:2642): Tamanio codigo 63.
+[ERROR] 15:13:26:436 Consola/(2642:2642): FALLO en la conexion con el kernel.
+[INFO] 15:15:11:862 Consola/(2650:2650): Tamanio codigo 63.
+[INFO] 15:15:11:862 Consola/(2650:2650): Se realizo la conexion con el kernel.
+[INFO] 15:15:11:862 Consola/(2650:2650): Se enviaron los primeros datos exitosamente.
+[INFO] 15:31:52:869 Consola/(2874:2874): Tamanio codigo 63.
+[INFO] 15:31:52:873 Consola/(2874:2874): Se realizo la conexion con el kernel.
+[INFO] 15:31:52:873 Consola/(2874:2874): Se enviaron los primeros datos exitosamente.
+[INFO] 15:31:54:185 Consola/(2876:2876): Tamanio codigo 63.
+[INFO] 15:31:54:185 Consola/(2876:2876): Se realizo la conexion con el kernel.
+[INFO] 15:31:54:185 Consola/(2876:2876): Se enviaron los primeros datos exitosamente.
+[INFO] 15:31:56:389 Consola/(2877:2877): Tamanio codigo 63.
+[INFO] 15:31:56:389 Consola/(2877:2877): Se realizo la conexion con el kernel.
+[INFO] 15:31:56:393 Consola/(2877:2877): Se enviaron los primeros datos exitosamente.
+[INFO] 15:47:15:346 Consola/(3207:3207): Tamanio codigo 63.
+[INFO] 15:47:15:350 Consola/(3207:3207): Se realizo la conexion con el kernel.
+[INFO] 15:47:15:350 Consola/(3207:3207): Se enviaron los primeros datos exitosamente.
+[INFO] 15:47:17:763 Consola/(3209:3209): Tamanio codigo 63.
+[INFO] 15:47:17:763 Consola/(3209:3209): Se realizo la conexion con el kernel.
+[INFO] 15:47:17:763 Consola/(3209:3209): Se enviaron los primeros datos exitosamente.
+[INFO] 15:47:21:147 Consola/(3210:3210): Tamanio codigo 63.
+[INFO] 15:47:21:151 Consola/(3210:3210): Se realizo la conexion con el kernel.
+[INFO] 15:47:21:151 Consola/(3210:3210): Se enviaron los primeros datos exitosamente.
+[INFO] 15:49:37:939 Consola/(3333:3333): Tamanio codigo 63.
+[INFO] 15:49:37:939 Consola/(3333:3333): Se realizo la conexion con el kernel.
+[INFO] 15:49:37:943 Consola/(3333:3333): Se enviaron los primeros datos exitosamente.
+[INFO] 15:49:39:503 Consola/(3335:3335): Tamanio codigo 63.
+[INFO] 15:49:39:507 Consola/(3335:3335): Se realizo la conexion con el kernel.
+[INFO] 15:49:39:507 Consola/(3335:3335): Se enviaron los primeros datos exitosamente.
+[INFO] 15:49:41:287 Consola/(3336:3336): Tamanio codigo 63.
+[INFO] 15:49:41:287 Consola/(3336:3336): Se realizo la conexion con el kernel.
+[INFO] 15:49:41:291 Consola/(3336:3336): Se enviaron los primeros datos exitosamente.
+[INFO] 15:50:47:976 Consola/(3343:3343): Tamanio codigo 63.
+[INFO] 15:50:47:976 Consola/(3343:3343): Se realizo la conexion con el kernel.
+[INFO] 15:50:47:980 Consola/(3343:3343): Se enviaron los primeros datos exitosamente.
+[INFO] 15:50:49:444 Consola/(3345:3345): Tamanio codigo 63.
+[INFO] 15:50:49:448 Consola/(3345:3345): Se realizo la conexion con el kernel.
+[INFO] 15:50:49:448 Consola/(3345:3345): Se enviaron los primeros datos exitosamente.
+[INFO] 15:50:51:216 Consola/(3346:3346): Tamanio codigo 63.
+[INFO] 15:50:51:228 Consola/(3346:3346): Se realizo la conexion con el kernel.
+[INFO] 15:50:51:228 Consola/(3346:3346): Se enviaron los primeros datos exitosamente.
+[INFO] 15:52:25:326 Consola/(3357:3357): Tamanio codigo 63.
+[INFO] 15:52:25:326 Consola/(3357:3357): Se realizo la conexion con el kernel.
+[INFO] 15:52:25:326 Consola/(3357:3357): Se enviaron los primeros datos exitosamente.
+[INFO] 15:52:27:266 Consola/(3359:3359): Tamanio codigo 63.
+[INFO] 15:52:27:266 Consola/(3359:3359): Se realizo la conexion con el kernel.
+[INFO] 15:52:27:266 Consola/(3359:3359): Se enviaron los primeros datos exitosamente.
+[INFO] 15:52:29:302 Consola/(3360:3360): Tamanio codigo 63.
+[INFO] 15:52:29:306 Consola/(3360:3360): Se realizo la conexion con el kernel.
+[INFO] 15:52:29:306 Consola/(3360:3360): Se enviaron los primeros datos exitosamente.
+[INFO] 15:57:32:561 Consola/(3373:3373): Tamanio codigo 63.
+[INFO] 15:57:32:561 Consola/(3373:3373): Se realizo la conexion con el kernel.
+[INFO] 15:57:32:561 Consola/(3373:3373): Se enviaron los primeros datos exitosamente.
+[INFO] 15:57:33:661 Consola/(3375:3375): Tamanio codigo 63.
+[INFO] 15:57:33:661 Consola/(3375:3375): Se realizo la conexion con el kernel.
+[INFO] 15:57:33:661 Consola/(3375:3375): Se enviaron los primeros datos exitosamente.
+[INFO] 15:57:34:905 Consola/(3377:3377): Tamanio codigo 63.
+[INFO] 15:57:34:905 Consola/(3377:3377): Se realizo la conexion con el kernel.
+[INFO] 15:57:34:905 Consola/(3377:3377): Se enviaron los primeros datos exitosamente.
+[INFO] 15:58:09:171 Consola/(3383:3383): Tamanio codigo 63.
+[INFO] 15:58:09:175 Consola/(3383:3383): Se realizo la conexion con el kernel.
+[INFO] 15:58:09:175 Consola/(3383:3383): Se enviaron los primeros datos exitosamente.
+[INFO] 15:58:10:803 Consola/(3385:3385): Tamanio codigo 63.
+[INFO] 15:58:10:803 Consola/(3385:3385): Se realizo la conexion con el kernel.
+[INFO] 15:58:10:803 Consola/(3385:3385): Se enviaron los primeros datos exitosamente.
+[INFO] 15:58:12:59 Consola/(3386:3386): Tamanio codigo 63.
+[INFO] 15:58:12:59 Consola/(3386:3386): Se realizo la conexion con el kernel.
+[INFO] 15:58:12:59 Consola/(3386:3386): Se enviaron los primeros datos exitosamente.
+[INFO] 15:58:56:114 Consola/(3506:3506): Tamanio codigo 63.
+[INFO] 15:58:56:114 Consola/(3506:3506): Se realizo la conexion con el kernel.
+[INFO] 15:58:56:114 Consola/(3506:3506): Se enviaron los primeros datos exitosamente.
+[INFO] 15:59:20:204 Consola/(3618:3618): Tamanio codigo 63.
+[INFO] 15:59:20:204 Consola/(3618:3618): Se realizo la conexion con el kernel.
+[INFO] 15:59:20:204 Consola/(3618:3618): Se enviaron los primeros datos exitosamente.
+[INFO] 15:59:51:506 Consola/(3730:3730): Tamanio codigo 63.
+[INFO] 15:59:51:510 Consola/(3730:3730): Se realizo la conexion con el kernel.
+[INFO] 15:59:51:510 Consola/(3730:3730): Se enviaron los primeros datos exitosamente.
+[INFO] 16:03:53:409 Consola/(3826:3826): Tamanio codigo 63.
+[INFO] 16:03:53:409 Consola/(3826:3826): Se realizo la conexion con el kernel.
+[INFO] 16:03:53:409 Consola/(3826:3826): Se enviaron los primeros datos exitosamente.
+[INFO] 16:03:55:981 Consola/(3827:3827): Tamanio codigo 63.
+[INFO] 16:03:55:981 Consola/(3827:3827): Se realizo la conexion con el kernel.
+[INFO] 16:03:55:985 Consola/(3827:3827): Se enviaron los primeros datos exitosamente.
+[INFO] 16:03:57:661 Consola/(3828:3828): Tamanio codigo 63.
+[INFO] 16:03:57:665 Consola/(3828:3828): Se realizo la conexion con el kernel.
+[INFO] 16:03:57:665 Consola/(3828:3828): Se enviaron los primeros datos exitosamente.
+[INFO] 16:08:08:181 Consola/(4148:4148): Tamanio codigo 63.
+[INFO] 16:08:08:181 Consola/(4148:4148): Se realizo la conexion con el kernel.
+[INFO] 16:08:08:181 Consola/(4148:4148): Se enviaron los primeros datos exitosamente.
+[INFO] 16:08:09:365 Consola/(4149:4149): Tamanio codigo 63.
+[INFO] 16:08:09:365 Consola/(4149:4149): Se realizo la conexion con el kernel.
+[INFO] 16:08:09:365 Consola/(4149:4149): Se enviaron los primeros datos exitosamente.
+[INFO] 16:08:10:961 Consola/(4150:4150): Tamanio codigo 63.
+[INFO] 16:08:10:965 Consola/(4150:4150): Se realizo la conexion con el kernel.
+[INFO] 16:08:10:965 Consola/(4150:4150): Se enviaron los primeros datos exitosamente.

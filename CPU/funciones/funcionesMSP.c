@@ -4,6 +4,14 @@
 /*Funciones MSP*/
 
 t_datosAEnviar* MSP_SolicitarMemoria(int PID,int direccionALeer, int cantidad, int codOperacion){
+	if(KMactual == 1){
+		PID = PIDkm;
+	}
+
+	if(noPIDkm == -1){
+		PID = PIDactual;
+	}
+
 	char * datos = malloc(3 * sizeof (int));
 	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &direccionALeer, sizeof(int));
@@ -29,10 +37,14 @@ t_datosAEnviar* MSP_SolicitarProximaInstruccionAEJecutar(int PID, int punteroIns
 	return respuesta;
 }
 
-t_datosAEnviar* MSP_SolicitarParametros(int punteroInstruccion, int tamanioParametros){
+t_datosAEnviar* MSP_SolicitarParametros(int PID,int punteroInstruccion, int tamanioParametros){
+	if(KMactual == 1){
+		PID = PIDkm;
+	}
+
 	int tamanio = tamanioParametros;
 	char * datos = malloc(3 * sizeof (int));
-	memcpy(datos, &PIDactual, sizeof(int));
+	memcpy(datos, &PID, sizeof(int));
 	memcpy(datos + sizeof(int), &punteroInstruccion, sizeof(int)); //ese puntero instruccion es el punteroInstruccionActual + 4
 	memcpy(datos + sizeof(int) + sizeof(int), &tamanio, sizeof(int));
 	t_datosAEnviar * paquete = crear_paquete(solicitarMemoria, (void*) datos, 3 * sizeof(int));

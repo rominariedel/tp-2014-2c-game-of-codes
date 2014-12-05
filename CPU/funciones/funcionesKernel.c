@@ -44,9 +44,7 @@ int KERNEL_IngreseNumeroPorConsola(int PID){
 
 t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 	//codOperacion = solicitarCadena
-	printf("TAMANIO MAXIMO = %d \n", tamanioMaxCadena);
 	char codigo = 'C';
-	printf("CODIGO: %c \n", codigo);
 	char * datos = malloc(2* sizeof (int) + sizeof(char));
 	memcpy(datos, &tamanioMaxCadena, sizeof(int));
 	memcpy(datos + sizeof(int),&PIDactual, sizeof(int));
@@ -59,12 +57,13 @@ t_datosAEnviar* KERNEL_IngreseCadenaPorConsola(int PID, int tamanioMaxCadena){
 	return respuesta;
 }
 
-void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
+void KERNEL_MostrarNumeroPorConsola(int PID, int nro){            //TODO PREGUNTAR ROMI SI VA PID TID O NOOOOOOOOO!!!!!!
 	char * toia = string_itoa(nro);
-	char * datos = malloc(sizeof (int) + string_length(toia));
-	memcpy(datos, &PIDactual, sizeof(int));
-	memcpy(datos + sizeof(int), toia, string_length(toia));
-	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(toia) + sizeof(int));
+	char * datos = malloc(sizeof (int) *2 + string_length(toia));
+	memcpy(datos,&PIDactual, sizeof(int));
+	memcpy(datos+sizeof(int), &TIDactual, sizeof(int));
+	memcpy(datos + sizeof(int)*2, toia, string_length(toia));
+	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(toia) +2* sizeof(int));
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	free(paquete);
@@ -72,10 +71,14 @@ void KERNEL_MostrarNumeroPorConsola(int PID, int nro){
 
 
 void KERNEL_MostrarCadenaPorConsola(int PID, char* cadena){
-	char * datos = malloc(sizeof (int) + string_length(cadena));
+
+	printf("\n\n\n\n CADENAAAAAAAAAAAAA: %s\n\n\n\n",cadena);
+	char * datos = malloc(sizeof (int) * 2 + string_length(cadena) + 1);
 	memcpy(datos, &PIDactual, sizeof(int));
-	memcpy(datos + sizeof(int), cadena, string_length(cadena));
-	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(cadena) + sizeof(int));
+	memcpy(datos+sizeof(int), &TIDactual, sizeof(int));
+	memcpy(datos + sizeof(int)*2, cadena, string_length(cadena));
+	datos[sizeof (int) * 2 + string_length(cadena)] = '\0';
+	t_datosAEnviar* paquete = crear_paquete(salida_estandar, (void*) datos,string_length(cadena) + 2* sizeof(int) + 1);
 	enviar_datos(socketKernel,paquete);
 	free(datos);
 	free(paquete);
@@ -103,6 +106,7 @@ t_TCB* KERNEL_CrearNuevoHilo(t_TCB* TCB){
 
 	t_TCB* hiloNuevo = (t_TCB *) buffer;
 */
+
 	free(paquete);
 	free(respuesta);
 	free(respuesta->datos);
@@ -151,13 +155,14 @@ void KERNEL_CrearHilo(t_TCB * TCB, int registro){
 	t_TCB* hiloNuevo = KERNEL_CrearNuevoHilo(TCB);
 	A = hiloNuevo->TID;
 	hiloNuevo->P = registro;
-	printf("TAMANIO CREAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %d",TCB->S - TCB->X );
+	printf("\n TAMANIO CREA: %d \n",TCB->S - TCB->X );
+	noPIDkm = -1;
 	t_datosAEnviar* respuesta = MSP_SolicitarMemoria(TCB->PID, TCB->X, TCB->S - TCB->X, solicitarMemoria);
 	int status= procesarRespuesta(respuesta);
 	if(status < 0){
 		finalizarEjecucion = -1;
 	}else{
-		printf("STACK A COPIAR TAMANIO %d", cursorStackActual - baseStackActual);
+		printf("STACK A COPIAR TAMANIO %d \n", cursorStackActual - baseStackActual);
 		void* stackACopiar = malloc(cursorStackActual - baseStackActual);
 		memcpy(stackACopiar, respuesta->datos , cursorStackActual - baseStackActual);
 		MSP_EscribirEnMemoria(hiloNuevo->PID,hiloNuevo->X, stackACopiar, TCB->S - TCB->X);

@@ -1,6 +1,73 @@
 #!/bin/bash
+cd ..
+git clone https://github.com/sisoputnfrba/so-commons-library
 
-cd ../so-commons-library/src
+
+cd tp-2014-2c-game-of-codes/so-ensamblador
+git clone https://github.com/sisoputnfrba/scripts-eso
+
+make all
+cd build
+
+./so-ensamblador -o arithmetics.bc ../EjemplosESO/arithmetics.txt
+./so-ensamblador -o bigStack.bc ../EjemplosESO/bigStack.txt
+./so-ensamblador -o cpyloop.bc ../EjemplosESO/cpyloop.txt
+./so-ensamblador -o data.bc ../EjemplosESO/data.txt
+./so-ensamblador -o flow.bc ../EjemplosESO/flow.txt
+./so-ensamblador -o getMemory.bc ../EjemplosESO/getMemory.txt
+./so-ensamblador -o labels.bc ../EjemplosESO/labels.txt
+./so-ensamblador -o load.bc ../EjemplosESO/load.txt
+./so-ensamblador -o logic.bc ../EjemplosESO/logic.txt
+./so-ensamblador -o segFault.bc ../EjemplosESO/segFault.txt
+./so-ensamblador -o shifter.bc ../EjemplosESO/shifter.txt
+./so-ensamblador -o stack.bc ../EjemplosESO/stack.txt
+./so-ensamblador -o sysCalls.bc ../EjemplosESO/systemCalls.txt
+./so-ensamblador -o free.bc ../EjemplosESO/systemCalls/build.txt
+./so-ensamblador -o hilos.bc ../EjemplosESO/systemCalls/hilos.txt
+./so-ensamblador -o malloc.bc ../EjemplosESO/systemCalls/malloc.txt
+./so-ensamblador -o semaphores.bc ../EjemplosESO/systemCalls/semaphores.txt
+./so-ensamblador -o STDIN.bc ../EjemplosESO/systemCalls/STDIN.txt
+./so-ensamblador -o STDOUT.bc ../EjemplosESO/systemCalls/STDOUT.txt
+
+./so-ensamblador -o prueba_error.bc ../scripts-eso/prueba_error.txt
+./so-ensamblador -o prueba_hilos.bc ../scripts-eso/prueba_hilos.txt
+./so-ensamblador -o prueba_forES.bc ../scripts-eso/prueba_forES.txt
+./so-ensamblador -o prueba_suma_alocada.bc ../scripts-eso/prueba_suma_alocada.txt
+./so-ensamblador -o prueba_suma.bc ../scripts-eso/prueba_suma.txt
+./so-ensamblador -o prueba_consumidor.bc ../scripts-eso/prueba_prodcons/prueba_consumidor.txt
+./so-ensamblador -o prueba_productor.bc ../scripts-eso/prueba_prodcons/prueba_productor.txt
+
+mv prueba_error.bc ../../Consola/Default
+mv prueba_hilos.bc ../../Consola/Default
+mv prueba_forES.bc ../../Consola/Default
+mv prueba_suma_alocada.bc ../../Consola/Default
+mv prueba_suma.bc ../../Consola/Default
+mv prueba_consumidor.bc ../../Consola/Default
+mv prueba_productor.bc ../../Consola/Default
+
+mv arithmetics.bc ../../Consola/Default
+mv bigStack.bc ../../Consola/Default
+mv cpyloop.bc ../../Consola/Default
+mv data.bc ../../Consola/Default
+mv flow.bc ../../Consola/Default
+mv getMemory.bc ../../Consola/Default
+mv labels.bc ../../Consola/Default
+mv load.bc ../../Consola/Default
+mv logic.bc ../../Consola/Default
+mv segFault.bc ../../Consola/Default
+mv shifter.bc ../../Consola/Default
+mv stack.bc ../../Consola/Default
+mv free.bc ../../Consola/Default
+mv hilos.bc ../../Consola/Default
+mv malloc.bc ../../Consola/Default
+mv semaphores.bc ../../Consola/Default
+mv STDIN.bc ../../Consola/Default
+mv STDOUT.bc ../../Consola/Default
+
+mv sysCalls.bc ../../Kernel
+
+
+cd ../../../so-commons-library/src
 make all
 make install
 
@@ -11,3 +78,4 @@ make all
 cp libSockets.so /usr/lib
 
 cd ../../
+

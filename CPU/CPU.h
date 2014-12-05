@@ -8,14 +8,17 @@
 #ifndef CPU_H_
 #define CPU_H_
 
-
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/string.h>
+#include <commons/collections/list.h>
+#include <commons/config.h>
 #include <pthread.h>
 #include <time.h>
 #include <stdint.h>
-#include <commons/config.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -32,11 +35,16 @@
 #include "funciones/funcionesMSP.h"
 #include "funciones/funcionesKernel.h"
 #include "funciones/instruccionesESO.h"
-#include "cpu.h"
+#include "logsObligatorios.h"
 
 
 
 /* Estructuras */
+
+typedef struct{
+	t_TCB* TCB;
+	t_cola cola;
+}hilo_t;
 
 
 /*Datos actuales*/
@@ -48,6 +56,7 @@ int tamanioSegmentoCodigoActual;
 int punteroInstruccionActual;
 int baseStackActual;
 int cursorStackActual;
+int PIDkm;
 
 /*Registros CPU*/
 int A;
@@ -73,6 +82,7 @@ t_log* LOGCPU;
 int finalizarEjecucion;
 int ejecutoInterrupcion;
 int aumentoPuntero;
+int noPIDkm;
 
 //int errorOperacionesConMemoria;
 //int errorMemoria;
@@ -96,15 +106,6 @@ int interpretarYEjecutarInstruccion(char* instruccion);
 char* deserializarPaqueteMSP(t_datosAEnviar* paqueteMSP);
 char* deserializarPaqueteKernel(t_datosAEnviar* paqueteKernel);
 void abortar(int codOperacion);
-
-typedef enum { NEW, READY, EXEC, BLOCK, EXIT } t_cola;
-
-typedef struct hilo {
-	t_TCB * tcb;
-	t_cola cola;
-}hilo_t;
-
-
 
 enum operaciones{
 	operacionExitosa = 1,

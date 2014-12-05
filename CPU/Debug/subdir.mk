@@ -3,19 +3,17 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-O_SRCS += \
-../dictionary.o \
-../list.o \
-../queue.o 
-
 C_SRCS += \
-../CPU.c 
+../CPU.c \
+../logsObligatorios.c 
 
 OBJS += \
-./CPU.o 
+./CPU.o \
+./logsObligatorios.o 
 
 C_DEPS += \
-./CPU.d 
+./CPU.d \
+./logsObligatorios.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

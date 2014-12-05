@@ -8,19 +8,14 @@
 #ifndef AUXILIARES_H_
 #define AUXILIARES_H_
 
-#include <stdio.h>
 #include <stddef.h>
 #include <commons/config.h>
 #include <sockets.h>
 #include <commons/collections/queue.h>
-#include <commons/collections/list.h>
 #include <sys/select.h>
-#include <commons/string.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <commons/collections/dictionary.h>
-#include <commons/log.h>
-#include "../panel/panel.h"
 #include "../panel/kernel.h"
 
 /*          ESTRUCTURAS          */
@@ -84,6 +79,16 @@ typedef struct joins {
 	int tid_a_esperar;
 } struct_join;
 
+typedef struct malc {
+	int PID;
+	int TID;
+	int base_segmento;
+}malc_struct;
+
+
+
+
+
 /*      SEMÁFOROS      */
 
 sem_t sem_procesoListo;
@@ -116,7 +121,7 @@ void planificador();
 struct_consola * obtener_consolaConectada(int);
 struct_consola * obtener_consolaAsociada(int);
 struct_bloqueado * obtener_bloqueado(int);
-void producir_salida_estandar(int, char*);
+void producir_salida_estandar(int, int, char*);
 void producir_entrada_estandar(int, char, int, int);
 void devolver_entrada_aCPU(int);
 void realizar_join(TCB_struct *, int);
@@ -132,6 +137,9 @@ void loguear(t_cola cola, TCB_struct * tcb);
 hilo_t * obtener_hilo_asociado(TCB_struct * tcb);
 void copiar_tcb(TCB_struct * tcb_destino, TCB_struct * tcb_origen);
 void destruir_segmento_MSP(int, int);
+void hizo_malloc(int pid, int tid, int base_segmento);
+void hizo_free(int pid, int tid, int base_segmento);
+void liberar_mallocs(int);
 
 enum mensajes {
 
@@ -165,6 +173,8 @@ enum mensajes {
 	bloquear = 23,
 	despertar = 24,
 	planificar_nuevo_hilo = 28,
+	hago_malloc = 33,
+	hago_free = 34,
 
 	//-->MSP
 	operacion_exitosa = 1, //Esto  me lo va a mandar si destruyo bien los segmentos y con todas las otras operaciones

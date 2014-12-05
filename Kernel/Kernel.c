@@ -5,14 +5,20 @@
  *      Author: utnso
  */
 
-#include "auxiliares/auxiliares.h"
 #include "auxiliares/variables_globales.h"
+#include <signal.h>
 
 #define pid_KM_boot 0
 
-/*VARIABLES GLOBALES*/
+void despedida(){
+	printf("\n\nSE HA INTERRUMPIDO LA EJECUCION DEL KERNEL.\n\n");
+	free_listas();
+	raise(SIGTERM);
+}
 
 int main(int argc, char ** argv) {
+
+	signal(SIGINT, despedida);
 
 	printf("\n -------------  KERNEL  -------------\n");
 	printf("    Iniciando...\n");
@@ -28,8 +34,6 @@ int main(int argc, char ** argv) {
 	pthread_create(&thread_dispatcher, NULL, (void*) &dispatcher, NULL );
 	pthread_join(thread_boot, NULL );
 	pthread_join(thread_dispatcher, NULL );
-	config_destroy(configuracion);
-	free_listas();
 	return 0;
 }
 
@@ -70,7 +74,7 @@ void obtenerDatosConfig(char ** argv) {
 void liberar_recursos(struct_consola * consola_conectada) {
 
 	//SI LA CONSOLA TIENE HILOS PLANIFICANDOSE O EJECUTANDOSE Y SE DESCONECTA, ABORTAN Y SE ELIMINAN SUS
-	//SEGMENTOS DE STACK
+	//SEGMENTOS DE STACK TODO
 	consola_conectada->termino_ejecucion = true;
 	if (consola_conectada->cantidad_hilos > 0) {
 		printf("Entre acaaaaa!\n");
@@ -87,14 +91,14 @@ void loader() {
 	fd_set copia_set;
 	while (1) {
 		struct timeval * timeout = malloc(sizeof(struct timeval));
-		timeout->tv_sec = 4;
+		timeout->tv_sec = 2;
 		timeout->tv_usec = 0;
 		copia_set = consola_set;
 
 		int i = select(descriptor_mas_alto_consola + 1, &copia_set, NULL, NULL,
 				timeout);
 		if (i == -1) {
-			//ERROR
+			printf("ERROR EN EL SELECT!!!\n");
 			exit(-1);
 		}
 		free(timeout);
@@ -115,6 +119,11 @@ void loader() {
 					desconexion_consola(n_descriptor);
 					liberar_recursos(consola_conectada);
 					FD_CLR(n_descriptor, &consola_set);
+					close(n_descriptor);
+					if(datos != NULL){
+						free(datos->datos);
+						free(datos);
+					}
 					break;
 				}
 				TCB_struct * nuevoTCB;
@@ -128,42 +137,61 @@ void loader() {
 					nuevoTCB->PID = consola_conectada->PID;
 					nuevoTCB->TID = obtener_TID();
 					consola_conectada->TID_padre = nuevoTCB->TID;
-					printf("ESTOY SOLICITANDO SEGMENTO \n");
-					int segmento_codigo = solicitar_crear_segmento(nuevoTCB,
-							datos->tamanio);
-					printf("ME MANDO UNA BASE %d\n", segmento_codigo);
-					if (segmento_codigo < 0) {
-						exit(0);
-					}
-					consola_conectada->M = segmento_codigo;
-					int segmento_stack = solicitar_crear_segmento(nuevoTCB,
-							TAMANIO_STACK);
-					if (segmento_stack < 0) {
-						exit(-1);
-					}
-
-					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
-							datos->datos);
-
 					nuevoTCB->KM = 0;
-					nuevoTCB->M = segmento_codigo;
-					nuevoTCB->tamanioSegmentoCodigo = datos->tamanio;
-					nuevoTCB->P = segmento_codigo;
-					nuevoTCB->X = segmento_stack;
-					nuevoTCB->S = segmento_stack;
 					nuevoTCB->registrosProgramacion[0] = 0;
 					nuevoTCB->registrosProgramacion[1] = 0;
 					nuevoTCB->registrosProgramacion[2] = 0;
 					nuevoTCB->registrosProgramacion[3] = 0;
 					nuevoTCB->registrosProgramacion[4] = 0;
-					printf("\nSe inicializo el TCB PADRE\n");
+					printf("ESTOY SOLICITANDO SEGMENTO \n");
+
+					consola_conectada->cantidad_hilos = 0;
+					consola_conectada->termino_ejecucion = false;
+
+					int segmento_codigo = solicitar_crear_segmento(nuevoTCB,
+							datos->tamanio);
+					printf("ME MANDO UNA BASE %d\n", segmento_codigo);
+					int segmento_stack = solicitar_crear_segmento(nuevoTCB,
+							TAMANIO_STACK);
+
+					nuevoTCB->M = segmento_codigo;
+					consola_conectada->M = segmento_codigo;
+					nuevoTCB->tamanioSegmentoCodigo = datos->tamanio;
+					nuevoTCB->P = segmento_codigo;
+
+					nuevoTCB->X = segmento_stack;
+					nuevoTCB->S = segmento_stack;
+
+					if (segmento_codigo < 0) {
+						printf("ERROR AL SOLICITAR SEGMENTO DE CODIGO\n");
+						t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL,
+								0);
+						enviar_datos(n_descriptor, datos);
+						free(datos);
+						free(nuevoTCB);
+						break;
+					}
+					escribir_memoria(nuevoTCB, segmento_codigo, datos->tamanio,
+							datos->datos);
+					if (segmento_stack < 0) {
+						printf("ERROR AL SOLICITAR SEGMENTO DE STACK\n");
+						t_datosAEnviar * datos = crear_paquete(terminar_conexion, NULL,
+								0);
+						enviar_datos(n_descriptor, datos);
+						free(datos);
+						free(nuevoTCB);
+						break;
+					}
 					consola_conectada->cantidad_hilos = 1;
+
+
+					printf("\nSe inicializo el TCB PADRE\n");
 
 					hilo_t * nuevo = malloc(sizeof(hilo_t));
 
 					nuevo->tcb.PID = nuevoTCB->PID;
 					nuevo->tcb.TID = nuevoTCB->TID;
-					nuevo->tcb.KM = nuevoTCB->KM;
+					nuevo->tcb.KM = 0;
 					nuevo->tcb.M = nuevoTCB->M;
 					nuevo->tcb.tamanioSegmentoCodigo =
 							nuevoTCB->tamanioSegmentoCodigo;
@@ -196,6 +224,7 @@ void loader() {
 
 					break;
 				}
+				free(datos->datos);
 				free(datos);
 			}
 			n_descriptor = n_descriptor + 1;
@@ -207,6 +236,7 @@ void loader() {
 void handshake_MSP(int socketMSP) {
 	t_datosAEnviar * datos = crear_paquete(soy_kernel, NULL, 0);
 	enviar_datos(socketMSP, datos);
+	free(datos->datos);
 	free(datos);
 }
 
@@ -266,19 +296,19 @@ void boot() {
 	hilo_t * nuevo = malloc(sizeof(hilo_t));
 
 	copiar_tcb(&nuevo->tcb, tcb_km);
-	nuevo->tcb.PID = tcb_km->PID;
-	nuevo->tcb.TID = tcb_km->TID;
-	nuevo->tcb.KM = tcb_km->KM;
-	nuevo->tcb.M = tcb_km->M;
-	nuevo->tcb.tamanioSegmentoCodigo = tcb_km->tamanioSegmentoCodigo;
-	nuevo->tcb.P = tcb_km->P;
-	nuevo->tcb.X = tcb_km->X;
-	nuevo->tcb.S = tcb_km->S;
-	nuevo->tcb.registrosProgramacion[0] = tcb_km->registrosProgramacion[0];
-	nuevo->tcb.registrosProgramacion[1] = tcb_km->registrosProgramacion[1];
-	nuevo->tcb.registrosProgramacion[2] = tcb_km->registrosProgramacion[2];
-	nuevo->tcb.registrosProgramacion[3] = tcb_km->registrosProgramacion[3];
-	nuevo->tcb.registrosProgramacion[4] = tcb_km->registrosProgramacion[4];
+//	nuevo->tcb.PID = tcb_km->PID;
+//	nuevo->tcb.TID = tcb_km->TID;
+//	nuevo->tcb.KM = tcb_km->KM;
+//	nuevo->tcb.M = tcb_km->M;
+//	nuevo->tcb.tamanioSegmentoCodigo = tcb_km->tamanioSegmentoCodigo;
+//	nuevo->tcb.P = tcb_km->P;
+//	nuevo->tcb.X = tcb_km->X;
+//	nuevo->tcb.S = tcb_km->S;
+//	nuevo->tcb.registrosProgramacion[0] = tcb_km->registrosProgramacion[0];
+//	nuevo->tcb.registrosProgramacion[1] = tcb_km->registrosProgramacion[1];
+//	nuevo->tcb.registrosProgramacion[2] = tcb_km->registrosProgramacion[2];
+//	nuevo->tcb.registrosProgramacion[3] = tcb_km->registrosProgramacion[3];
+//	nuevo->tcb.registrosProgramacion[4] = tcb_km->registrosProgramacion[4];
 
 	nuevo->cola = BLOCK;
 
@@ -288,7 +318,7 @@ void boot() {
 
 	sem_post(&sem_kmDisponible);
 
-	t_log * logger = log_create("../panel/lg", "KERNEL", 1, LOG_LEVEL_DEBUG);
+	logger = log_create("../panel/lg", "KERNEL", 1, LOG_LEVEL_DEBUG);
 
 	printf("Esperando conexiones...\n");
 	log_debug(logger, "ESPERANDO CONEXIONES");
@@ -377,22 +407,34 @@ void interrumpir(TCB_struct * tcb, int dirSyscall) {
 	sem_post(&sem_procesoListo);
 }
 
+TCB_struct obtener_tcb_bloqueado(TCB_struct tcb){
+	bool es_bloqueado(struct_bloqueado * bloq){
+		return bloq->tcb.TID == tcb.TID;
+	}
+
+	struct_bloqueado * bloqueado = list_find(block.prioridad_1, (void*)es_bloqueado);
+	return bloqueado->tcb;
+}
+
 void crear_hilo(TCB_struct tcb, int socketCPU) {
+
+	TCB_struct tcb_bloqueado = obtener_tcb_bloqueado(tcb);
+
 
 	TCB_struct * nuevoTCB = malloc(sizeof(TCB_struct));
 	printf("Por solicitarle segmento a la msp\n");
-	int base_stack = solicitar_crear_segmento(&tcb, TAMANIO_STACK);
+	int base_stack = solicitar_crear_segmento(&tcb_bloqueado, TAMANIO_STACK);
 	printf("Me devolvio base %d\n", base_stack);
-	nuevoTCB->PID = tcb.PID;
+	nuevoTCB->PID = tcb_bloqueado.PID;
 	int tid = obtener_TID();
 	nuevoTCB->X = base_stack;
 	nuevoTCB->S = base_stack;
 	nuevoTCB->KM = 0;
-	nuevoTCB->PID = tcb.PID;
+	nuevoTCB->PID = tcb_bloqueado.PID;
 	nuevoTCB->TID = tid;
-	nuevoTCB->M = tcb.M;
-	nuevoTCB->tamanioSegmentoCodigo = tcb.tamanioSegmentoCodigo;
-	nuevoTCB->P = tcb.P;
+	nuevoTCB->M = tcb_bloqueado.M;
+	nuevoTCB->tamanioSegmentoCodigo = tcb_bloqueado.tamanioSegmentoCodigo;
+	nuevoTCB->P = tcb_bloqueado.P;
 	copiarRegistros(nuevoTCB->registrosProgramacion, tcb.registrosProgramacion);
 
 	t_datosAEnviar * datos = crear_paquete(0, nuevoTCB, sizeof(TCB_struct));
@@ -409,7 +451,7 @@ void crear_hilo(TCB_struct tcb, int socketCPU) {
 void planificar_hilo_creado(TCB_struct * nuevoTCB) {
 
 	hilo_t * nuevo = malloc(sizeof(hilo_t));
-
+	nuevoTCB->KM = 0;
 	copiar_tcb(&nuevo->tcb, nuevoTCB);
 	nuevo->cola = READY;
 	list_add(HILOS_SISTEMA, nuevo);
@@ -447,15 +489,18 @@ int solicitar_crear_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 			paquete->codigo_operacion, paquete->tamanio);
 
 	enviar_datos(socket_MSP, paquete);
+	free(paquete->datos);
+	free(paquete);
 	free(datos);
+
 	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
 	printf("RECIBI ALGO!\n");
 	if (respuesta == NULL ) {
 		printf("no se recibio una respuesta\n");
 	}
-	int * dir_base = malloc(sizeof(int));
-	memcpy(dir_base, respuesta->datos, sizeof(int));
+	int dir_base;
+	memcpy(&dir_base, respuesta->datos, sizeof(int));
 	int codop = respuesta->codigo_operacion;
 	free(respuesta->datos);
 	free(respuesta);
@@ -470,9 +515,9 @@ int solicitar_crear_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 		abortar(tcb);
 		return -1;
 	}
-	printf("Se recibio la direccion base: %d\n", *dir_base);
+	printf("Se recibio la direccion base: %d\n", dir_base);
 
-	return *dir_base;
+	return dir_base;
 }
 
 void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
@@ -492,12 +537,13 @@ void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 
 	enviar_datos(socket_MSP, paquete);
 	free(datos);
+	free(paquete->datos);
 	free(paquete);
+
 	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
 
 	paquete = recibir_datos(socket_MSP);
 
-	sem_post(&sem_lecturaEscritura);
 
 	if ((paquete->codigo_operacion == error_segmentationFault)
 			|| (paquete->codigo_operacion == error_general)) {
@@ -507,21 +553,23 @@ void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 		tcb->TID = consola_asociada->TID_padre;
 		abortar(tcb);
 	}
+	free(paquete->datos);
+	free(paquete);
+	sem_post(&sem_lecturaEscritura);
 
 }
 
 void finalizo_quantum(TCB_struct* tcb) {
 
-	bool es_TCB(TCB_struct tcb_comparar) {
-		return (tcb_comparar.PID == PID) && (tcb_comparar.TID == TID);
+	bool es_TCB(TCB_struct * tcb_comparar) {
+		return (tcb_comparar->PID == PID) && (tcb_comparar->TID == TID)&&(tcb_comparar->KM == 0); //TODO: CAMBIE ESTO, OJO
 	}
-	TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
-	free(tcb_exec);
-	printf("Se saco el tcb de la cola de ejecucion\n");
-	if (chequear_proceso_abortado(tcb) < 0) {
-		//EL PADRE DE ESE PROCESO TERMINO
-		//exit(0);
+	if(chequear_proceso_abortado(tcb) < 0) {
+		printf("LALA EL PROCESO FUE ABORTADO !!!!!! \n\n\n\n");
 	} else {
+		TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
+		free(tcb_exec);
+		printf("Se saco el tcb de la cola de ejecucion\n");
 		meter_en_ready(1, tcb);
 	}
 
@@ -556,9 +604,11 @@ void sacar_de_ejecucion(TCB_struct* tcb, bool waitear) {
 		if (enviar_datos(consola_asociada->socket_consola, paquete) < 0) {
 
 		}
+		free(paquete->datos);
 		free(paquete);
 		printf("DESCONECTE LA CONSOLA ASOCIADA\n");
 	}
+
 	mandar_a_exit(tcb);
 
 	//if (consola_asociada->cantidad_hilos == 0) {
@@ -582,7 +632,7 @@ void matar_hijos(int PID) {
 	printf("cantidad elementos ready %d\n", queue_size(ready.prioridad_1));
 	matar_hijos_en_lista(PID, ready.prioridad_1->elements, READY);
 	matar_hijos_en_lista(PID, block.prioridad_1, BLOCK);
-	matar_hijos_en_lista(PID, SYS_CALL->elements, 8);		//TODO
+	matar_hijos_en_lista(PID, SYS_CALL->elements, 8);
 	matar_hijos_en_lista(PID, hilos_join, 10);
 	matar_hijo_en_diccionario(PID);
 }
@@ -616,7 +666,8 @@ void matar_hijos_en_lista(int PID, t_list* lista, int tipo_lista) {
 		cantidad = list_count_satisfying(lista, (void*) tiene_mismo_pid);
 		sem_wait(&sem_procesoListo);
 
-		while (contador < cantidad) {
+                sem_wait(&sem_procesoListo);		
+                while (contador < cantidad) {
 			tcb = list_remove_by_condition(lista, (void*) tiene_mismo_pid);
 			mandar_a_exit(tcb);
 			contador++;
@@ -692,22 +743,29 @@ void fijarse_joins(int tid) {
 	printf("Me fijo joins\n");
 
 	bool esta_esperando_tid(struct_join *estructura) {
+		log_debug(logger, "ME ESTOY FIJANDO EL JOIN.\n \n TID del bloqueado: %d \n TID a esperar: %d \n", tid, estructura->tid_a_esperar);
 		return estructura->tid_a_esperar == tid;
 	}
+
 	void desbloquear_por_join(struct_join * estructura) {
 		if (esta_esperando_tid(estructura)) {
+			bool espera_a_alguien_mas(struct_join * estructura2){
+				return estructura2->tcb_llamador->TID == estructura->tcb_llamador->TID;
+			}
+			if(!list_any_satisfy(hilos_join, (void*)espera_a_alguien_mas)){
 			TCB_struct * tcb_bloqueado = malloc(sizeof(TCB_struct));
 			copiar_tcb(tcb_bloqueado, estructura->tcb_llamador);
 			meter_en_ready(1, tcb_bloqueado);
+			}
 		}
 	}
 
-	list_remove_and_destroy_by_condition(hilos_join, (void*) esta_esperando_tid,
-			free);
 	//Como el filter contiene referencias a estructuras que contiene hilos_join, con liberar los elementos del
 	//filter tendrían que dejar de estar los elementos en hilos_join
 
 	list_map(hilos_join, (void*) desbloquear_por_join);
+	list_remove_and_destroy_by_condition(hilos_join, (void*) esta_esperando_tid,
+			free);
 }
 
 void finalizo_ejecucion(TCB_struct *tcb_fin) {
@@ -756,9 +814,9 @@ void finalizo_ejecucion(TCB_struct *tcb_fin) {
 void enviar_a_ejecucion(TCB_struct * tcb) {
 
 	struct_CPU* cpu = list_find(CPU_list, (void*) CPU_esta_libre);
-	if (cpu == NULL ) {
-		printf("FALLO. NO SE ENCONTRO CPU\n");
-		exit(-1);
+	while(cpu == NULL ) {
+		sem_wait(&sem_CPU);
+		cpu = list_find(CPU_list, (void*) CPU_esta_libre);
 	}
 	cpu->bit_estado = ocupado;
 	cpu->PID = tcb->PID;
@@ -771,7 +829,7 @@ void enviar_a_ejecucion(TCB_struct * tcb) {
 	list_add(exec, tcb);
 	loguear(EXEC, tcb);
 
-	printf("\n TCB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+	printf("\n TCB PARA MANDAR A EJECUCION \n");
 	printf("\n PID: %d \n", tcb->PID);
 	printf("\n TID: %d \n", tcb->TID);
 	printf("\n KM: %d \n", tcb->KM);
@@ -805,8 +863,8 @@ void dispatcher() {
 		printf("\nSe detectó un nuevo proceso!\n");
 		if (!queue_is_empty(SYS_CALL)) {
 
-			printf("ENTRE A EJECUTAR UNA INTERRUPCION!!!!!!!\n");
 			sem_wait(&sem_kmDisponible);
+			printf("ENTRE A EJECUTAR UNA INTERRUPCION!!!!!!!\n");
 			tcb_ejecutandoSysCall = (TCB_struct*) queue_pop(SYS_CALL);
 
 			struct_bloqueado * tcb_bloqueado = obtener_bloqueado(
@@ -827,12 +885,18 @@ void dispatcher() {
 		} else {
 			TCB_struct * tcb;
 
-			if (!queue_is_empty(ready.prioridad_0)) {
-				tcb = sacar_de_ready(0);
-			} else {
+			//if (!queue_is_empty(ready.prioridad_0)) {
+				//tcb = sacar_de_ready(0);
+			//} else {
 				tcb = sacar_de_ready(1);
-			}
+				if(tcb->KM){
+					printf("\n\n\nNOOOOOooOOoOoOOoOo QUE HACE ESTO ACAAAA?!!!!!\n\n\n\n");
+					queue_push(block.prioridad_0, tcb);
+				}else{
 			enviar_a_ejecucion(tcb);
+
+				}
+			//}
 		}
 	}
 

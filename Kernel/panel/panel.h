@@ -6,9 +6,9 @@
 	#include <stdint.h>
 	#include <stdbool.h>
 	#include <string.h>
-	#include "commons/collections/list.h"
-	#include "commons/string.h"
-	#include "commons/log.h"
+	#include <commons/collections/list.h>
+	#include <commons/string.h>
+	#include <commons/log.h>
 
 	typedef enum { KERNEL, CPU } t_tipo_proceso;
 	typedef enum { NEW, READY, EXEC, BLOCK, EXIT } t_cola;
