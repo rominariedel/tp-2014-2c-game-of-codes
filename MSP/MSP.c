@@ -1262,7 +1262,7 @@ void interpretarOperacion(int* sock_conectado) {
 				respuesta = crearSegmento(pid, tamanio);
 				log_debug(logger,"La respuesta es: %d", respuesta);
 
-				paquete = crear_paquete(1, (void*) &respuesta, sizeof(uint32_t));
+				paquete = crear_paquete(respuesta, (void*) &respuesta, sizeof(uint32_t));
 
 				int r = enviar_datos(*socket_conectado, paquete);
 
@@ -1349,7 +1349,8 @@ void interpretarOperacion(int* sock_conectado) {
 
 				respuesta = escribirMemoria(pid, direccion, bytesAEscribir, tamanio);
 
-				paquete = crear_paquete(0, (void*) &respuesta, sizeof(uint32_t));
+				//int codigo_operacion;
+				paquete = crear_paquete(respuesta, (void*) &respuesta, sizeof(uint32_t));
 
 				enviar_datos(*socket_conectado, paquete);
 
