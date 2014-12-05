@@ -1295,7 +1295,7 @@ void interpretarOperacion(int* sock_conectado) {
 				}
 
 				log_debug(logger, "Codigo de Operacion a enviar: %d", codigo_operacion);
-				paquete = crear_paquete(codigo_operacion, (void*) resultado, sizeof(int));
+				paquete = crear_paquete(codigo_operacion, (void*) resultado, tamanio);
 
 				enviar_datos(*socket_conectado, paquete);
 
