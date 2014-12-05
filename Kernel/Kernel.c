@@ -12,6 +12,7 @@
 
 void despedida(){
 	printf("\n\nSE HA INTERRUMPIDO LA EJECUCION DEL KERNEL.\n\n");
+	printf("\n liberando listas \n");
 	free_listas();
 	raise(SIGTERM);
 }
@@ -77,7 +78,7 @@ void liberar_recursos(struct_consola * consola_conectada) {
 	//SEGMENTOS DE STACK TODO
 	consola_conectada->termino_ejecucion = true;
 	if (consola_conectada->cantidad_hilos > 0) {
-		printf("Entre acaaaaa!\n");
+		printf("Entre acaa\n");
 		matar_hijos(consola_conectada->PID);
 	}
 	if (consola_conectada->cantidad_hilos == 0) {
@@ -219,7 +220,9 @@ void loader() {
 				case se_produjo_entrada:
 					aux = malloc(sizeof(int));
 					memcpy(aux, &datos->tamanio, sizeof(int));
+					entrada->cadena = malloc(datos->tamanio + 1);
 					memcpy(entrada->cadena, datos->datos, datos->tamanio);
+					entrada->cadena[datos->tamanio] = '\0';
 					devolver_entrada_aCPU(*aux);
 
 					break;
@@ -484,7 +487,7 @@ int solicitar_crear_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 	t_datosAEnviar * paquete = crear_paquete(crear_segmento, (void*) datos,
 			2 * sizeof(int));
 	printf(
-			"TAMANIO DEL SEGMENTO %d, PID %d, SOCKET MSP %d, PAQUETE CODOP %d, TAMANIO PAQUETE %d",
+			"TAMANIO DEL SEGMENTO %d, PID %d, SOCKET MSP %d, PAQUETE COD_OP %d, TAMANIO PAQUETE %d",
 			tamanio_del_segmento, tcb->PID, socket_MSP,
 			paquete->codigo_operacion, paquete->tamanio);
 
@@ -493,9 +496,8 @@ int solicitar_crear_segmento(TCB_struct * tcb, int tamanio_del_segmento) {
 	free(paquete);
 	free(datos);
 
-	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
+	printf("Esperando recibir datos de la msp\n");
 	t_datosAEnviar * respuesta = recibir_datos(socket_MSP);
-	printf("RECIBI ALGO!\n");
 	if (respuesta == NULL ) {
 		printf("no se recibio una respuesta\n");
 	}
@@ -540,7 +542,7 @@ void escribir_memoria(TCB_struct * tcb, int dir_logica, int tamanio,
 	free(paquete->datos);
 	free(paquete);
 
-	printf("SE VAN A RECIBIR DATOS EN EL SOCKET %d DE LA MSP\n", socket_MSP);
+	printf("Esperando recibir datos de la msp\n");
 
 	paquete = recibir_datos(socket_MSP);
 
@@ -565,7 +567,7 @@ void finalizo_quantum(TCB_struct* tcb) {
 		return (tcb_comparar->PID == PID) && (tcb_comparar->TID == TID)&&(tcb_comparar->KM == 0); //TODO: CAMBIE ESTO, OJO
 	}
 	if(chequear_proceso_abortado(tcb) < 0) {
-		printf("LALA EL PROCESO FUE ABORTADO !!!!!! \n\n\n\n");
+		printf("El proceso fue abortado\n");
 	} else {
 		TCB_struct * tcb_exec = list_remove_by_condition(exec, (void*) es_TCB);
 		free(tcb_exec);
@@ -784,6 +786,7 @@ void finalizo_ejecucion(TCB_struct *tcb_fin) {
 				block.prioridad_1, (void*) tiene_mismo_tid);
 		if (tcb_bloqueado == NULL ) {
 			printf("NO SE ENCONTRO EL TCB BLOQUEADO\n");
+			exit(-1);
 		}
 
 		TCB_struct * tcb_block = malloc(sizeof(TCB_struct));
@@ -806,7 +809,7 @@ void finalizo_ejecucion(TCB_struct *tcb_fin) {
 		meter_en_ready(1, tcb_block);
 		sem_post(&sem_kmDisponible);
 	} else {
-		printf("FINALIZO LA EJECUCION DE UN TCB COMUNACHO\n");
+		printf("FINALIZO LA EJECUCION DE UN TCB MODO USUARIO\n");
 		sacar_de_ejecucion(tcb_fin, true);
 	}
 }
@@ -890,7 +893,6 @@ void dispatcher() {
 			//} else {
 				tcb = sacar_de_ready(1);
 				if(tcb->KM){
-					printf("\n\n\nNOOOOOooOOoOoOOoOo QUE HACE ESTO ACAAAA?!!!!!\n\n\n\n");
 					queue_push(block.prioridad_0, tcb);
 				}else{
 			enviar_a_ejecucion(tcb);

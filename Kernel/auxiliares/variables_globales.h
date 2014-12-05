@@ -34,7 +34,7 @@ t_log * logger;
 
 typedef struct {
 	int socket_CPU; //El Socket pertenece a la CPU que hizo la solicitud de entrada/salida
-	void * cadena;
+	char * cadena;
 } entrada_salida;
 entrada_salida * entrada;
 
