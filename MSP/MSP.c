@@ -65,7 +65,7 @@ int main(int cantArgs, char** args) {
 	printf("\nIniciando...\n");
 
 	inicializar(args);
-	logger = log_create(rutaLog, "Log Programa", true, LOG_LEVEL_DEBUG);
+	logger = log_create(rutaLog, "Log Programa", false, LOG_LEVEL_INFO);
 	log_debug(logger,"Memoria disponible: %d", memoriaDisponible);
 	log_info(logger, "Inicio de la MSP \n El tamaño de la memoria principal es: %d \n El tamaño del archivo de paginacion: %d", tamanioMemoria, tamanioPag);
 	//signal(SIGINT, cerrarMSP);
